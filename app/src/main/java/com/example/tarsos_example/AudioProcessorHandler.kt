@@ -1,5 +1,6 @@
 package com.example.tarsos_example
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import be.tarsos.dsp.AudioDispatcher
@@ -8,6 +9,8 @@ import be.tarsos.dsp.io.android.AudioDispatcherFactory
 import be.tarsos.dsp.pitch.PitchDetectionHandler
 import be.tarsos.dsp.pitch.PitchDetectionResult
 import be.tarsos.dsp.pitch.PitchProcessor
+import be.tarsos.dsp.util.fft.FFT
+import be.tarsos.dsp.util.fft.WindowFunction
 import be.tarsos.dsp.writer.WriterProcessor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -55,6 +58,18 @@ class AudioProcessorHandler(private val context: Context) {
 
                     _pitchTextViewValue.postValue(octav)
 
+                    // FFT 변환을 통해 음성 데이터를 스펙트럼으로 변환
+                    val fftTransform = FFT(e.floatBuffer.size / 2)
+                    val amplitudes = FloatArray(e.floatBuffer.size / 2)
+                    fftTransform.forwardTransform(e.floatBuffer)
+                    fftTransform.modulus(e.floatBuffer, amplitudes)
+
+                    // HPS 알고리즘을 적용하여 다중 음향 정보를 얻음
+                    val hpsResult = hps(amplitudes)
+
+                    // 로그 출력
+                    Log.d("HPS pitch", "The result of HPS: $hpsResult Hz")
+
                 }
             }
 
@@ -90,4 +105,26 @@ class AudioProcessorHandler(private val context: Context) {
         dispatcher?.stop()
         dispatcher = null
     }
+
+    fun hps(inputSignal: FloatArray): Float {
+        val downsampled = Array(5) { FloatArray(inputSignal.size / (it+1)) }
+        for (i in downsampled.indices) {
+            for (j in downsampled[i].indices) {
+                downsampled[i][j] = inputSignal[j * i]
+            }
+        }
+
+        val product = FloatArray(downsampled[0].size) { 1.0f }
+        for (i in downsampled.indices) {
+            for (j in downsampled[i].indices) {
+                product[j] *= downsampled[i][j]
+            }
+        }
+
+        val peakIndex = product.indices.maxByOrNull { product[it] } ?: -1
+        val peakFreq = 22050f * peakIndex / product.size
+
+        return peakFreq
+    }
+
 }

@@ -87,8 +87,12 @@ class MainActivity : ComponentActivity() {
                     fontSize = 50.sp,
                     textAlign = TextAlign.Center
                 )
+                Text(
+                    text = "입력된 코드",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                )
             }
-
             Button(
                 onClick = { audioProcessorHandler.SetupAudioProcessing() },
                 modifier = Modifier.fillMaxWidth()
