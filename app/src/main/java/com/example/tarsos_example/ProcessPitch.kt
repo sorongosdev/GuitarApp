@@ -5,7 +5,8 @@ import android.util.Log
 object ProcessPitch {
     // pitch -> key
     fun processPitch(pitchInHz: Float): String {
-        Log.d("pitch","$pitchInHz")
+//        if (pitchInHz > 0)
+//            Log.d("pitch", "$pitchInHz")
         var noteText = "$pitchInHz"
         when {
             pitchInHz >= 82 && pitchInHz < 83 -> noteText = "E"

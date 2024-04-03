@@ -1,4 +1,5 @@
 package com.example.tarsos_example
+
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -68,7 +69,9 @@ class AudioProcessorHandler(private val context: Context) {
                     val hpsResult = hps(amplitudes)
 
                     // 로그 출력
-                    Log.d("HPS pitch", "The result of HPS: $hpsResult Hz")
+                    if (pitchInHz > 0 && hpsResult < 10000) {
+                        Log.d("pitch / HPS", "$pitchInHz // $hpsResult")
+                    }
 
                 }
             }
@@ -107,7 +110,7 @@ class AudioProcessorHandler(private val context: Context) {
     }
 
     fun hps(inputSignal: FloatArray): Float {
-        val downsampled = Array(5) { FloatArray(inputSignal.size / (it+1)) }
+        val downsampled = Array(5) { FloatArray(inputSignal.size / (it + 1)) }
         for (i in downsampled.indices) {
             for (j in downsampled[i].indices) {
                 downsampled[i][j] = inputSignal[j * i]
