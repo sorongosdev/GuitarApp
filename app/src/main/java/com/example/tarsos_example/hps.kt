@@ -1,12 +1,13 @@
 package com.example.tarsos_example
 
 import kotlin.math.*
-import android.content.Context
-import android.media.AudioAttributes
-import android.media.MediaPlayer
-import java.io.File
-import java.io.FileInputStream
 import org.jtransforms.fft.DoubleFFT_1D
+import java.io.File
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import kotlin.math.min
+import kotlin.math.max
+
 // Path
 val path = "./"
 val filename = "G_AcusticPlug26_1.wav"
@@ -21,42 +22,41 @@ val hopLength = (fftLen * (1 - overlap)).toInt() // Number of samples between su
 // For the calculations of the music scale.
 val twelveRootOf2 = 2.0.pow(1.0 / 12)
 
+fun readWavFile(path: String, filename: String): Pair<Int, FloatArray> {
+    val file = File(path, filename)
+    val inputStream = file.inputStream()
 
-fun playAudioFromFile(context: Context, filePath: String) {
-    val mediaPlayer = MediaPlayer().apply {
-        setAudioAttributes(
-            AudioAttributes.Builder()
-                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                .setUsage(AudioAttributes.USAGE_MEDIA)
-                .build()
-        )
-        setDataSource(filePath)
-        prepare()
-        start()
+    // 프레임 및 샘플레이트를 읽기 위한 준비 (여기서는 간단화를 위해 생략)
+    val sampleRate = 44100 // 예시로 사용
+    val numFrames = file.length().toInt() // 실제 사용시 정확한 프레임 수를 계산해야 함
+
+    // WAV 파일의 프레임을 읽어옴
+    val wavBytes = inputStream.readBytes()
+    val wavShorts = ShortArray(wavBytes.size / 2)
+    ByteBuffer.wrap(wavBytes).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().get(wavShorts)
+
+    // int16을 float64로 변환
+    val signalArray = FloatArray(wavShorts.size)
+    for (i in wavShorts.indices) {
+        signalArray[i] = wavShorts[i] / 32768.0f
     }
+
+    println("file_name: $filename")
+    println("sample_rate: $sampleRate")
+    println("input_buffer.size: ${signalArray.size}")
+    println("seconds: ${String.format("%.4f", signalArray.size / sampleRate.toFloat())} s")
+    println("type [-1, 1]: ${signalArray::class.java.simpleName}")
+    println("min: ${String.format("%.4f", signalArray.minOrNull() ?: 0f)} max: ${String.format("%.4f", signalArray.maxOrNull() ?: 0f)}")
+
+    return Pair(sampleRate, signalArray)
 }
 
-fun readWavFile(filePath: String): Pair<Int, ShortArray>? {
-    try {
-        val file = File(filePath)
-        val fileInputStream = FileInputStream(file)
-        // WAV 파일 헤더 등을 처리하는 로직 필요
-        // 실제 데이터를 읽어 ShortArray 등으로 변환
 
-        // 예시에서는 실제 WAV 파일 포맷 분석 및 처리를 생략
-        // 실제 구현 시, WAV 파일 스펙에 맞춰 파일 헤더를 분석하고 데이터를 읽어야 함
 
-        // 여기에서는 데이터 읽기 및 처리 예시를 생략함
-        // 반환값은 샘플레이트와 오디오 데이터 배열(여기서는 가상의 데이터로 대체)
-        return Pair(44100, ShortArray(1024)) // 가상의 예시 데이터
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-    return null
-}
+// Kotlin에서는 toStrF4 함수의 기능을 "${"%.4f".format(value)}"로 대체할 수 있음
 
 // 주어진 버퍼를 최대 길이로 나누어 겹치지 않는 청크(작은 조각)로 분할, 분할된 배열 뷰 반환
-fun divideBufferIntoNonOverlappingChunks(buffer: Array<Float>, maxLen: Int): List<Array<Float>> {
+fun divideBufferIntoNonOverlappingChunks(buffer: FloatArray, maxLen: Int): List<DoubleArray> {
     // 버퍼의 최대 길이 확인
     val bufferLen = buffer.size
     // 최대길이로 나누어질 수 있는 청크의 수 계산
@@ -68,19 +68,21 @@ fun divideBufferIntoNonOverlappingChunks(buffer: Array<Float>, maxLen: Int): Lis
         divisionPtsList.add(i * maxLen)
     }
     // 버퍼를 분할 지점으로 나누어 배열 뷰를 생성
-    val splittedArrayView = mutableListOf<Array<Float>>()
+    val splittedArrayView = mutableListOf<DoubleArray>()
     var startIdx = 0
     for (divisionPt in divisionPtsList) {
-        splittedArrayView.add(buffer.copyOfRange(startIdx, divisionPt))
+        // FloatArray를 DoubleArray로 변환하여 추가
+        splittedArrayView.add(buffer.copyOfRange(startIdx, divisionPt).map { it.toDouble() }.toDoubleArray())
         startIdx = divisionPt
     }
-    // 마지막 청크 추가
+    // 마지막 청크 추가 (FloatArray를 DoubleArray로 변환)
     if (startIdx < bufferLen) {
-        splittedArrayView.add(buffer.copyOfRange(startIdx, bufferLen))
+        splittedArrayView.add(buffer.copyOfRange(startIdx, bufferLen).map { it.toDouble() }.toDoubleArray())
     }
     // 분할된 뷰 반환
     return splittedArrayView
 }
+
 
 fun getFFT(data: DoubleArray, sampleRate: Double): Triple<DoubleArray, DoubleArray, Int> {
     // 데이터 길이 확인
@@ -260,8 +262,8 @@ fun main() {
     // 음정 반환
     val orderedNoteFreq = getAllNotesFreq()
 
-    // WAV 파일을 읽고 신호를 버퍼로 반환
-    val (sampleRateFile, inputBuffer) = readWavFile(path, filename)
+    // WAV 파일을 읽고 신호를 버퍼로 반환. null일 경우 함수를 빠져나온다.
+    val (sampleRateFile, inputBuffer) = readWavFile(path, filename) ?: return
     // 주어진 버퍼를 최대 길이로 나누어 겹치지 않는 청크(작은 조각)로 분할
     val bufferChunks = divideBufferIntoNonOverlappingChunks(inputBuffer, fftLen)
 
@@ -272,14 +274,14 @@ fun main() {
         println("\n...Chunk: $count")
 
         // fft 결과 반환
-        val (fftFreq, fftRes, fftResLen) = getFFT(chunk, chunk.size)
+        val (fftFreq, fftRes, fftResLen) = getFFT(chunk, chunk.size.toDouble())
         // dc 오프셋 제거
         val fftResNoDC = removeDcOffset(fftRes)
 
         // RMS 계산
         val bufferRms = sqrt(chunk.map { it * it }.average())
 
-        val allFreqs = pitchSpectralHps(fftResNoDC, fftFreq, sampleRateFile, bufferRms)
+        val allFreqs = pitchSpectralHps(fftResNoDC, fftFreq, sampleRateFile.toDouble(), bufferRms)
 
         for (freq in allFreqs) {
             val noteName = findNearestNote(orderedNoteFreq, freq.first)
