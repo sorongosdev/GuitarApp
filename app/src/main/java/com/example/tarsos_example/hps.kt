@@ -9,8 +9,9 @@ import kotlin.math.min
 import kotlin.math.max
 
 // Path
-val path = "./"
-val filename = "G_AcusticPlug26_1.wav"
+val path = "app/src/main/assets/"
+val filename = "Dm_AcusticPlug26_1.wav"
+
 val noteThreshold = 5_000.0 // 120 // 50_000.0 // 3_000.0
 
 // Parameters
@@ -27,7 +28,7 @@ fun readWavFile(path: String, filename: String): Pair<Int, FloatArray> {
     val inputStream = file.inputStream()
 
     // 프레임 및 샘플레이트를 읽기 위한 준비 (여기서는 간단화를 위해 생략)
-    val sampleRate = 44100 // 예시로 사용
+    val sampleRate = 16000 // 예시로 사용
     val numFrames = file.length().toInt() // 실제 사용시 정확한 프레임 수를 계산해야 함
 
     // WAV 파일의 프레임을 읽어옴
@@ -91,18 +92,36 @@ fun getFFT(data: DoubleArray, sampleRate: Double): Triple<DoubleArray, DoubleArr
     val windowedData =
         data.indices.map { data[it] * (0.54 - 0.46 * Math.cos(2 * Math.PI * it / (lenData - 1))) }
             .toDoubleArray()
-    // fft 계산을 위한 배열 준비 (실수부와 허수부를 모두 포함해야 함)
-    val fftData = DoubleArray(lenData * 2)
-    System.arraycopy(windowedData, 0, fftData, 0, lenData)
+//    // fft 계산을 위한 배열 준비 (실수부와 허수부를 모두 포함해야 함)
+//    val fftData = DoubleArray(lenData * 2)
+//    System.arraycopy(windowedData, 0, fftData, 0, lenData)
+//    // fft 실행
+//    val fft = DoubleFFT_1D(lenData.toLong())
+//    fft.realForwardFull(fftData)
+//    // fft 결과 절대값 계산
+//    val absFFT =
+//        DoubleArray(lenData) { Math.sqrt(fftData[2 * it] * fftData[2 * it] + fftData[2 * it + 1] * fftData[2 * it + 1]) }
+//    // fft 변환을 통해 분석된 주파수 성분의 개수를 반환
+//    val ret_len_FFT = absFFT.size
+//    println(ret_len_FFT)
+//    // fft 주파수 계산
+//    val freq = DoubleArray(lenData) { it * sampleRate / lenData }
+//    return Triple(freq, absFFT, absFFT.size)
+
+    // fft 계산을 위한 배열 준비 (실수부만 포함하면 됨)
+    val fftData = windowedData.copyOf() // <--- 변경: 실수 데이터 복사
     // fft 실행
     val fft = DoubleFFT_1D(lenData.toLong())
-    fft.realForwardFull(fftData)
+    fft.realForward(fftData) // <--- 변경: 실수 FFT 수행
     // fft 결과 절대값 계산
     val absFFT =
-        DoubleArray(lenData) { Math.sqrt(fftData[2 * it] * fftData[2 * it] + fftData[2 * it + 1] * fftData[2 * it + 1]) }
+        DoubleArray(lenData / 2) { Math.sqrt(fftData[2 * it] * fftData[2 * it] + fftData[2 * it + 1] * fftData[2 * it + 1]) } // <--- 변경: 결과 배열 크기 조정
+    // fft 변환을 통해 분석된 주파수 성분의 개수를 반환
+    val ret_len_FFT = absFFT.size
+    println(ret_len_FFT)
     // fft 주파수 계산
-    val freq = DoubleArray(lenData) { it * sampleRate / lenData }
-    return Triple(freq, absFFT, absFFT.size)
+    val freq = DoubleArray(lenData / 2) { it * sampleRate / lenData } // <--- 변경: 결과 배열 크기 조정
+    return Triple(freq, absFFT, ret_len_FFT)
 }
 
 fun removeDcOffset(fftRes: DoubleArray): DoubleArray {
@@ -277,19 +296,18 @@ fun main() {
         // fft 결과 반환
         val (fftFreq, fftRes, fftResLen) = getFFT(chunk, chunk.size.toDouble())
         // dc 오프셋 제거
-//        val fftResNoDC = removeDcOffset(fftRes)
-//
-//        // RMS 계산
-//        val bufferRms = sqrt(chunk.map { it * it }.average())
-//
-//        val allFreqs = pitchSpectralHps(fftResNoDC, fftFreq, sampleRateFile.toDouble(), bufferRms)
-//
-//        for (freq in allFreqs) {
-//            val noteName = findNearestNote(orderedNoteFreq, freq.first)
-//            println("=> freq: ${toStrF(freq.first)} Hz  value: ${toStrF(freq.second)} note_name: $noteName")
-//        }
-//
-//        // 여기서부터의 시각화 및 배열 출력 관련 코드는 Kotlin에서 직접적인 대응이 없으므로 생략
+        val fftResNoDC = removeDcOffset(fftRes)
+
+        // RMS 계산
+        val bufferRms = sqrt(chunk.map { it * it }.average())
+
+
+        for (freq in allFreqs) {
+            val noteName = findNearestNote(orderedNoteFreq, freq.first)
+            println("=> freq: ${toStrF(freq.first)} Hz  value: ${toStrF(freq.second)} note_name: $noteName")
+        }
+
+        // 여기서부터의 시각화 및 배열 출력 관련 코드는 Kotlin에서 직접적인 대응이 없으므로 생략
 
         count++
     }
