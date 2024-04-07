@@ -272,23 +272,24 @@ fun main() {
     // 청크 처리
     for (chunk in bufferChunks.take(60)) {
         println("\n...Chunk: $count")
+        println("chunk dimension: ${chunk}")
 
         // fft 결과 반환
         val (fftFreq, fftRes, fftResLen) = getFFT(chunk, chunk.size.toDouble())
         // dc 오프셋 제거
-        val fftResNoDC = removeDcOffset(fftRes)
-
-        // RMS 계산
-        val bufferRms = sqrt(chunk.map { it * it }.average())
-
-        val allFreqs = pitchSpectralHps(fftResNoDC, fftFreq, sampleRateFile.toDouble(), bufferRms)
-
-        for (freq in allFreqs) {
-            val noteName = findNearestNote(orderedNoteFreq, freq.first)
-            println("=> freq: ${toStrF(freq.first)} Hz  value: ${toStrF(freq.second)} note_name: $noteName")
-        }
-
-        // 여기서부터의 시각화 및 배열 출력 관련 코드는 Kotlin에서 직접적인 대응이 없으므로 생략
+//        val fftResNoDC = removeDcOffset(fftRes)
+//
+//        // RMS 계산
+//        val bufferRms = sqrt(chunk.map { it * it }.average())
+//
+//        val allFreqs = pitchSpectralHps(fftResNoDC, fftFreq, sampleRateFile.toDouble(), bufferRms)
+//
+//        for (freq in allFreqs) {
+//            val noteName = findNearestNote(orderedNoteFreq, freq.first)
+//            println("=> freq: ${toStrF(freq.first)} Hz  value: ${toStrF(freq.second)} note_name: $noteName")
+//        }
+//
+//        // 여기서부터의 시각화 및 배열 출력 관련 코드는 Kotlin에서 직접적인 대응이 없으므로 생략
 
         count++
     }

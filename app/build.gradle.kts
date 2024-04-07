@@ -57,7 +57,6 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation(files("libs/TarsosDSP-Android-latest.jar"))
-    implementation (files("libs/fftpack-0.1.jar"))
     implementation("com.github.wendykierp:JTransforms:3.1")
 
 
