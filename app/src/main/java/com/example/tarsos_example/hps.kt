@@ -192,21 +192,20 @@ fun findNearestNote(orderedNoteFreq: List<Pair<String, Double>>, freq: Double): 
 
 // 주파수의 최댓값을 찾는 함수
 fun pitchSpectralHps(
-    X: Array<DoubleArray>,
+    X: DoubleArray,
     freqBuckets: DoubleArray,
     fS: Double,
     bufferRms: Double
 ): List<Pair<Double, Double>> {
     val iOrder = 4
     val fMin = 65.41 // C2
-    val f = DoubleArray(X.size) { 0.0 }
-    val iLen = (X[0].size - 1) / iOrder
-    val afHps = DoubleArray(iLen) { index -> X[index][0] } // 초기화 필요
-    val kMin = round(fMin / fS * 2 * (X[0].size - 1)).toInt()
+    val iLen = (X.size - 1) / iOrder
+    val afHps = DoubleArray(iLen) { X[it] } // X가 이제 1차원 배열이므로 직접 접근
+    val kMin = round(fMin / fS * 2 * (X.size - 1)).toInt()
 
     // HPS 계산
     for (j in 1 until iOrder) {
-        val Xd = X.map { it[j] }.toDoubleArray()
+        val Xd = DoubleArray(iLen) { X[it * j] } // 1차원 배열에서 간격을 j로 해서 새 배열 생성
         for (i in 0 until iLen) {
             afHps[i] *= Xd[i]
         }
@@ -233,6 +232,7 @@ fun pitchSpectralHps(
         Pair(freqIndex.toDouble(), afHps[freqIndex])
     }
 }
+
 
 fun noteThresholdScaledByRMS(bufferRms: Double): Double {
     val noteThreshold = 1000.0 * (4 / 0.090) * bufferRms
