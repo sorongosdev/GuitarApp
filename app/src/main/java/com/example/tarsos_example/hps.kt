@@ -301,6 +301,7 @@ fun main() {
         // RMS 계산
         val bufferRms = sqrt(chunk.map { it * it }.average())
 
+        val allFreqs = pitchSpectralHps(fftResNoDC, fftFreq, sampleRateFile.toDouble(), bufferRms)
 
         for (freq in allFreqs) {
             val noteName = findNearestNote(orderedNoteFreq, freq.first)
