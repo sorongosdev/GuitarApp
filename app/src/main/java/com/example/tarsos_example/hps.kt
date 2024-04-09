@@ -217,9 +217,11 @@ fun pitchSpectralHps(
     bufferRms: Double
 ): List<Pair<Double, Double>> {
     val iOrder = 4
-    val fMin = 65.41 // C2
+    val fMin = 65.41 // C2, 최소 주파수
     val iLen = (X.size - 1) / iOrder
     val afHps = DoubleArray(iLen) { X[it] } // X가 이제 1차원 배열이므로 직접 접근
+    println("afHps $afHps")
+
     val kMin = round(fMin / fS * 2 * (X.size - 1)).toInt()
 
     // HPS 계산
