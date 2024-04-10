@@ -40,33 +40,39 @@ def get_log():
 
 ## wav 파일 읽은 후, sample_rate와 input_buffer 반환
 # (sample_rate : int, input_buffer : NDArray[Any]) 반환, NDArray[Any]는 실수값의 numpy 배열을 의미
-def read_wav_file(path, filename): 
-    # Reads the input WAV file from HDD disc.
-    wav_handler = wave.open(path + filename,'rb')    # 지정된 경로에 wav 파일을 읽기 전용 모드로 연다.
-    num_frames = wav_handler.getnframes()            # 파일에서 sample의 총 개수를 얻는다. 44100*(wav 길이 예로 4초) = 176400개
-    sample_rate = wav_handler.getframerate()         # 파일의 sample_rate를 얻는다. 44100
-    wav_frames = wav_handler.readframes(num_frames)  # 모든 frame을 읽는다. wav_frames는 num_frames의 두 배이다. 각 샘플이 2바이트로 표현되기 때문. wav_frames의 바이트 배열 길이는 176400*2 = 352800 바이트이다.
+def read_wav_file(filename):
+    asset_manager = Python.getPlatform().getApplication().getAssets()
 
-    # Loads the file into a NumPy contiguous array.
-    # WAV 파일의 프레임을 numpy 배열로 변환합니다.
-    # Convert Int16 into float64 in the range of [-1, 1].
-    # This means that the sound pressure values are mapped to integer values that can range from -2^15 to (2^15)-1.
-    # We can convert our sound array to floating point values ranging from -1 to 1 as follows.
-    signal_temp = np.frombuffer(wav_frames, np.int16) # 읽은 wav_frame 데이터를 numpy 배열로 변환한다. 데이터 타입은 int16이다. 
-    signal_array = np.zeros(len(signal_temp), float) # wav_frames로부터 생성된 numpy 배열이다. 신호를 저장할 float 타입의 numpy 배열을 생성한다.
+    # `open` 메소드를 사용하여 assets 폴더 내의 파일을 엽니다.
+    # 이 때, input_stream은 Java의 InputStream 객체입니다.
+    input_stream = asset_manager.open(filename)
+
+    # InputStream 객체를 Python의 bytes로 변환합니다.
+    file_bytes = input_stream.read()
+
+    # BytesIO를 사용하여 bytes를 파일과 같은 객체로 변환합니다.
+    # 이렇게 하면 wave.open이 처리할 수 있는 형태가 됩니다.
+    file_like_object = io.BytesIO(file_bytes)
+
+    wav_handler = wave.open(file_like_object, 'rb')
+    num_frames = wav_handler.getnframes()
+    sample_rate = wav_handler.getframerate()
+    wav_frames = wav_handler.readframes(num_frames)
+
+    signal_temp = np.frombuffer(wav_frames, np.int16)
+    signal_array = np.zeros(len(signal_temp), float)
 
     for i in range(0, len(signal_temp)):
-        signal_array[i] = signal_temp[i] / (2.0**15) # int16 타입의 값을 [-1, 1] 범위의 float64 타입으로 변환합니다.
+        signal_array[i] = signal_temp[i] / (2.0**15)
 
     print("file_name: " + str(filename))
     print("sample_rate: " + str(sample_rate))
     print("input_buffer.size, 총 sample의 수: " + str(len(signal_array)))
-    print("seconds: " + to_str_f4(len(signal_array)/sample_rate) + " s")
+    print("seconds: " + str(len(signal_array)/sample_rate) + " s")
     print("type [-1, 1]: " + str(signal_array.dtype))
-    print("min: " + to_str_f4(np.min(signal_array)) + " max: " + to_str_f4(np.max(signal_array))  )
+    print("min: " + str(np.min(signal_array)) + " max: " + str(np.max(signal_array)))
 
-    # sample_rate int형 숫자와 input_buffer numpy float 배열 반환
-    return sample_rate, signal_array 
+    return sample_rate, signal_array
 
 ## chunk 나눈 후, 나누어진 chunk의 리스트 반환
 # (나누어진 청크들의 리스트 : list[NDArray]) 반환
@@ -303,7 +309,7 @@ def main():
     # print(ordered_note_freq)
 
     # wav 파일을 읽고 신호를 버퍼로 반환
-    sample_rate_file, input_buffer = read_wav_file(path, filename)
+    sample_rate_file, input_buffer = read_wav_file(filename)
     # 주어진 버퍼를 최대 길이로 나누어 겹치지 않는 청크(작은 조각)로 분할, buffer_chuncks는 분할된 배열 뷰
     buffer_chunks = divide_buffer_into_non_overlapping_chunks(input_buffer, fft_len)
     # The buffer chunk at n seconds:

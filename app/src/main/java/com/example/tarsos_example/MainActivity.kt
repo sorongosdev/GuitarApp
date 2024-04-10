@@ -49,7 +49,7 @@ class MainActivity : ComponentActivity() {
 
         val python = Python.getInstance()
         val exampleModule = python.getModule("example")
-        val logMessage = exampleModule.callAttr("get_log").toString()
+        val logMessage = exampleModule.callAttr("main").toString()
 
         // Logcat에 로그 메시지 출력
         Log.d("PythonLog", logMessage)
