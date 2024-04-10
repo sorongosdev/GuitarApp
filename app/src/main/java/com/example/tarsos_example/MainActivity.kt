@@ -27,6 +27,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import java.nio.ByteOrder
 import android.Manifest
+import android.util.Log
+import com.chaquo.python.Python
+import com.chaquo.python.android.AndroidPlatform
 
 var tarsosDSPAudioFormat: TarsosDSPAudioFormat? = null
 
@@ -39,6 +42,17 @@ class MainActivity : ComponentActivity() {
 
         // 권한 요청
         requestRecordAudioPermission()
+
+        if (! Python.isStarted()) {
+            Python.start(AndroidPlatform(applicationContext));
+        }
+
+        val python = Python.getInstance()
+        val exampleModule = python.getModule("example")
+        val logMessage = exampleModule.callAttr("get_log").toString()
+
+        // Logcat에 로그 메시지 출력
+        Log.d("PythonLog", logMessage)
 
         setContent {
             Tarsos_exampleTheme {
