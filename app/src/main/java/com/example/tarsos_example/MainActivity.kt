@@ -31,6 +31,7 @@ import android.content.Context
 import android.util.Log
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
+import java.io.File
 import java.io.IOException
 
 var tarsosDSPAudioFormat: TarsosDSPAudioFormat? = null
@@ -51,10 +52,28 @@ class MainActivity : ComponentActivity() {
 
         val py = Python.getInstance()
         val pyObj = py.getModule("example")
-        val waveBytes = readAssetFile(this, "Dm_AcusticPlug26_1.wav")
+
+        ///////////////////////////////////////////////////////////
+//        val waveBytes = readAssetFile(this, "Dm_AcusticPlug26_1.wav")
+//        val result = waveBytes?.let { bytes ->
+//            pyObj.callAttr("read_wav_file", bytes)
+//        }
+        ///////////////////////////////////////////////////////////
+
+
+        //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // 내부 저장소에 있는 파일의 경로를 지정합니다.
+        val filePath = "${filesDir.absolutePath}/recorded_audio.wav"
+
+        // 정의한 함수를 사용하여 파일에서 바이트 데이터를 읽습니다.
+        val waveBytes = readFileBytes(filePath)
+
+        // 읽은 바이트 데이터를 Python 코드에 전달합니다.
         val result = waveBytes?.let { bytes ->
             pyObj.callAttr("read_wav_file", bytes)
         }
+        //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 
         // Chaquopy에서 파이썬 함수 호출 결과를 받음
         val (sampleRate, signalList) = result?.asList() ?: listOf(0, listOf<Float>())
@@ -90,6 +109,15 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    fun readFileBytes(filePath: String): ByteArray? {
+        return try {
+            val file = File(filePath)
+            file.readBytes()
+        } catch (e: IOException) {
+            e.printStackTrace()
+            null
+        }
+    }
     fun readAssetFile(context: Context, fileName: String): ByteArray? {
         return try {
             context.assets.open(fileName).use { inputStream ->
