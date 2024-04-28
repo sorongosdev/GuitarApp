@@ -40,14 +40,14 @@ TWELVE_ROOT_OF_2 = math.pow(2, 1.0 / 12)
 def get_log():
     return "이것은 Python에서 온 로그 메시지입니다."
 
-def process_wave_bytes(wave_bytes):
-    wave_file = io.BytesIO(wave_bytes)
-    with wave.open(wave_file, 'rb') as wf:
-        params = wf.getparams()
-        frames = wf.readframes(params.nframes)
-        # 여기에서 WAV 파일을 처리합니다.
-        # 예를 들어, 파라미터와 프레임 정보를 반환할 수 있습니다.
-        return params, frames
+# def process_wave_bytes(wave_bytes):
+#     wave_file = io.BytesIO(wave_bytes)
+#     with wave.open(wave_file, 'rb') as wf:
+#         params = wf.getparams()
+#         frames = wf.readframes(params.nframes)
+#         # 여기에서 WAV 파일을 처리합니다.
+#         # 예를 들어, 파라미터와 프레임 정보를 반환할 수 있습니다.
+#         return params, frames
 
 ## wav 파일 읽은 후, sample_rate와 input_buffer 반환
 # (sample_rate : int, input_buffer : NDArray[Any]) 반환, NDArray[Any]는 실수값의 numpy 배열을 의미

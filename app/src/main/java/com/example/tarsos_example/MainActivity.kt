@@ -49,9 +49,9 @@ class MainActivity : ComponentActivity() {
         if (!Python.isStarted()) {
             Python.start(AndroidPlatform(applicationContext));
         }
-
-        val py = Python.getInstance()
-        val pyObj = py.getModule("example")
+// example.py를 읽음
+//        val py = Python.getInstance()
+//        val pyObj = py.getModule("example")
 
         ///////////////////////////////////////////////////////////
 //        val waveBytes = readAssetFile(this, "Dm_AcusticPlug26_1.wav")
@@ -62,26 +62,26 @@ class MainActivity : ComponentActivity() {
 
 
         //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        // 내부 저장소에 있는 파일의 경로를 지정합니다.
-        val filePath = "${filesDir.absolutePath}/recorded_audio.wav"
-
-        // 정의한 함수를 사용하여 파일에서 바이트 데이터를 읽습니다.
-        val waveBytes = readFileBytes(filePath)
-
-        // 읽은 바이트 데이터를 Python 코드에 전달합니다.
-        val result = waveBytes?.let { bytes ->
-            pyObj.callAttr("read_wav_file", bytes)
-        }
+//        // 내부 저장소에 있는 파일의 경로를 지정합니다.
+//        val filePath = "${filesDir.absolutePath}/recorded_audio.wav"
+//
+//        // 정의한 함수를 사용하여 파일에서 바이트 데이터를 읽습니다.
+//        val waveBytes = readFileBytes(filePath)
+//
+//        // 읽은 바이트 데이터를 Python 코드에 전달합니다.
+//        val result = waveBytes?.let { bytes ->
+//            pyObj.callAttr("read_wav_file", bytes)
+//        }
         //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
         // Chaquopy에서 파이썬 함수 호출 결과를 받음
-        val (sampleRate, signalList) = result?.asList() ?: listOf(0, listOf<Float>())
+//        val (sampleRate, signalList) = result?.asList() ?: listOf(0, listOf<Float>())
 
         // 결과 로그 출력
         Log.d("WAV_INFO", "Sample Rate: $sampleRate")
         // 신호 배열의 일부를 로그로 출력하려면, signalList를 적절히 슬라이싱 하거나 요약하여 출력
-        Log.d("WAV_INFO", "Signal Array First Elements: ${signalList}")
+//        Log.d("WAV_INFO", "Signal Array First Elements: ${signalList}")
 
 
         // 메인에서 온 로그를 찍어주는 부분
