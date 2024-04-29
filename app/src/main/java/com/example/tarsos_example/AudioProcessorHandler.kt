@@ -29,11 +29,12 @@ class AudioProcessorHandler(private val context: Context) {
     val pitchTextViewValue: LiveData<String> get() = _pitchTextViewValue
 
     fun SetupAudioProcessing() {
+        // 코루틴을 사용하여 메인 스레드에서 비동기 작업을 수행
         CoroutineScope(Dispatchers.Main).launch {
             //시작 시간 측정
             start = System.currentTimeMillis()
 
-            //현재 사용하고 있는 dispatcher 객체를 제거하고, 마이크로부터 입력을 받는 dispatcher 객체를 생성한다.
+            //현재 사용하고 있는 dispatcher 객체를 제거하고, 마이크로부터 입력을 받는 dispatcher 객체를 생성
             releaseDispatcher()
             dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(22050, 1024, 0)
 
@@ -64,14 +65,6 @@ class AudioProcessorHandler(private val context: Context) {
                     val amplitudes = FloatArray(e.floatBuffer.size / 2)
                     fftTransform.forwardTransform(e.floatBuffer)
                     fftTransform.modulus(e.floatBuffer, amplitudes)
-
-                    // HPS 알고리즘을 적용하여 다중 음향 정보를 얻음
-                    val hpsResult = hps(amplitudes)
-
-                    // 로그 출력
-                    if (pitchInHz > 0 && hpsResult < 10000) {
-                        Log.d("pitch / HPS", "$pitchInHz // $hpsResult")
-                    }
 
                 }
             }
@@ -108,26 +101,4 @@ class AudioProcessorHandler(private val context: Context) {
         dispatcher?.stop()
         dispatcher = null
     }
-
-    fun hps(inputSignal: FloatArray): Float {
-        val downsampled = Array(5) { FloatArray(inputSignal.size / (it + 1)) }
-        for (i in downsampled.indices) {
-            for (j in downsampled[i].indices) {
-                downsampled[i][j] = inputSignal[j * i]
-            }
-        }
-
-        val product = FloatArray(downsampled[0].size) { 1.0f }
-        for (i in downsampled.indices) {
-            for (j in downsampled[i].indices) {
-                product[j] *= downsampled[i][j]
-            }
-        }
-
-        val peakIndex = product.indices.maxByOrNull { product[it] } ?: -1
-        val peakFreq = 22050f * peakIndex / product.size
-
-        return peakFreq
-    }
-
 }
