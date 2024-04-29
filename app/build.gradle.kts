@@ -58,7 +58,10 @@ android {
 
 chaquopy {
     defaultConfig {
-//        buildPython("/usr/bin/python3")
+// yaeun
+// buildPython("C:/Users/USER/AppData/Local/Programs/Python/Python312/python.exe")
+
+// buildPython("/usr/bin/python3")
         buildPython("C:/Users/Admin/AppData/Local/Programs/Python/Python312/python.exe")
 
         pip {
