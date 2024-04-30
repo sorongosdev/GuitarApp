@@ -27,9 +27,12 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import java.nio.ByteOrder
 import android.Manifest
+import android.content.Context
 import android.util.Log
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
+import java.io.File
+import java.io.IOException
 
 var tarsosDSPAudioFormat: TarsosDSPAudioFormat? = null
 
@@ -43,16 +46,49 @@ class MainActivity : ComponentActivity() {
         // 권한 요청
         requestRecordAudioPermission()
 
-        if (! Python.isStarted()) {
+        if (!Python.isStarted()) {
             Python.start(AndroidPlatform(applicationContext));
         }
 
-        val python = Python.getInstance()
-        val exampleModule = python.getModule("example")
-        val logMessage = exampleModule.callAttr("main").toString()
+        val py = Python.getInstance()
+        val pyObj = py.getModule("example")
+
+        ///////////////////////////////////////////////////////////
+//        val waveBytes = readAssetFile(this, "Dm_AcusticPlug26_1.wav")
+//        val result = waveBytes?.let { bytes ->
+//            pyObj.callAttr("read_wav_file", bytes)
+//        }
+        ///////////////////////////////////////////////////////////
+
+
+        //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // 내부 저장소에 있는 파일의 경로를 지정합니다.
+        val filePath = "${filesDir.absolutePath}/recorded_audio.wav"
+
+        // 정의한 함수를 사용하여 파일에서 바이트 데이터를 읽습니다.
+        val waveBytes = readFileBytes(filePath)
+
+        // 읽은 바이트 데이터를 Python 코드에 전달합니다.
+        val result = waveBytes?.let { bytes ->
+            pyObj.callAttr("read_wav_file", bytes)
+        }
+        //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+        // Chaquopy에서 파이썬 함수 호출 결과를 받음
+        val (sampleRate, signalList) = result?.asList() ?: listOf(0, listOf<Float>())
+
+        // 결과 로그 출력
+        Log.d("WAV_INFO", "Sample Rate: $sampleRate")
+        // 신호 배열의 일부를 로그로 출력하려면, signalList를 적절히 슬라이싱 하거나 요약하여 출력
+        Log.d("WAV_INFO", "Signal Array First Elements: ${signalList}")
+
+
+        // 메인에서 온 로그를 찍어주는 부분
+        // val logMessage = pyObj.callAttr("main").toString()
 
         // Logcat에 로그 메시지 출력
-        Log.d("PythonLog", logMessage)
+        // Log.d("PythonLog", logMessage)
 
         setContent {
             Tarsos_exampleTheme {
@@ -73,8 +109,33 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    fun readFileBytes(filePath: String): ByteArray? {
+        return try {
+            val file = File(filePath)
+            file.readBytes()
+        } catch (e: IOException) {
+            e.printStackTrace()
+            null
+        }
+    }
+    fun readAssetFile(context: Context, fileName: String): ByteArray? {
+        return try {
+            context.assets.open(fileName).use { inputStream ->
+                inputStream.readBytes()
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+
     private fun requestRecordAudioPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), 0)
         }
     }
@@ -125,7 +186,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
 
 
 @Composable
