@@ -9,10 +9,8 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import math
-# 파일 읽는 것 관련
 import wave
-import io
+import math
 
 path     = "./"
 filename = 'G-DDDD.wav'
@@ -28,27 +26,21 @@ hop_length   = int(fft_len*(1-overlap))  # Number of samples between successive 
 # For the calculations of the music scale.
 TWELVE_ROOT_OF_2 = math.pow(2, 1.0 / 12)
 
-
-# example.py
-
-def get_log():
-    return "이것은 Python에서 온 로그 메시지입니다."
-
 ## wav 파일 읽은 후, sample_rate와 input_buffer 반환
 # (sample_rate : int, input_buffer : NDArray[Any]) 반환, NDArray[Any]는 실수값의 numpy 배열을 의미
-def read_wav_file(wave_bytes):
-    wave_file = io.BytesIO(wave_bytes)
-    with wave.open(wave_file, 'rb') as wf:
-        params = wf.getparams()
-        frames = wf.readframes(params.nframes)
+def read_wav_file(path, filename):
+    # Reads the input WAV file from HDD disc.
+    wav_handler = wave.open(path + filename,'rb')    # 지정된 경로에 wav 파일을 읽기 전용 모드로 연다.
+    num_frames = wav_handler.getnframes()            # 파일에서 sample의 총 개수를 얻는다. 44100*(wav 길이 예로 4초) = 176400개
+    sample_rate = wav_handler.getframerate()         # 파일의 sample_rate를 얻는다.
+                                                     # sampling rate는 초당 샘플링 횟수를 의미하며, 단위는 Hz이다. wav파일의 헤더 부분에 이 정보가 포함되어 있다.
+    wav_frames = wav_handler.readframes(num_frames)  # 모든 frame을 읽는다. wav_frames는 num_frames의 두 배이다. 각 샘플이 2바이트로 표현되기 때문. wav_frames의 바이트 배열 길이는 176400*2 = 352800 바이트이다.
 
-#     wav_handler = wave.open(path + filename,'rb')    # 지정된 경로에 wav 파일을 읽기 전용 모드로 연다.
-#     num_frames = wav_handler.getnframes()            # 파일에서 sample의 총 개수를 얻는다. 44100*(wav 길이 예로 4초) = 176400개
-#     sample_rate = wav_handler.getframerate()         # 파일의 sample_rate를 얻는다. 44100
-    sample_rate = 16000
-#     wav_frames = wav_handler.readframes(num_frames)  # 모든 frame을 읽는다. wav_frames는 num_frames의 두 배이다. 각 샘플이 2바이트로 표현되기 때문. wav_frames의 바이트 배열 길이는 176400*2 = 352800 바이트이다.
-    wav_frames = frames
-
+    # Loads the file into a NumPy contiguous array.
+    # WAV 파일의 프레임을 numpy 배열로 변환합니다.
+    # Convert Int16 into float64 in the range of [-1, 1].
+    # This means that the sound pressure values are mapped to integer values that can range from -2^15 to (2^15)-1.
+    # We can convert our sound array to floating point values ranging from -1 to 1 as follows.
     signal_temp = np.frombuffer(wav_frames, np.int16) # 읽은 wav_frame 데이터를 numpy 배열로 변환한다. 데이터 타입은 int16이다.
     signal_array = np.zeros(len(signal_temp), float) # wav_frames로부터 생성된 numpy 배열이다. 신호를 저장할 float 타입의 numpy 배열을 생성한다.
 
