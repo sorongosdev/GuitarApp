@@ -19,7 +19,7 @@ note_threshold = 5_000.0    # 120   # 50_000.0   #  3_000.0
 
 # Parameters
 sample_rate  = 44100                     # Sampling Frequency
-fft_len      = 10000  # 22050   # 2048            # Length of the FFT window
+fft_len      = 10000 # 22050             # Length of the FFT window
 overlap      = 0.5                       # Hop overlap percentage between windows
 hop_length   = int(fft_len*(1-overlap))  # Number of samples between successive frames
 
@@ -179,7 +179,7 @@ def find_nearest_note(ordered_note_freq, freq):
     return final_note_name
 
 # 기타 조에 대한 딕셔너리 생성
-def get_all_key_freq():
+def get_all_keys_note():
     keys_freq = {
         "A": ['A_2', 'E_3', 'E4'],
         "B": ['F#_2', 'B_2', 'F#_3', 'F#_4'],
@@ -231,32 +231,44 @@ def get_top_frequencies(frequencies, top_n):
 
 # 기타 조 판단에 해당하는 음 저장하기
 def find_unique_notes(ordered_note_freq, top_freqs, unique_notes):
-    found_notes = []
+    found_unique_notes = []
 
     # 주어진 상위 주파수들 중 unique_notes에 해당하는 음 찾기
     for freq in top_freqs:
         note_name = find_nearest_note(ordered_note_freq, freq[0])  # 주파수로부터 가장 가까운 음 찾기
-        if note_name in unique_notes and note_name not in found_notes:  # unique_notes 목록에 해당하는지 확인
-            found_notes.append(note_name)
+        if note_name in unique_notes and note_name not in found_unique_notes:  # unique_notes 목록에 해당하는지 확인
+            found_unique_notes.append(note_name)
 
-    return found_notes
+    return found_unique_notes
 
 # 기타 조 추정
-def find_nearest_key(found_notes, keys_freq):
+def find_nearest_key(found_unique_notes, keys_freq):
     # found_notes가 비어있으면, 'null' 반환
-    if not found_notes:
+    if not found_unique_notes:
         return 'null'
 
     # 각 조와 found_notes 간의 일치도 계산
     best_match = None
     best_match_score = -1  # 일치하는 음의 개수를 저장할 변수
+    best_match_index = None  # found_notes에서 match된 최소 인덱스를 저장할 변수
 
     for key, notes in keys_freq.items():
-        match_score = sum(note in found_notes for note in notes)  # found_notes에 포함된 음의 개수를 계산
+        match_score = sum(note in found_unique_notes for note in notes)  # found_notes에 포함된 음의 개수를 계산
+        # print("match_score", match_score)
+        current_key_min_index = len(found_unique_notes)  # 현재 키에 대한 최소 인덱스 초기화
+        # print("index ", current_key_min_index)
 
-        if match_score > best_match_score:  # 현재 조가 이전 조보다 더 많은 일치를 가지면
-            best_match = key  # 현재 조를 최고 일치로 업데이트
-            best_match_score = match_score  # 최고 일치 점수 업데이트
+        for note in notes:
+            if note in found_unique_notes:
+                match_score += 1
+                index = found_unique_notes.index(note)  # 현재 노트의 found_notes에서의 인덱스
+                current_key_min_index = min(current_key_min_index, index)
+
+        # 더 높은 match_score를 가진 조를 찾거나, 동일한 match_score이지만 더 낮은 인덱스를 가진 조를 찾는다
+        if match_score > best_match_score or (match_score == best_match_score and current_key_min_index < best_match_index):
+            best_match = key
+            best_match_score = match_score
+            best_match_index = current_key_min_index
 
     return best_match  # 가장 일치율이 높은 조 반환
 
@@ -367,7 +379,7 @@ def main():
     print("\nPolyphonic note detector\n")
 
     unique_notes = get_unique_key()
-    keys_freq = get_all_key_freq()
+    keys_note = get_all_keys_note()
     guitar_chords_freq = get_all_guitar_chords_freq()
     ordered_note_freq = get_all_notes_freq()
     # print(ordered_note_freq)
@@ -406,10 +418,10 @@ def main():
             # print("=> freq: " + to_str_f(freq[0]) + " Hz  value: " + to_str_f(freq[1]) + " note_name: " + note_name)
 
         # 상위 6개의 주파수를 이용하여 가장 가까운 조를 찾기
-        found_notes = find_unique_notes(ordered_note_freq, top_freqs, unique_notes)
-        print(found_notes)
+        found_unique_notes = find_unique_notes(ordered_note_freq, top_freqs, unique_notes)
+        print(found_unique_notes)
 
-        nearest_key = find_nearest_key(found_notes, keys_freq)
+        nearest_key = find_nearest_key(found_unique_notes, keys_note)
         print(nearest_key)
 
         # 각 주파수에 대해 해당하는 기타 조 찾기
