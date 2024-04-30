@@ -4,9 +4,8 @@
 # Description:  This is my implementation of a polyphonic note detector using
 #               the Harmonic Product Spectrum method.
 #               The input is a mono WAV file.
-#               The output are the corresponding notes in time. 
+#               The output are the corresponding notes in time.
 # License: MIT Open Source License
-
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,39 +14,25 @@ import math
 import wave
 import io
 
-## Configuration
-
-# Path
 path     = "./"
-
-# filename = '18474__pitx__c4.wav'
-# filename = 'c_major_guitar.wav'
-filename = 'Dm_AcusticPlug26_1.wav'
+filename = 'G-DDDD.wav'
 
 note_threshold = 5_000.0    # 120   # 50_000.0   #  3_000.0
 
 # Parameters
 sample_rate  = 44100                     # Sampling Frequency
-fft_len      = 22050   # 2048                      # Length of the FFT window
+fft_len      = 10000  # 22050   # 2048            # Length of the FFT window
 overlap      = 0.5                       # Hop overlap percentage between windows
 hop_length   = int(fft_len*(1-overlap))  # Number of samples between successive frames
 
 # For the calculations of the music scale.
 TWELVE_ROOT_OF_2 = math.pow(2, 1.0 / 12)
 
+
 # example.py
 
 def get_log():
     return "이것은 Python에서 온 로그 메시지입니다."
-
-# def process_wave_bytes(wave_bytes):
-#     wave_file = io.BytesIO(wave_bytes)
-#     with wave.open(wave_file, 'rb') as wf:
-#         params = wf.getparams()
-#         frames = wf.readframes(params.nframes)
-#         # 여기에서 WAV 파일을 처리합니다.
-#         # 예를 들어, 파라미터와 프레임 정보를 반환할 수 있습니다.
-#         return params, frames
 
 ## wav 파일 읽은 후, sample_rate와 input_buffer 반환
 # (sample_rate : int, input_buffer : NDArray[Any]) 반환, NDArray[Any]는 실수값의 numpy 배열을 의미
@@ -70,10 +55,11 @@ def read_wav_file(wave_bytes):
     for i in range(0, len(signal_temp)):
         signal_array[i] = signal_temp[i] / (2.0**15) # int16 타입의 값을 [-1, 1] 범위의 float64 타입으로 변환합니다.
 
+    print("------------------------------")
     print("file_name: " + str(filename))
-    print("sample_rate: " + str(sample_rate))
-    print("input_buffer.size: " + str(len(signal_array)))
-    print("seconds: " + to_str_f4(len(signal_array)/sample_rate) + " s")
+    print("sample_rate: " + str(sample_rate) + " Hz")
+    print("input_buffer.size(sample의 총 갯수): " + str(len(signal_array)) + " 개")
+    print("seconds(input_buffer.size/sample_rate): " + to_str_f4(len(signal_array)/sample_rate) + " s")
     print("type [-1, 1]: " + str(signal_array.dtype))
     print("min: " + to_str_f4(np.min(signal_array)) + " max: " + to_str_f4(np.max(signal_array))  )
 
@@ -86,16 +72,17 @@ def read_wav_file(wave_bytes):
 def divide_buffer_into_non_overlapping_chunks(buffer, max_len): # max_len -> fft_len
     buffer_len = len(buffer)                  # input_buffer의 길이 계산, buffer에 총 몇개의 sample이 있는지를 반환
     chunks = int(buffer_len / max_len)        # input_buffer 길이를 fft_len으로 나누어 몇 개의 chunk로 나눌 수 있는지 계산
-    print("buffers_num: " + str(chunks))      # 총 chunks의 개수를 출력
 
     division_pts_list = []                    # chunk를 나눌 지점을 저장할 리스트
     for i in range(1, chunks):
         division_pts_list.append(i * max_len) # 각 청크의 시작 지점을 계산하여 리스트에 추가, fft_len의 배수가 리스트에 추가됨 -> [22050, 44100, 66150, ..]
     splitted_array_view = np.split(buffer, division_pts_list, axis=0) # 계산된 지점을 기준으로 버퍼를 나눈다.
-    
-    # print("나누어진 chunk들에 대한 리스트 :", splitted_array_view)
+
+    print("------------------------------")
+    print("buffers_num: " + str(chunks))      # 총 chunks의 개수를 출력
+    print("나누어진 chunk들에 대한 리스트 :", splitted_array_view)
     # 나누어진 청크들의 리스트를 반환, list[NDArray]
-    return splitted_array_view                
+    return splitted_array_view
 
 ## fft 연산 후, frequency 배열과 magnitude 배열과 frequency 개수(대칭적인 rfft 이용) 반환
 # (frequency 배열 : NDArray[floating[Any]], magnitude 배열 : NDArray[Any], frequency 개수 : int) 반환
@@ -109,20 +96,19 @@ def getFFT(data, rate):
                                         # rfft는 수행하면 양수, 음수의 대칭적이므로 양수만을 출력한다.
     fft = np.abs(fft)                   # fft 결과의 절대값을 취하여 magnitue를 얻는다. 실수값의 numpy 배열을 반환한다.
 
-    # fft 연산 후 frequency 개수 
+    # fft 연산 후 frequency 개수
     ret_len_FFT = len(fft)              # fft 결과의 길이를 저장한다. 배열의 원소 개수, 즉 fft 변환을 통해 분석된 주파수 성분의 개수를 반환한다.
-    
+
     # fft 연산 후 frequency 배열
     freq = np.fft.rfftfreq(len_data, 1.0 / sample_rate) # fft 결과에 대응하는 주파수 배열을 계산한다.
     # return ( freq[:int(len(freq) / 2)], fft[:int(ret_len_FFT / 2)], ret_len_FFT )
-    
-    print("------------------------------")
-    print("getFFT() 거친 후 결과")
-    # print("fft 연산 후 magnitude 배열 :", fft)
-    # print("fft 연산 후 frequency 개수 :", ret_len_FFT)
-    # print("fft 연산 후 frequency 배열 :", freq)
+
+    print("--------------getFFT() 거친 후----------------")
+    print("fft 연산 후 magnitude 배열 :", fft)
+    print("fft 연산 후 frequency 개수 :", ret_len_FFT)
+    print("fft 연산 후 frequency 배열 :", freq)
     # (frequency 배열 : NDArray[floating[Any]], magnitude 배열 : NDArray[Any], frequency 개수 : int) 반환
-    return (freq, fft, ret_len_FFT) 
+    return (freq, fft, ret_len_FFT)
 
 ## fft 결과에 DC offset을 제거한 magnitude를 반환
 def remove_dc_offset(fft_res):
@@ -132,18 +118,17 @@ def remove_dc_offset(fft_res):
     fft_res[2] = 0.0
     return fft_res
 
-## 주어진 기준 음과 음 인덱스를 사용하여 해당 음의 주파수를 계산
 def freq_for_note(base_note, note_index):
     # See Physics of Music - Notes
     #     https://pages.mtu.edu/~suits/NoteFreqCalcs.html
-    
+
     A4 = 440.0
 
     base_notes_freq = {"A2" : A4 / 4,   # 110.0 Hz
                        "A3" : A4 / 2,   # 220.0 Hz
                        "A4" : A4,       # 440.0 Hz
                        "A5" : A4 * 2,   # 880.0 Hz
-                       "A6" : A4 * 4 }  # 1760.0 Hz  
+                       "A6" : A4 * 4 }  # 1760.0 Hz
 
     scale_notes = { "C"  : -9.0,
                     "C#" : -8.0,
@@ -162,10 +147,9 @@ def freq_for_note(base_note, note_index):
     scale_notes_index = list(range(-9, 5)) # Has one more note.
     note_index_value = scale_notes_index[note_index]
     freq_0 = base_notes_freq[base_note]
-    freq = freq_0 * math.pow(TWELVE_ROOT_OF_2, note_index_value) 
+    freq = freq_0 * math.pow(TWELVE_ROOT_OF_2, note_index_value)
     return freq
 
-## 음정(C_2) 반환하는 함수
 def get_all_notes_freq():
     ordered_note_freq = []
     ordered_notes = ["C",
@@ -180,79 +164,160 @@ def get_all_notes_freq():
                      "A",
                      "A#",
                      "B"]
-    # 2옥타브~6옥타브까지 각 음계의 주파수 계산
     for octave_index in range(2, 7):
         base_note  = "A" + str(octave_index)
         # note_index = 0  # C2
         # note_index = 12  # C3
         for note_index in range(0, 12):
             note_freq = freq_for_note(base_note, note_index)
-            note_name = ordered_notes[note_index] + "_" + str(octave_index) # 코드_숫자 로 음정 표시
+            note_name = ordered_notes[note_index] + "_" + str(octave_index)
             ordered_note_freq.append((note_name, note_freq))
     return ordered_note_freq
 
 def find_nearest_note(ordered_note_freq, freq):
     final_note_name = 'note_not_found'
-    # 노트까지의 최소 거리를 저장하는 함수.
     last_dist = 1_000_000.0
-    # ordered_note_freq 리스트를 순회하면서 각 음표의 이름과 주파수를 가져옴
     for note_name, note_freq in ordered_note_freq:
-        # 현재 음표와 목표 주파수 간의 거리(curr_dist)를 계산
         curr_dist = abs(note_freq - freq)
-        # 현재 음표가 더 가까운 경우에는 last_dist를 curr_dist로 업데이트하고 final_note_name을 현재 음표의 이름으로 업데이트
         if curr_dist < last_dist:
             last_dist = curr_dist
             final_note_name = note_name
-        # 더 이상 가까운 음표를 찾을 수 없을 때 순회 종료
         elif curr_dist > last_dist:
-            break    
+            break
     return final_note_name
 
-# HPS를 계산하여 주파수의 최댓값을 찾는 함수
-def PitchSpectralHps(X, freq_buckets, f_s, buffer_rms):
-    # X: 스펙트로그램 데이터 (크기: FFTLength x Observations)
-    # freq_buckets: 주파수 버킷
-    # f_s: 오디오 데이터의 샘플링 주파수
-    # buffer_rms: RMS(Root Mean Square) 값을 기반으로 한 노트 임계값
-    # initialize
+# 기타 조에 대한 딕셔너리 생성
+def get_all_key_freq():
+    keys_freq = {
+        "A": ['A_2', 'E_3', 'E4'],
+        "B": ['F#_2', 'B_2', 'F#_3', 'F#_4'],
+        "C": ['C_3', 'E_3', 'C_4', 'E_4'],
+        "D": ['D_3', 'A_3'],
+        "E": ['E_2', 'B_2', 'B_3', 'E_4'],
+        "F": ['F_2', 'C_3', 'C_4', 'F_4'],
+        "G": ['G_2', 'B_2', 'D_3', 'G_3', 'B_3']
+    }
+    return keys_freq
 
-    # hps 계산 순서
+# 기타 코드에 대한 딕셔너리 생성
+def get_all_guitar_chords_freq():
+    guitar_chords_freq = {
+        "A": [110.00, 164.81, 220.00, 277.18, 329.63],
+        "Am": [110.00, 164.81, 220.00, 261.63, 329.63],
+        "A7": [110.00, 164.81, 196.00, 277.18, 329.63],
+        "B": [92.50, 123.47, 185.00, 246.94, 311.13, 369.99],
+        "Bm": [92.50, 123.47, 185.00, 246.94, 293.66, 369.99],
+        "B7": [92.50, 123.47, 185.00, 220.00, 311.13, 369.99],
+        "C": [130.81, 164.81, 196.00, 261.63, 329.63],
+        "C7": [130.81, 164.81, 233.08, 261.63, 329.63],
+        "D": [146.83, 220.00, 293.66, 369.99],
+        "Dm": [146.83, 220.00, 293.66, 349.23],
+        "D7": [146.83, 220.00, 261.63, 369.99],
+        "E": [82.41, 123.47, 164.81, 207.65, 246.94, 329.63],
+        "Em": [82.41, 123.47, 164.81, 196.00, 246.94, 329.63],
+        "E7": [82.41, 123.47, 146.83, 207.65, 246.94, 329.63],
+        "F": [87.31, 130.81, 174.61, 220.00, 261.63, 349.23],
+        "Fm": [87.31, 130.81, 174.61, 207.65, 261.63, 349.23],
+        "F7": [87.31, 130.81, 155.56, 220.00, 261.63, 349.23],
+        "G": [98.00, 123.47, 146.83, 196.00, 246.94, 392.00],
+        "G7": [98.00, 123.47, 146.83, 196.00, 246.94, 349.23]
+    }
+    return guitar_chords_freq
+
+# 기타 조 판단에 중요한 list 생성
+def get_unique_key():
+    unique_notes = ['A_2', 'E_3', 'E_4', 'F#2',
+                    'B_2', 'F#_3', 'F#_4', 'C_3',
+                    'C_4', 'D_3', 'A_3', 'E_2',
+                    'B_3', 'F_2', 'F_4', 'G_2', 'D_3', 'G_3']
+    return unique_notes
+
+# chunk별 상위 top_n개 주파수 뽑기
+def get_top_frequencies(frequencies, top_n):
+    top_freqs = sorted(frequencies, key=lambda x: x[1], reverse=True)[:top_n]
+    return top_freqs
+
+# 기타 조 판단에 해당하는 음 저장하기
+def find_unique_notes(ordered_note_freq, top_freqs, unique_notes):
+    found_notes = []
+
+    # 주어진 상위 주파수들 중 unique_notes에 해당하는 음 찾기
+    for freq in top_freqs:
+        note_name = find_nearest_note(ordered_note_freq, freq[0])  # 주파수로부터 가장 가까운 음 찾기
+        if note_name in unique_notes and note_name not in found_notes:  # unique_notes 목록에 해당하는지 확인
+            found_notes.append(note_name)
+
+    return found_notes
+
+# 기타 조 추정
+def find_nearest_key(found_notes, keys_freq):
+    # found_notes가 비어있으면, 'null' 반환
+    if not found_notes:
+        return 'null'
+
+    # 각 조와 found_notes 간의 일치도 계산
+    best_match = None
+    best_match_score = -1  # 일치하는 음의 개수를 저장할 변수
+
+    for key, notes in keys_freq.items():
+        match_score = sum(note in found_notes for note in notes)  # found_notes에 포함된 음의 개수를 계산
+
+        if match_score > best_match_score:  # 현재 조가 이전 조보다 더 많은 일치를 가지면
+            best_match = key  # 현재 조를 최고 일치로 업데이트
+            best_match_score = match_score  # 최고 일치 점수 업데이트
+
+    return best_match  # 가장 일치율이 높은 조 반환
+
+# 기타 코드 추정
+def find_nearest_chord(guitar_chords_freq):
+    return 0
+
+def PitchSpectralHps(X, freq_buckets, f_s, buffer_rms):
+
+    """
+    NOTE: This function is from the book Audio Content Analysis repository
+    https://www.audiocontentanalysis.org/code/pitch-tracking/hps-2/
+    The license is MIT Open Source License.
+    And I have modified it. Go to the link to see the original.
+
+    computes the maximum of the Harmonic Product Spectrum
+
+    Args:
+        X: spectrogram (dimension FFTLength X Observations)
+        f_s: sample rate of audio data
+
+    Returns:
+        f HPS maximum location (in Hz)
+    """
+    print("fft_res, HPS 들어간 후", "(",X.shape, ")",X)
+
+    # initialize
     iOrder = 4
-    # 최소 주파수
     f_min = 65.41   # C2      300
     # f = np.zeros(X.shape[1])
     f = np.zeros(len(X))
 
     iLen = int((X.shape[0] - 1) / iOrder)
-    # hps 결과를 저장, 주어진 스펙트로그램 데이터에서 일부를 추출하여 초기화됨
     afHps = X[np.arange(0, iLen)]
-    print("iLen " + afHps)
-
-    # 최소 주파수에 해당하는 인덱스를 계산하는데 사용
-    # 주어진 샘플링 주파수 f_s와 스펙트로그램 데이터의 크기를 기반으로 계산
     k_min = int(round(f_min / f_s * 2 * (X.shape[0] - 1)))
 
     # compute the HPS
-    # HPS 알고리즘을 사용하여 afHps 배열을 계산
-    # 이를 위해 X의 일부를 추출하고, 추출한 배열과 afHps를 곱하여 HPS를 계산
     for j in range(1, iOrder):
         X_d = X[::(j + 1)]
         afHps *= X_d[np.arange(0, iLen)]
 
-    ## Uncomment to show the original algorithm for a single frequency or note. 
+    ## Uncomment to show the original algorithm for a single frequency or note.
     # f = np.argmax(afHps[np.arange(k_min, afHps.shape[0])], axis=0)
     ## find max index and convert to Hz
     # freq_out = (f + k_min) / (X.shape[0] - 1) * f_s / 2
 
-    # note_threshold_scaled_by_RMS 함수를 사용하여 buffer_rms 값을 기반으로 한 노트 임계값을 계산
     note_threshold = note_threshold_scaled_by_RMS(buffer_rms)
 
-    # afHps에서 노트 임계값보다 큰 값의 인덱스를 찾아 k_min 값을 더한 후, 해당 인덱스를 주파수로 변환하여 freqs_out에 저장
     all_freq = np.argwhere(afHps[np.arange(k_min, afHps.shape[0])] > note_threshold)
     # find max index and convert to Hz
     freqs_out = (all_freq + k_min) / (X.shape[0] - 1) * f_s / 2
 
-    # afHps에서 노트 임계값보다 큰 값의 인덱스 / 해당 값들을 각각 freq_indexes_out와 freq_values_out에 저장
+
     x = afHps[np.arange(k_min, afHps.shape[0])]
     freq_indexes_out = np.where( x > note_threshold)
     freq_values_out = x[freq_indexes_out]
@@ -262,15 +327,16 @@ def PitchSpectralHps(X, freq_buckets, f_s, buffer_rms):
 
     max_value = np.max(afHps[np.arange(k_min, afHps.shape[0])])
     max_index = np.argmax(afHps[np.arange(k_min, afHps.shape[0])])
-    
-    ## Uncomment to print the values: buffer_RMS, max_value, min_value
-    ## and note_threshold.    
-    print(" buffer_rms: " + to_str_f4(buffer_rms) )
-    print(" max_value : " + to_str_f(max_value) + "  max_index : " + to_str_f(max_index) )
-    print(" note_threshold : " + to_str_f(note_threshold) )
 
-    ## Uncomment to show the graph of the result of the 
-    ## Harmonic Product Spectrum. 
+    ## Uncomment to print the values: buffer_RMS, max_value, min_value
+    ## and note_threshold.
+    print("--------------PitchSpectralHps() 거친 후----------------")
+    print("buffer_rms: " + to_str_f4(buffer_rms) )
+    print("max_value : " + to_str_f(max_value) + "  max_index : " + to_str_f(max_index) )
+    print("note_threshold : " + to_str_f(note_threshold) )
+
+    ## Uncomment to show the graph of the result of the
+    ## Harmonic Product Spectrum.
     # fig, ax = plt.subplots()
     # yr_tmp = afHps[np.arange(k_min, afHps.shape[0])]
     # xr_tmp = (np.arange(k_min, afHps.shape[0]) + k_min) / (X.shape[0] - 1) * f_s / 2
@@ -278,15 +344,13 @@ def PitchSpectralHps(X, freq_buckets, f_s, buffer_rms):
     # plt.show()
 
     # Turns 2 level list into a one level list.
-    # freqs_out와 freq_values_out를 묶어서 저장한 freqs_out_tmp를 반환
     freqs_out_tmp = []
     for freq, value  in zip(freqs_out, freq_values_out):
         freqs_out_tmp.append((freq[0], value))
-    
+
     return freqs_out_tmp
 
 def note_threshold_scaled_by_RMS(buffer_rms):
-    # note_threshold는 어떤 음향 신호 세기를 나타낼지에 따라 조절하면 됨
     note_threshold = 1000.0 * (4 / 0.090) * buffer_rms
     return note_threshold
 
@@ -295,7 +359,7 @@ def normalize(arr):
     # Normalize array between -1 and 1.
     # Only works if the signal is larger then the final signal and if the positive
     # value is grater in absolute value them the negative value.
-    ar_res = (arr / (np.max(arr) / 2)) - 1  
+    ar_res = (arr / (np.max(arr) / 2)) - 1
     return ar_res
 
 def to_str_f(value):
@@ -309,63 +373,57 @@ def to_str_f4(value):
 
 def main():
     print("\nPolyphonic note detector\n")
-    
-    # 음정 반환
+
+    unique_notes = get_unique_key()
+    keys_freq = get_all_key_freq()
+    guitar_chords_freq = get_all_guitar_chords_freq()
     ordered_note_freq = get_all_notes_freq()
     # print(ordered_note_freq)
 
-    # wav 파일을 읽고 신호를 버퍼로 반환
-    sample_rate_file, input_buffer = read_wav_file(filename)
-    # 주어진 버퍼를 최대 길이로 나누어 겹치지 않는 청크(작은 조각)로 분할, buffer_chuncks는 분할된 배열 뷰
+    sample_rate_file, input_buffer = read_wav_file(path, filename)
     buffer_chunks = divide_buffer_into_non_overlapping_chunks(input_buffer, fft_len)
     # The buffer chunk at n seconds:
 
     count = 0
-    
-    ## Uncomment to process a single chunk os a limited number os sequential chunks. 
-    # for chunk in buffer_chunks[5: 6]:
+
+    ## Uncomment to process a single chunk os a limited number os sequential chunks.
     for chunk in buffer_chunks[0: 60]:
-        print("\n...Chunk: ", str(count))
-                
-        # fft 결과 반환
+        print("\nChunk", str(count+1))
+
         fft_freq, fft_res, fft_res_len = getFFT(chunk, len(chunk))
-        # dc 오프셋 제거. 불필요한 값을 제거하고 주요 주파수 성분이 더 잘드러나게 하기 위함.
+        ### print("fft_res, getFFT 직후", "(",fft_res.shape, ")", fft_res)
         fft_res = remove_dc_offset(fft_res)
+        ### print("fft_res, de offset 제거 직후","(",fft_res.shape, ")", fft_res)
 
         # Calculate Root Mean Square of the signal buffer, as a scale factor to the threshold.
-        # rms 계산 (root mean square)
         buffer_rms = np.sqrt(np.mean(chunk**2))
 
-        #
         all_freqs = PitchSpectralHps(fft_res, fft_freq, sample_rate_file, buffer_rms)
-        # print("all_freqs ")
         # print(all_freqs)
+
+        # get_top_frequencies 함수를 사용하여 상위 6개의 주파수를 선택
+        top_freqs = get_top_frequencies(all_freqs, 6)
+        print("top_freqs :", top_freqs)
+        for freq in top_freqs:
+            note_name = find_nearest_note(ordered_note_freq, freq[0])
+            print("=> freq: " + to_str_f(freq[0]) + " Hz  value: " + to_str_f(freq[1]) + " note_name: " + note_name)
+
+        # print("------------------------------")
         for freq in all_freqs:
             note_name = find_nearest_note(ordered_note_freq, freq[0])
-            print("=> freq: " + to_str_f(freq[0]) + " Hz  value: " + to_str_f(freq[1]) + " note_name: " + note_name )
+            # print("=> freq: " + to_str_f(freq[0]) + " Hz  value: " + to_str_f(freq[1]) + " note_name: " + note_name)
 
+        # 상위 6개의 주파수를 이용하여 가장 가까운 조를 찾기
+        found_notes = find_unique_notes(ordered_note_freq, top_freqs, unique_notes)
+        print(found_notes)
 
-        ## Uncomment to print the arrays.
-        # print("\nfft_freq: ")
-        # print(fft_freq)
-        # print("\nfft_freq_len: " + str(len(fft_freq)))
+        nearest_key = find_nearest_key(found_notes, keys_freq)
+        print(nearest_key)
 
-        # print("\nfft_res: ")
-        # print(fft_res)
-
-        # print("\nfft_res_len: ")
-        # print(fft_res_len)
-
-
-        ## Uncomment to show the graph of the result of the FFT with the
-        ## correct frequencies in the legend. 
-        N = fft_res_len
-        fft_freq_interval = fft_freq[: N // 4]
-        fft_res_interval = fft_res[: N // 4]
-        fig, ax = plt.subplots()
-        ax.plot(fft_freq_interval, 2.0/N * np.abs(fft_res_interval))
-        # plt.show()
-        
+        # 각 주파수에 대해 해당하는 기타 조 찾기
+        # for freq, _ in top_freqs:
+        #     key = find_key_for_freq(freq, keys_freq)
+        #     print(f"freq: {freq:.2f} Hz -> key: {key}")
 
         count += 1
 
