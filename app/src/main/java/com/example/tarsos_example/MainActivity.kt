@@ -136,8 +136,15 @@ class MainActivity : ComponentActivity() {
             ) {
                 DrawSheet(modifier = Modifier.matchParentSize()) // 악보 그림
                 DrawNotes(
-                    noteType = NoteSorts.note_1011, // 예시 음표 타입 리스트
+                    noteType = NoteSorts.note_1010, // 예시 음표 타입 리스트
                     location = 2,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                ) // 음표 그림
+                DrawNotes(
+                    noteType = NoteSorts.note_1011, // 예시 음표 타입 리스트
+                    location = 1,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
