@@ -9,30 +9,22 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import math
-# 파일 읽는 것 관련
 import wave
-import io
+import math
 
 path     = "./"
-filename = 'G-DDDD.wav'
+filename = '100-A-DUDU.wav'
 
 note_threshold = 5_000.0    # 120   # 50_000.0   #  3_000.0
 
 # Parameters
 sample_rate  = 44100                     # Sampling Frequency
-fft_len      = 8820  # 22050   # 2048            # Length of the FFT window
+fft_len      = 8820  # 8820-100bpm # 8192-110bpm    # Length of the FFT window
 overlap      = 0.5                       # Hop overlap percentage between windows
 hop_length   = int(fft_len*(1-overlap))  # Number of samples between successive frames
 
 # For the calculations of the music scale.
 TWELVE_ROOT_OF_2 = math.pow(2, 1.0 / 12)
-
-
-# example.py
-
-def get_log():
-    return "이것은 Python에서 온 로그 메시지입니다."
 
 ## wav 파일 읽은 후, sample_rate와 input_buffer 반환
 # (sample_rate : int, input_buffer : NDArray[Any]) 반환, NDArray[Any]는 실수값의 numpy 배열을 의미
@@ -80,7 +72,7 @@ def divide_buffer_into_non_overlapping_chunks(buffer, max_len): # max_len -> fft
 
     print("------------------------------")
     print("buffers_num: " + str(chunks))      # 총 chunks의 개수를 출력
-    print("나누어진 chunk들에 대한 리스트 :", splitted_array_view)
+    # print("나누어진 chunk들에 대한 리스트 :", splitted_array_view)
     # 나누어진 청크들의 리스트를 반환, list[NDArray]
     return splitted_array_view
 
@@ -103,10 +95,10 @@ def getFFT(data, rate):
     freq = np.fft.rfftfreq(len_data, 1.0 / sample_rate) # fft 결과에 대응하는 주파수 배열을 계산한다.
     # return ( freq[:int(len(freq) / 2)], fft[:int(ret_len_FFT / 2)], ret_len_FFT )
 
-    print("--------------getFFT() 거친 후----------------")
-    print("fft 연산 후 magnitude 배열 :", fft)
-    print("fft 연산 후 frequency 개수 :", ret_len_FFT)
-    print("fft 연산 후 frequency 배열 :", freq)
+    # print("--------------getFFT() 거친 후----------------")
+    # print("fft 연산 후 magnitude 배열 :", fft)
+    # print("fft 연산 후 frequency 개수 :", ret_len_FFT)
+    # print("fft 연산 후 frequency 배열 :", freq)
     # (frequency 배열 : NDArray[floating[Any]], magnitude 배열 : NDArray[Any], frequency 개수 : int) 반환
     return (freq, fft, ret_len_FFT)
 
@@ -189,7 +181,7 @@ def find_nearest_note(ordered_note_freq, freq):
 # 기타 조에 대한 딕셔너리 생성
 def get_all_keys_note():
     keys_freq = {
-        "A": ['A_2', 'E_3', 'E4'],
+        "A": ['A_2', 'E_3', 'E_4'],
         "B": ['F#_2', 'B_2', 'F#_3', 'F#_4'],
         "C": ['C_3', 'E_3', 'C_4', 'E_4'],
         "D": ['D_3', 'A_3'],
@@ -200,42 +192,111 @@ def get_all_keys_note():
     return keys_freq
 
 # 기타 코드에 대한 딕셔너리 생성
-def get_all_guitar_chords_freq():
-    guitar_chords_freq = {
-        "A": [110.00, 164.81, 220.00, 277.18, 329.63],
-        "Am": [110.00, 164.81, 220.00, 261.63, 329.63],
-        "A7": [110.00, 164.81, 196.00, 277.18, 329.63],
-        "B": [92.50, 123.47, 185.00, 246.94, 311.13, 369.99],
-        "Bm": [92.50, 123.47, 185.00, 246.94, 293.66, 369.99],
-        "B7": [92.50, 123.47, 185.00, 220.00, 311.13, 369.99],
-        "C": [130.81, 164.81, 196.00, 261.63, 329.63],
-        "C7": [130.81, 164.81, 233.08, 261.63, 329.63],
-        "D": [146.83, 220.00, 293.66, 369.99],
-        "Dm": [146.83, 220.00, 293.66, 349.23],
-        "D7": [146.83, 220.00, 261.63, 369.99],
-        "E": [82.41, 123.47, 164.81, 207.65, 246.94, 329.63],
-        "Em": [82.41, 123.47, 164.81, 196.00, 246.94, 329.63],
-        "E7": [82.41, 123.47, 146.83, 207.65, 246.94, 329.63],
-        "F": [87.31, 130.81, 174.61, 220.00, 261.63, 349.23],
-        "Fm": [87.31, 130.81, 174.61, 207.65, 261.63, 349.23],
-        "F7": [87.31, 130.81, 155.56, 220.00, 261.63, 349.23],
-        "G": [98.00, 123.47, 146.83, 196.00, 246.94, 392.00],
-        "G7": [98.00, 123.47, 146.83, 196.00, 246.94, 349.23]
+def get_all_guitar_chords_notes():
+    guitar_chords_with_common_notes = {
+        "A": {
+            "chords": ["A", "Am", "A7"],
+            "identifying_notes": {
+                "A": ["A_3", "C#_4"],
+                "Am": ["A_3", "C_4"],
+                "A7": ["G_3", "C#_4"]
+            }
+        },
+        "B": {
+            "chords": ["B", "Bm", "B7"],
+            "identifying_notes": {
+                "B": ["B_3", "D#_4"],
+                "Bm": ["B_3", "D_4"],
+                "B7": ["A_3", "D#_4"]
+            }
+        },
+        "C": {
+            "chords": ["C", "C7"],
+            "identifying_notes": {
+                "C": ["G_3"],
+                "C7": ["A#_3"]
+            }
+        },
+        "D": {
+            "chords": ["D", "Dm", "D7"],
+            "identifying_notes": {
+                "D": ["D_4", "F#_4"],
+                "Dm": ["D_4", "F_4"],
+                "D7": ["C_4", "F#_4"]
+            }
+        },
+        "E": {
+            "chords": ["E", "Em", "E7"],
+            "identifying_notes": {
+                "E": ["E_3", "G#_3"],
+                "Em": ["E_3", "G_3"],
+                "E7": ["D_3", "G#_3"]
+            }
+        },
+        "F": {
+            "chords": ["F", "Fm", "F7"],
+            "identifying_notes": {
+                "F": ["F_3", "A_3"],
+                "Fm": ["F_3", "G#_3"],
+                "F7": ["D#_3", "A_3"]
+            }
+        },
+        "G": {
+            "chords": ["G", "G7"],
+            "identifying_notes": {
+                "G": ["G_4"],
+                "G7": ["F_4"]
+            }
+        },
     }
-    return guitar_chords_freq
+    return guitar_chords_with_common_notes
 
-# 기타 조 판단에 중요한 list 생성
+# 기타 unique notes 생성
 def get_unique_key():
-    unique_notes = ['A_2', 'E_3', 'E_4', 'F#2',
-                    'B_2', 'F#_3', 'F#_4', 'C_3',
-                    'C_4', 'D_3', 'A_3', 'E_2',
-                    'B_3', 'F_2', 'F_4', 'G_2', 'D_3', 'G_3']
+    unique_notes = ['A_2', 'E_3', 'E_4',
+                    'F#2', 'B_2', 'F#_3', 'F#_4',
+                    'C_3', 'C_4',
+                    'D_3', 'A_3', 'E_2',
+                    'B_3', 'F_2', 'F_4',
+                    'G_2', 'D_3', 'G_3']
     return unique_notes
 
-# chunk별 상위 top_n개 주파수 뽑기
-def get_top_frequencies(frequencies, top_n):
-    top_freqs = sorted(frequencies, key=lambda x: x[1], reverse=True)[:top_n]
-    return top_freqs
+# 기타 코드를 숫자와 매칭
+def chord_to_number(chord_name):
+    # 각 코드에 숫자를 부여하는 딕셔너리
+    chords_numbers = {
+        "A": 1, "Am": 2, "A7": 3,
+        "B": 4, "Bm": 5, "B7": 6,
+        "C": 7, "C7": 8,
+        "D": 9, "Dm": 10, "D7": 11,
+        "E": 12, "Em": 13, "E7": 14,
+        "F": 15, "Fm": 16, "F7": 17,
+        "G": 18, "G7": 19,
+    }
+
+    # 입력된 코드 이름에 해당하는 숫자를 반환
+    return chords_numbers.get(chord_name, 'null')
+
+# chunk별 value 기준 상위 top_n개 tuple(freq, value) 뽑기
+def get_top_values(values, top_n):
+    top_values = sorted(values, key=lambda x: x[1], reverse=True)[:top_n]
+    return top_values
+
+# 원하는 chunk별 value 기준 상위 top_n개 {chunk_num:(freq, value, note_name), ...} 뽑기
+def get_chunks_results(all_top_results, target_chunk_nums, top_n):
+    chunk_results = {}
+
+    for chunk_num, freq, value, note_name in all_top_results:
+        if chunk_num in target_chunk_nums:
+            if chunk_num not in chunk_results:
+                chunk_results[chunk_num] = []
+            chunk_results[chunk_num].append((freq, value, note_name))
+
+     # 각 chunk 별로 저장된 결과를 value 기준으로 내림차순 정렬하고 상위 n개만 선택
+    for chunk_num in chunk_results:
+        chunk_results[chunk_num] = sorted(chunk_results[chunk_num], key=lambda x: x[1], reverse=True)[:top_n]
+
+    return chunk_results
 
 # 기타 조 판단에 해당하는 음 저장하기
 def find_unique_notes(ordered_note_freq, top_freqs, unique_notes):
@@ -269,7 +330,7 @@ def find_nearest_key(found_unique_notes, keys_freq):
         for note in notes:
             if note in found_unique_notes:
                 match_score += 1
-                index = found_unique_notes.index(음표)  # 현재 노트의 found_notes에서의 인덱스
+                index = found_unique_notes.index(note)  # 현재 노트의 found_notes에서의 인덱스
                 current_key_min_index = min(current_key_min_index, index)
 
         # 더 높은 match_score를 가진 조를 찾거나, 동일한 match_score이지만 더 낮은 인덱스를 가진 조를 찾는다
@@ -279,6 +340,121 @@ def find_nearest_key(found_unique_notes, keys_freq):
             best_match_index = current_key_min_index
 
     return best_match  # 가장 일치율이 높은 조 반환
+
+# 기타 조 최종적으로 확정
+def decide_majority_key(target_chunk_nums, all_keys):
+    # target_chunk_nums에 해당하는 조들을 담을 리스트 초기화
+    target_keys = []
+
+    # all_keys에서 target_chunk_nums에 해당하는 조를 찾아 target_keys에 추가
+    for chunk_num, key in all_keys:
+        if chunk_num in target_chunk_nums:
+            target_keys.append(key)
+
+    # 다수결로 조를 결정하기 위해 각 조의 빈도수를 계산
+    key_count = {}
+    for key in target_keys:
+        if key in key_count:
+            key_count[key] += 1
+        else:
+            key_count[key] = 1
+
+    # 가장 많이 나온 조를 결정 (동률일 경우 list로 반환될 수 있음)
+    majority_key = [k for k, v in key_count.items() if v == max(key_count.values())]
+
+    # 다수결의 결과가 하나의 조로 결정되면 그 조를 반환, 아니면 리스트 전체 반환
+    return majority_key[0] if len(majority_key) == 1 else 'null'
+
+# 기타 코드 확정
+def find_matching_chord(final_key, chunks_results, all_guitar_chords_freq):
+    if final_key == 'null':
+        return 'null'
+
+    # 결정된 조에 해당하는 코드 후보군과 식별음 가져오기
+    chords = all_guitar_chords_freq[final_key]["chords"]
+    identifying_notes = all_guitar_chords_freq[final_key]["identifying_notes"]
+
+    # 각 코드별 일치하는 식별음 수 계산
+    chord_matching_scores = {chord: 0 for chord in chords}
+
+    for chunk_number, results in chunks_results.items():
+        note_values = {}  # 청크별 노트 value 저장
+        for freq, value, note_name in results:
+            note_values[note_name] = value
+
+        # 각 청크에서 식별음의 value를 내림차순으로 정렬
+        sorted_notes_by_value = sorted(note_values.items(), key=lambda x: x[1], reverse=True)
+
+        # 식별음 순위에 따른 점수 부여 로직
+        for rank, (note_name, _) in enumerate(sorted_notes_by_value):
+            for chord in chords:
+                if note_name in identifying_notes[chord]:
+                    # 순위가 높을수록 더 큰 점수를 부여합니다. 예: 1등은 len(results) 점, 2등은 len(results)-1 점...
+                    chord_matching_scores[chord] += (len(results) - rank)
+
+    print(chord_matching_scores)
+    # 가장 높은 점수를 가진 코드 결정
+    best_chord = max(chord_matching_scores, key=chord_matching_scores.get)
+    return best_chord
+
+# 기타 박자 추정
+def find_chunks_with_peak_values(all_values):
+    peak_chunks = []
+
+    # 리스트의 길이
+    length = len(all_values)
+
+    for i in range(length):
+        # 현재 chunk의 value
+        current_value = all_values[i][1]
+
+        # 이전 chunk의 value
+        if i > 0:
+            prev_value = all_values[i-1][1]
+        else:
+            prev_value = float('-inf')  # 첫 번째 요소의 경우, 이전 값이 없으므로 -무한대로 설정
+
+        # 다음 chunk의 value
+        if i < length - 1:
+            next_value = all_values[i+1][1]
+        else:
+            next_value = float('-inf')  # 마지막 요소의 경우, 다음 값이 없으므로 -무한대로 설정
+
+        # 현재 value가 이전과 다음의 value보다 큰 경우
+        if current_value > prev_value and current_value > next_value:
+            peak_chunks.append(all_values[i])
+
+    return peak_chunks
+
+# 기타 박자 여음 처리를 위한 앞뒤 value 차이 계산
+def calculate_value_differences(values_list):
+    differences_list = []
+    for values in values_list:
+        if len(values) == 3:
+            diff1 = abs(values[1] - values[0])
+            diff2 = abs(values[2] - values[1])
+            differences_list.append(diff1)
+            # differences_list.append([diff1, diff2])
+        else:
+            differences_list.append([])
+
+    return differences_list
+
+# 기타 박자 여음 처리를 위한 임계값 계산
+def remove_small_values(values):
+    if len(values) == 0:
+        return values
+
+    # 가장 큰 값의 0.5% 계산
+    max_value = max(values)
+    threshold = max_value * 0.06
+    print(threshold)
+
+    # 임계값보다 큰 값들만 포함하여 새로운 리스트 생성
+    filtered_values = [value for value in values if value > threshold]
+
+    return filtered_values
+
 
 def PitchSpectralHps(X, freq_buckets, f_s, buffer_rms):
 
@@ -297,7 +473,7 @@ def PitchSpectralHps(X, freq_buckets, f_s, buffer_rms):
     Returns:
         f HPS maximum location (in Hz)
     """
-    print("fft_res, HPS 들어간 후", "(",X.shape, ")",X)
+    # print("fft_res, HPS 들어간 후", "(",X.shape, ")",X)
 
     # initialize
     iOrder = 4
@@ -313,6 +489,7 @@ def PitchSpectralHps(X, freq_buckets, f_s, buffer_rms):
     for j in range(1, iOrder):
         X_d = X[::(j + 1)]
         afHps *= X_d[np.arange(0, iLen)]
+        # print("afHps ", afHps)
 
     ## Uncomment to show the original algorithm for a single frequency or note.
     # f = np.argmax(afHps[np.arange(k_min, afHps.shape[0])], axis=0)
@@ -384,64 +561,194 @@ def main(wave_bytes):
 
     unique_notes = get_unique_key()
     keys_note = get_all_keys_note()
-    guitar_chords_freq = get_all_guitar_chords_freq()
+    guitar_chords_notes = get_all_guitar_chords_notes()
     ordered_note_freq = get_all_notes_freq()
-    # print(ordered_note_freq)
 
-#     sample_rate_file, input_buffer = read_wav_file(path, filename)
     sample_rate_file, input_buffer = read_wav_file(wave_bytes)
+    buffer_chunks = divide_buffer_into_non_overlapping_chunks(input_buffer, fft_len)
 
-    print("sample_rate_file: "+str(sample_rate_file))
-    print("input_buffer: "+str(input_buffer))
+    all_top_results = [] # [(chunk_num, freq, value, note_name), ...]
+    all_values = []      # chunk별 상위 1개의 value 모음, [(chunk_num, value), ....]
+    all_keys = []        # 추정한 조 모음, [(chunk_num, nearest_key), ...]
+    all_chords = []      # 추정한 코드 모음, ['G', 'null', ...]
+    chunk_num = 0
+    top_n = 6
+
+    results = []
+    chunk_times = []
+
+    # chunk 별로 HPS 수행
+    for chunk in buffer_chunks[0: 60]:
+        start_time = (chunk_num * len(chunk)) / sample_rate_file
+        end_time = ((chunk_num + 1) * len(chunk)) / sample_rate_file
+        print(f"\nChunk {chunk_num+1}, 시간: {start_time:.2f}초~{end_time:.2f}초")
+        chunk_times.append((chunk_num+1, start_time))  # chunk 시작 시간 추가
+
+        fft_freq, fft_res, fft_res_len = getFFT(chunk, len(chunk))
+        fft_res = remove_dc_offset(fft_res)
+        buffer_rms = np.sqrt(np.mean(chunk**2))
+        all_freqs = PitchSpectralHps(fft_res, fft_freq, sample_rate_file, buffer_rms)
 
 
-    #####################################################################################
-#     buffer_chunks = divide_buffer_into_non_overlapping_chunks(input_buffer, fft_len)
-#     # The buffer chunk at n seconds:
-#
-#     count = 0
-#
-#     ## Uncomment to process a single chunk os a limited number os sequential chunks.
-#     for chunk in buffer_chunks[0: 60]:
-#         print("\nChunk", str(count+1))
-#
-#         fft_freq, fft_res, fft_res_len = getFFT(chunk, len(chunk))
-#         ### print("fft_res, getFFT 직후", "(",fft_res.shape, ")", fft_res)
-#         fft_res = remove_dc_offset(fft_res)
-#         ### print("fft_res, de offset 제거 직후","(",fft_res.shape, ")", fft_res)
-#
-#         # Calculate Root Mean Square of the signal buffer, as a scale factor to the threshold.
-#         buffer_rms = np.sqrt(np.mean(chunk**2))
-#
-#         all_freqs = PitchSpectralHps(fft_res, fft_freq, sample_rate_file, buffer_rms)
-#         # print(all_freqs)
-#
-#         # get_top_frequencies 함수를 사용하여 상위 6개의 주파수를 선택
-#         top_freqs = get_top_frequencies(all_freqs, 6)
-#         print("top_freqs :", top_freqs)
-#         for freq in top_freqs:
-#             note_name = find_nearest_note(ordered_note_freq, freq[0])
-#             print("=> freq: " + to_str_f(freq[0]) + " Hz  value: " + to_str_f(freq[1]) + " note_name: " + note_name)
-#
-#         # print("------------------------------")
-#         for freq in all_freqs:
-#             note_name = find_nearest_note(ordered_note_freq, freq[0])
-#             # print("=> freq: " + to_str_f(freq[0]) + " Hz  value: " + to_str_f(freq[1]) + " note_name: " + note_name)
-#
-#         # 상위 6개의 주파수를 이용하여 가장 가까운 조를 찾기
-#         found_unique_notes = find_unique_notes(ordered_note_freq, top_freqs, unique_notes)
-#         print(found_unique_notes)
-#
-#         nearest_key = find_nearest_key(found_unique_notes, keys_note)
-#         print(nearest_key)
-#
-#         # 각 주파수에 대해 해당하는 기타 조 찾기
-#         # for freq, _ in top_freqs:
-#         #     key = find_key_for_freq(freq, keys_freq)
-#         #     print(f"freq: {freq:.2f} Hz -> key: {key}")
-#
-#         count += 1
-###########################################################################################
+        ''' 코드 추정을 위한 코드 '''
+        # freq 기준 상위 n개 tuple(freq, value)를 저장
+        top_results = get_top_values(all_freqs, top_n)
+
+
+        ''' 박자 추정을 위한 코드 '''
+        # value 기준 상위 n개 tuple(freq, value)를 저장
+        top_values_result = get_top_values(all_freqs, 1)
+        # chunk별 value 기준 상위 1개의 value만을 저장
+        if top_values_result:
+            all_values.append((chunk_num+1, int(top_values_result[0][1])))
+        else:
+            all_values.append((chunk_num+1, 0))
+
+
+        ''' 출력을 위한 코드 '''
+        # freq 기준 상위 n개 tuple(freq, value) 출력
+        for freq in top_results:
+            note_name = find_nearest_note(ordered_note_freq, freq[0])
+            print("=> freq: " + to_str_f(freq[0]) + " Hz  value: " + to_str_f(freq[1]) + " note_name: " + note_name)
+            # all_top_result에 추가
+            all_top_results.append((chunk_num+1, freq[0], freq[1], note_name))  # chunk 번호, freq, value, 음 순으로 저장
+
+        # all_freqs(freq, value) 출력
+        # for freq in all_freqs:
+        #     note_name = find_nearest_note(ordered_note_freq, freq[0])
+        #     print("=> freq: " + to_str_f(freq[0]) + " Hz  value: " + to_str_f(freq[1]) + " note_name: " + note_name)
+
+
+        ''' 조 추정을 위한 코드 '''
+        # freq 기준 상위 n개의 음 중 unique_notes에 해당하는 음을 found_unique_notes에 담기
+        found_unique_notes = find_unique_notes(ordered_note_freq, top_results, unique_notes)
+        print(found_unique_notes)
+
+        # found_unique_notes의 음과 keys_note의 음을 비교하여 조 찾기
+        nearest_key = find_nearest_key(found_unique_notes, keys_note)
+        print(nearest_key, "조")
+
+        # all_keys에 추정한 조 추가
+        all_keys.append((chunk_num+1, nearest_key))
+
+
+        ''' 코드 추정을 위한 코드 '''
+        chunks_top_results = get_chunks_results(all_top_results, [chunk_num+1], top_n)  # {chunk_num:(freq, value, note_name), ...}
+        final_chord = find_matching_chord(nearest_key, chunks_top_results, guitar_chords_notes)
+        print(final_chord, "코드")
+        all_chords.append(final_chord)
+
+        chunk_num += 1
+
+
+    print("\n---------------chunk별 조 결과----------------")
+    print(all_keys)
+
+    print("\n---------------chunk별 코드 결과----------------")
+    print(all_chords)
+
+    print("\n---------------chunk별 상위 1개 value 결과----------------")
+    print(all_values)
+
+    print("\n---------------chunk별 시작 시간----------------")
+    print(chunk_times)
+
+    print("\n---------------박자 확정 과정 및 결과---------------")
+    peak_chunks = find_chunks_with_peak_values(all_values)
+    sorted_peak_chunks = sorted(peak_chunks, key=lambda x: x[1], reverse=True)
+    print(sorted_peak_chunks)
+
+    # 박자 친 부분 확정
+    peak_chunk_nums = [chunk[0]-1 for chunk in peak_chunks]
+    print(peak_chunk_nums)
+
+    # 각 숫자로부터 뒤로 3개의 숫자를 포함하는 이중리스트 생성
+    if -1 in peak_chunk_nums:
+        extended_peak_chunks = [0, 1, 2]
+    else:
+        extended_peak_chunks = [[num + i for i in range(3)] for num in peak_chunk_nums]
+    print(extended_peak_chunks)
+
+
+    print("\n---------------코드 확정 과정 및 결과----------------")
+    final_chord_list = []
+    for current_target_chunk_nums in extended_peak_chunks:
+        # 1. 해당하는 chunk의 조 결과를 all_keys를 통해 확인하고, 해당하는 chunk의 조를 최종적으로 확정
+
+        ## 원하는 chunk별, value 기준 상위 n개 {chunk_num:(freq, value, note_name), ...} 출력
+        chunks_top_results = get_chunks_results(all_top_results, current_target_chunk_nums, top_n)
+        # for chunk_number, results in chunks_top_results.items():
+        #     for freq, value, note_name in results:
+        #         print(f"=> freq: {to_str_f(freq)} Hz  value: {to_str_f(value)} note_name: {note_name} chunk num: {chunk_number}")
+
+        ## target_chunk별 정해진 조 출력
+        # for chunk_num in current_target_chunk_nums:
+        #     for chunk_key in all_keys:
+        #         if chunk_key[0] == chunk_num:
+        #             print(f"Chunk {chunk_num}의 조: {chunk_key[1]}")
+
+        ## target_chunk를 통해 최종적으로 조 확정
+        final_key = decide_majority_key(current_target_chunk_nums, all_keys)
+        # print(f"최종 결정된 조: {final_key}")
+
+
+        # 2. 해당하는 조의 코드에서 공통되는 음을 제외한 음들이, chunks_top_results 음에 많이 있는지 비교 확인한 후 코드 확정
+        final_chord = find_matching_chord(final_key, chunks_top_results, guitar_chords_notes)
+        # print(f"최종 결정된 코드: {final_chord}")
+        final_chord_list.append(final_chord)
+
+    print(final_chord_list)
+    numbered_final_chord_list = [chord_to_number(chord) for chord in final_chord_list]
+    print(numbered_final_chord_list)
+
+
+    print("\n---------------박자 여음 처리 이전, 코드 및 박자 결과----------------")
+    # 박자 체크
+    results = [1 if i in peak_chunk_nums else 0 for i in range(0, chunk_num+1)]
+    print(results)
+    # 코드 체크
+    chord_pointer = 0
+    for i, val in enumerate(results):
+        if val == 1:
+            if numbered_final_chord_list[chord_pointer] == 'null':
+                results[i] = 0
+            else:
+                results[i] = numbered_final_chord_list[chord_pointer]
+            chord_pointer = chord_pointer + 1
+    # 코드와 박자
+    print(results)
+
+    print("\n---------------박자 여음 처리 과정----------------")
+    # 0이 아닌 chunk 뒤로 2개까지의 value 모아서, 총 3개의 value로 이중리스트
+    non_zero_indices = [i for i, val in enumerate(results) if val != 0]
+    selected_chunks_values = []
+    for index in non_zero_indices:
+        chunk_nums_to_check = [index, index + 1, index + 2]
+        temp_values = []
+        for chunk_num in chunk_nums_to_check:
+            if chunk_num <= len(all_values):
+                temp_values.append(all_values[chunk_num - 1][1])
+        selected_chunks_values.append(temp_values)
+    print(selected_chunks_values)
+
+    # 앞, 중간 chunk value 값 차이들 저장
+    differences = calculate_value_differences(selected_chunks_values)
+    print(differences)
+
+    # 임계값 설정
+    filtered_values = remove_small_values(differences)
+    print(filtered_values)
+
+
+    print("\n---------------코드 및 박자 결과----------------")
+    # for i, difference in enumerate(differences):
+    #     if difference <= filtered_values:
+    #         results[non_zero_indices[i]] = 0
+    # print(results)
+    for i, difference in enumerate(differences):
+        if difference not in filtered_values:
+            results[non_zero_indices[i]] = 0
+    print(results)
 
 if __name__ == "__main__":
     main()
