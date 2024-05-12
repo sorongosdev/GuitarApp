@@ -128,7 +128,7 @@ class MainActivity : ComponentActivity() {
             }
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Box를 사용하여 DrawSheet와 DrawNotes를 겹치게 함
+            // Box를 사용하여 DrawSheet와 DrawNotes를 겹치게 함, 표출 악보
             Box(
                 modifier = Modifier
                     .fillMaxWidth()

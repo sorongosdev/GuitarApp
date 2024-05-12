@@ -74,6 +74,7 @@ class AudioProcessorHandler(private val context: Context) {
         randomAccessFile = null
         transferWavToPy()
         getFileList()
+
     }
 
     private fun getFileList() {
