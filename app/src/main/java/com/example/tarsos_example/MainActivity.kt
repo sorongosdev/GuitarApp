@@ -1,5 +1,7 @@
 package com.example.tarsos_example
 
+import DrawNotes
+import DrawSheet
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -28,7 +30,6 @@ import androidx.core.content.ContextCompat
 import java.nio.ByteOrder
 import android.Manifest
 import android.content.Context
-import android.util.Log
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 import java.io.File
@@ -110,33 +111,11 @@ class MainActivity : ComponentActivity() {
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(507.dp)
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Pitch:",
-                    modifier = Modifier.align(Alignment.TopStart)
-                )
-                Text(
-                    text = pitchTextViewValue.value,  // pitchTextViewValue 바인딩,
-                    fontSize = 50.sp,
-                    textAlign = TextAlign.Center
-                )
-                Text(
-                    text = "입력된 코드",
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.align(Alignment.BottomCenter)
-                )
-            }
             Button(
                 onClick = { audioProcessorHandler.SetupAudioProcessing() },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = "녹음")
+                Text(text = "연주 시작")
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -146,6 +125,23 @@ class MainActivity : ComponentActivity() {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(text = "중지")
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Box를 사용하여 DrawSheet와 DrawNotes를 겹치게 함
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+            ) {
+                DrawSheet(modifier = Modifier.matchParentSize()) // 악보 그림
+                DrawNotes(
+                    noteType = NoteSorts.note_1011, // 예시 음표 타입 리스트
+                    location = 2,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                ) // 음표 그림
             }
         }
     }

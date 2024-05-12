@@ -21,7 +21,7 @@ note_threshold = 5_000.0    # 120   # 50_000.0   #  3_000.0
 
 # Parameters
 sample_rate  = 44100                     # Sampling Frequency
-fft_len      = 10000  # 22050   # 2048            # Length of the FFT window
+fft_len      = 8820  # 22050   # 2048            # Length of the FFT window
 overlap      = 0.5                       # Hop overlap percentage between windows
 hop_length   = int(fft_len*(1-overlap))  # Number of samples between successive frames
 
@@ -45,7 +45,7 @@ def read_wav_file(wave_bytes):
 #     wav_handler = wave.open(path + filename,'rb')    # 지정된 경로에 wav 파일을 읽기 전용 모드로 연다.
 #     num_frames = wav_handler.getnframes()            # 파일에서 sample의 총 개수를 얻는다. 44100*(wav 길이 예로 4초) = 176400개
 #     sample_rate = wav_handler.getframerate()         # 파일의 sample_rate를 얻는다. 44100
-    sample_rate = 16000
+    sample_rate = 44100
 #     wav_frames = wav_handler.readframes(num_frames)  # 모든 frame을 읽는다. wav_frames는 num_frames의 두 배이다. 각 샘플이 2바이트로 표현되기 때문. wav_frames의 바이트 배열 길이는 176400*2 = 352800 바이트이다.
     wav_frames = frames
 
@@ -56,7 +56,7 @@ def read_wav_file(wave_bytes):
         signal_array[i] = signal_temp[i] / (2.0**15) # int16 타입의 값을 [-1, 1] 범위의 float64 타입으로 변환합니다.
 
     print("------------------------------")
-    print("file_name: " + str(filename))
+#     print("file_name: " + str(filename))
     print("sample_rate: " + str(sample_rate) + " Hz")
     print("input_buffer.size(sample의 총 갯수): " + str(len(signal_array)) + " 개")
     print("seconds(input_buffer.size/sample_rate): " + to_str_f4(len(signal_array)/sample_rate) + " s")
@@ -187,7 +187,7 @@ def find_nearest_note(ordered_note_freq, freq):
     return final_note_name
 
 # 기타 조에 대한 딕셔너리 생성
-def get_all_key_freq():
+def get_all_keys_note():
     keys_freq = {
         "A": ['A_2', 'E_3', 'E4'],
         "B": ['F#_2', 'B_2', 'F#_3', 'F#_4'],
@@ -239,38 +239,46 @@ def get_top_frequencies(frequencies, top_n):
 
 # 기타 조 판단에 해당하는 음 저장하기
 def find_unique_notes(ordered_note_freq, top_freqs, unique_notes):
-    found_notes = []
+    found_unique_notes = []
 
     # 주어진 상위 주파수들 중 unique_notes에 해당하는 음 찾기
     for freq in top_freqs:
         note_name = find_nearest_note(ordered_note_freq, freq[0])  # 주파수로부터 가장 가까운 음 찾기
-        if note_name in unique_notes and note_name not in found_notes:  # unique_notes 목록에 해당하는지 확인
-            found_notes.append(note_name)
+        if note_name in unique_notes and note_name not in found_unique_notes:  # unique_notes 목록에 해당하는지 확인
+            found_unique_notes.append(note_name)
 
-    return found_notes
+    return found_unique_notes
 
 # 기타 조 추정
-def find_nearest_key(found_notes, keys_freq):
+def find_nearest_key(found_unique_notes, keys_freq):
     # found_notes가 비어있으면, 'null' 반환
-    if not found_notes:
+    if not found_unique_notes:
         return 'null'
 
     # 각 조와 found_notes 간의 일치도 계산
     best_match = None
     best_match_score = -1  # 일치하는 음의 개수를 저장할 변수
+    best_match_index = None  # found_notes에서 match된 최소 인덱스를 저장할 변수
 
     for key, notes in keys_freq.items():
-        match_score = sum(note in found_notes for note in notes)  # found_notes에 포함된 음의 개수를 계산
+        match_score = sum(note in found_unique_notes for note in notes)  # found_notes에 포함된 음의 개수를 계산
+        # print("match_score", match_score)
+        current_key_min_index = len(found_unique_notes)  # 현재 키에 대한 최소 인덱스 초기화
+        # print("index ", current_key_min_index)
 
-        if match_score > best_match_score:  # 현재 조가 이전 조보다 더 많은 일치를 가지면
-            best_match = key  # 현재 조를 최고 일치로 업데이트
-            best_match_score = match_score  # 최고 일치 점수 업데이트
+        for note in notes:
+            if note in found_unique_notes:
+                match_score += 1
+                index = found_unique_notes.index(음표)  # 현재 노트의 found_notes에서의 인덱스
+                current_key_min_index = min(current_key_min_index, index)
+
+        # 더 높은 match_score를 가진 조를 찾거나, 동일한 match_score이지만 더 낮은 인덱스를 가진 조를 찾는다
+        if match_score > best_match_score or (match_score == best_match_score and current_key_min_index < best_match_index):
+            best_match = key
+            best_match_score = match_score
+            best_match_index = current_key_min_index
 
     return best_match  # 가장 일치율이 높은 조 반환
-
-# 기타 코드 추정
-def find_nearest_chord(guitar_chords_freq):
-    return 0
 
 def PitchSpectralHps(X, freq_buckets, f_s, buffer_rms):
 
@@ -371,61 +379,69 @@ def to_str_f4(value):
     return "{0:.4f}".format(value)
 
 
-def main():
+def main(wave_bytes):
     print("\nPolyphonic note detector\n")
 
     unique_notes = get_unique_key()
-    keys_freq = get_all_key_freq()
+    keys_note = get_all_keys_note()
     guitar_chords_freq = get_all_guitar_chords_freq()
     ordered_note_freq = get_all_notes_freq()
     # print(ordered_note_freq)
 
-    sample_rate_file, input_buffer = read_wav_file(path, filename)
-    buffer_chunks = divide_buffer_into_non_overlapping_chunks(input_buffer, fft_len)
-    # The buffer chunk at n seconds:
+#     sample_rate_file, input_buffer = read_wav_file(path, filename)
+    sample_rate_file, input_buffer = read_wav_file(wave_bytes)
 
-    count = 0
+    print("sample_rate_file: "+str(sample_rate_file))
+    print("input_buffer: "+str(input_buffer))
 
-    ## Uncomment to process a single chunk os a limited number os sequential chunks.
-    for chunk in buffer_chunks[0: 60]:
-        print("\nChunk", str(count+1))
 
-        fft_freq, fft_res, fft_res_len = getFFT(chunk, len(chunk))
-        ### print("fft_res, getFFT 직후", "(",fft_res.shape, ")", fft_res)
-        fft_res = remove_dc_offset(fft_res)
-        ### print("fft_res, de offset 제거 직후","(",fft_res.shape, ")", fft_res)
-
-        # Calculate Root Mean Square of the signal buffer, as a scale factor to the threshold.
-        buffer_rms = np.sqrt(np.mean(chunk**2))
-
-        all_freqs = PitchSpectralHps(fft_res, fft_freq, sample_rate_file, buffer_rms)
-        # print(all_freqs)
-
-        # get_top_frequencies 함수를 사용하여 상위 6개의 주파수를 선택
-        top_freqs = get_top_frequencies(all_freqs, 6)
-        print("top_freqs :", top_freqs)
-        for freq in top_freqs:
-            note_name = find_nearest_note(ordered_note_freq, freq[0])
-            print("=> freq: " + to_str_f(freq[0]) + " Hz  value: " + to_str_f(freq[1]) + " note_name: " + note_name)
-
-        # print("------------------------------")
-        for freq in all_freqs:
-            note_name = find_nearest_note(ordered_note_freq, freq[0])
-            # print("=> freq: " + to_str_f(freq[0]) + " Hz  value: " + to_str_f(freq[1]) + " note_name: " + note_name)
-
-        # 상위 6개의 주파수를 이용하여 가장 가까운 조를 찾기
-        found_notes = find_unique_notes(ordered_note_freq, top_freqs, unique_notes)
-        print(found_notes)
-
-        nearest_key = find_nearest_key(found_notes, keys_freq)
-        print(nearest_key)
-
-        # 각 주파수에 대해 해당하는 기타 조 찾기
-        # for freq, _ in top_freqs:
-        #     key = find_key_for_freq(freq, keys_freq)
-        #     print(f"freq: {freq:.2f} Hz -> key: {key}")
-
-        count += 1
+    #####################################################################################
+#     buffer_chunks = divide_buffer_into_non_overlapping_chunks(input_buffer, fft_len)
+#     # The buffer chunk at n seconds:
+#
+#     count = 0
+#
+#     ## Uncomment to process a single chunk os a limited number os sequential chunks.
+#     for chunk in buffer_chunks[0: 60]:
+#         print("\nChunk", str(count+1))
+#
+#         fft_freq, fft_res, fft_res_len = getFFT(chunk, len(chunk))
+#         ### print("fft_res, getFFT 직후", "(",fft_res.shape, ")", fft_res)
+#         fft_res = remove_dc_offset(fft_res)
+#         ### print("fft_res, de offset 제거 직후","(",fft_res.shape, ")", fft_res)
+#
+#         # Calculate Root Mean Square of the signal buffer, as a scale factor to the threshold.
+#         buffer_rms = np.sqrt(np.mean(chunk**2))
+#
+#         all_freqs = PitchSpectralHps(fft_res, fft_freq, sample_rate_file, buffer_rms)
+#         # print(all_freqs)
+#
+#         # get_top_frequencies 함수를 사용하여 상위 6개의 주파수를 선택
+#         top_freqs = get_top_frequencies(all_freqs, 6)
+#         print("top_freqs :", top_freqs)
+#         for freq in top_freqs:
+#             note_name = find_nearest_note(ordered_note_freq, freq[0])
+#             print("=> freq: " + to_str_f(freq[0]) + " Hz  value: " + to_str_f(freq[1]) + " note_name: " + note_name)
+#
+#         # print("------------------------------")
+#         for freq in all_freqs:
+#             note_name = find_nearest_note(ordered_note_freq, freq[0])
+#             # print("=> freq: " + to_str_f(freq[0]) + " Hz  value: " + to_str_f(freq[1]) + " note_name: " + note_name)
+#
+#         # 상위 6개의 주파수를 이용하여 가장 가까운 조를 찾기
+#         found_unique_notes = find_unique_notes(ordered_note_freq, top_freqs, unique_notes)
+#         print(found_unique_notes)
+#
+#         nearest_key = find_nearest_key(found_unique_notes, keys_note)
+#         print(nearest_key)
+#
+#         # 각 주파수에 대해 해당하는 기타 조 찾기
+#         # for freq, _ in top_freqs:
+#         #     key = find_key_for_freq(freq, keys_freq)
+#         #     print(f"freq: {freq:.2f} Hz -> key: {key}")
+#
+#         count += 1
+###########################################################################################
 
 if __name__ == "__main__":
     main()

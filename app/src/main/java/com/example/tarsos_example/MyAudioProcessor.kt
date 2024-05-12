@@ -1,14 +1,10 @@
+import android.util.Log
 import be.tarsos.dsp.AudioEvent
 import be.tarsos.dsp.AudioProcessor
 
 class MyAudioProcessor : AudioProcessor {
     override fun process(audioEvent: AudioEvent): Boolean {
-        // 오디오 데이터에 대한 처리 로직 구현
-        // 예: 오디오 버퍼의 볼륨을 조절
-        val audioBuffer = audioEvent.floatBuffer
-        for (i in audioBuffer.indices) {
-            audioBuffer[i] *= 0.5f // 볼륨을 50% 감소시킴
-        }
+        Log.d("cutWav","${System.currentTimeMillis()}")
         return true
     }
 
