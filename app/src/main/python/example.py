@@ -11,6 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import wave
 import math
+import io
 
 path     = "./"
 filename = '100-A-DUDU.wav'
@@ -749,6 +750,7 @@ def main(wave_bytes):
         if difference not in filtered_values:
             results[non_zero_indices[i]] = 0
     print(results)
+    return results
 
 if __name__ == "__main__":
     main()

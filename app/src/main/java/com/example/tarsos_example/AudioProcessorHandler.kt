@@ -43,7 +43,11 @@ class AudioProcessorHandler(private val context: Context) {
 
             // 현재 사용하고 있는 dispatcher 객체를 제거하고, 마이크로부터 입력을 받는 dispatcher 객체를 생성
             releaseDispatcher()
-            dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(sampleRate, audioBufferSize, bufferOverlap)
+            dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(
+                sampleRate,
+                audioBufferSize,
+                bufferOverlap
+            )
 
             val filename = "recorded_audio.wav"
             val file = File(context.filesDir, filename)
@@ -105,8 +109,8 @@ class AudioProcessorHandler(private val context: Context) {
         val result = waveBytes?.let { bytes ->
             pyObj.callAttr("main", bytes)
         }
-    }
 
+        Log.d("logTest", result.toString()); }
 
 
     // wav 의 바이트를 읽음
