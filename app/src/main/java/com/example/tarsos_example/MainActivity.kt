@@ -1,5 +1,6 @@
 package com.example.tarsos_example
 
+import DrawFeedBackNotes
 import DrawNotes
 import DrawSheet
 import android.content.pm.PackageManager
@@ -17,10 +18,7 @@ import com.example.tarsos_example.ui.theme.Tarsos_exampleTheme
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
 import be.tarsos.dsp.io.TarsosDSPAudioFormat
 import androidx.compose.runtime.LaunchedEffect
@@ -30,11 +28,12 @@ import androidx.core.content.ContextCompat
 import java.nio.ByteOrder
 import android.Manifest
 import android.content.Context
+import android.provider.ContactsContract.CommonDataKinds.Note
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
+import com.example.tarsos_example.consts.NoteTypes
 import java.io.File
 import java.io.IOException
-import java.util.Date
 
 var tarsosDSPAudioFormat: TarsosDSPAudioFormat? = null
 
@@ -136,19 +135,24 @@ class MainActivity : ComponentActivity() {
             ) {
                 DrawSheet(modifier = Modifier.matchParentSize()) // 악보 그림
                 DrawNotes(
-                    noteType = NoteSorts.note_1010, // 예시 음표 타입 리스트
+                    noteType = NoteTypes.note_1010, // 예시 음표 타입 리스트
                     location = 2,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
                 ) // 음표 그림
                 DrawNotes(
-                    noteType = NoteSorts.note_1011, // 예시 음표 타입 리스트
+                    noteType = NoteTypes.note_1011, // 예시 음표 타입 리스트
                     location = 1,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
                 ) // 음표 그림
+                DrawFeedBackNotes(
+                    feedbackNoteList = NoteTypes.note_feedback, location = 1, modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                )
             }
         }
     }
