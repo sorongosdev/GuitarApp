@@ -33,7 +33,10 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
     compileOptions {
@@ -58,11 +61,17 @@ android {
 
 chaquopy {
     defaultConfig {
-// yaeun
-// buildPython("C:/Users/USER/AppData/Local/Programs/Python/Python312/python.exe")
+        // yaeun
+        // buildPython("C:/Users/USER/AppData/Local/Programs/Python/Python312/python.exe")
 
-// buildPython("/usr/bin/python3")
-        buildPython("C:/Users/Admin/AppData/Local/Programs/Python/Python312/python.exe")
+        // Sora Desktop Mac
+        // buildPython("/usr/bin/python3")
+
+        // Sora Laptop Window
+        // buildPython("C:/Users/Admin/AppData/Local/Programs/Python/Python312/python.exe")
+
+        //Sora Desktop Window
+        buildPython("C:/Users/dosor/AppData/Local/Programs/Python/Python312/python.exe")
 
         pip {
             install("numpy")
