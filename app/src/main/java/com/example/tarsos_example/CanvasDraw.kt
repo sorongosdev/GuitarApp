@@ -1,12 +1,18 @@
-// ScoreCanvas.kt 파일 내부
-
+/* **************
+* CanvasDrawCanvasDraw.kt
+*
+* Canvas 를 이용해서 악보를 그려주는 부분
+* *******************/
 import android.util.Log
 import androidx.compose.foundation.Canvas
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.nativeCanvas
 import kotlin.math.sqrt
 
 /**악보 전체 틀을 그려주는 함수*/
@@ -80,17 +86,12 @@ fun DrawNotes(noteType: List<Int>, location: Int, modifier: Modifier = Modifier)
     }
 }
 
-//TODO: 받아온 리스트 바탕으로 피드백 음표 그리기, 한 마디로 돼있는거 두 마디로 늘이기, 피드백 음표는 진하게 그리기
 @Composable
 fun DrawFeedBackNotes(feedbackNoteList: List<Int>?, location: Int, modifier: Modifier) {
     Log.d("undraw", "DrawFeedBackNotes, List length: ${feedbackNoteList?.size}")
     if (!feedbackNoteList.isNullOrEmpty()) {
         Canvas(modifier = modifier) {
-            val startX_measure = if (location == 1) {
-                1 * (size.width / 10) // 첫번째 마디 시작점
-            } else {
-                5 * (size.width / 10) // 두번째 마디 시작점
-            }
+            val startX_measure = 1 * (size.width / 10) // 첫번째 마디 시작점
             val measure_width = 8 * (size.width / 10) // 두 마디 넓이
             val startY_tail = size.height * 1 / 5 // 꼬리가 시작되는 Y지점
             val endY_tail = size.height * 4 / 5 // 꼬리가 끝나는 Y지점
@@ -115,10 +116,38 @@ fun DrawFeedBackNotes(feedbackNoteList: List<Int>?, location: Int, modifier: Mod
                         color = Color.Red,
                         start = start,
                         end = end,
-                        strokeWidth = 10f
+                        strokeWidth = 100f
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun ShowChords(modifier: Modifier) {
+    Canvas(modifier = modifier) {
+        val startX_measure1 = 1 * (size.width / 10) // 첫번째 마디 시작점
+        val startX_measure2 = 5 * (size.width / 10) // 두번째 마디 시작점
+
+        val paint = android.graphics.Paint().apply {
+            color = android.graphics.Color.BLACK // 텍스트 색상 설정
+            textSize = 40f // 텍스트 크기 설정
+        }
+
+        drawIntoCanvas { canvas ->
+            canvas.nativeCanvas.drawText(
+                "텍스트",
+                startX_measure1, // x 좌표
+                0f, // y 좌표
+                paint // Paint 객체
+            )
+            canvas.nativeCanvas.drawText(
+                "텍스트",
+                startX_measure2, // x 좌표
+                0f, // y 좌표
+                paint // Paint 객체
+            )
         }
     }
 }

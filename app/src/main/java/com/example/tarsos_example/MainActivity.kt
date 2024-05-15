@@ -3,6 +3,7 @@ package com.example.tarsos_example
 import DrawFeedBackNotes
 import DrawNotes
 import DrawSheet
+import ShowChords
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -31,11 +32,14 @@ import android.content.Context
 import android.provider.ContactsContract.CommonDataKinds.Note
 import android.util.Log
 import androidx.activity.viewModels
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
@@ -114,23 +118,34 @@ class MainActivity : ComponentActivity() {
     fun MainActivityUI(feedbackNoteList: List<Int>, name: String, modifier: Modifier = Modifier) {
         Column(
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Top
         ) {
-            Button(
-                onClick = { audioProcessorHandler.SetupAudioProcessing(viewModel) }, // viewModel 내부에서 _feedbackNoteList 상태 업데이트
-                modifier = Modifier.fillMaxWidth()
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = "연주 시작")
+                Text(text = "text test")
+                FloatingActionButton(
+                    onClick = { audioProcessorHandler.SetupAudioProcessing(viewModel) },
+
+                    ) {
+                    Text(
+                        text = "연주 시작",
+                        style = TextStyle(fontSize = 50.sp)
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.fillMaxHeight(0.3f)) // 전체의 30% 공백
 
             // Box를 사용하여 DrawSheet와 DrawNotes를 겹치게 함, 표출 악보
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
+                    .height(200.dp),
             ) {
+                ShowChords(modifier = Modifier.fillMaxWidth())
+
                 DrawSheet(modifier = Modifier.matchParentSize()) // 악보 그림
                 DrawNotes(
                     noteType = NoteTypes.note_1010, // 예시 음표 타입 리스트
