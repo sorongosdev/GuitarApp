@@ -1,5 +1,6 @@
 // ScoreCanvas.kt 파일 내부
 
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -79,40 +80,44 @@ fun DrawNotes(noteType: List<Int>, location: Int, modifier: Modifier = Modifier)
     }
 }
 
+//TODO: 받아온 리스트 바탕으로 피드백 음표 그리기, 한 마디로 돼있는거 두 마디로 늘이기, 피드백 음표는 진하게 그리기
 @Composable
-fun DrawFeedBackNotes(feedbackNoteList: List<Int>, location: Int, modifier: Modifier) {
-    Canvas(modifier = modifier) {
-        val startX_measure = if (location == 1) {
-            1 * (size.width / 10) // 첫번째 마디 시작점
-        } else {
-            5 * (size.width / 10) // 두번째 마디 시작점
-        }
-        val measure_width = 4 * (size.width / 10) // 한 마디 넓이
-        val startY_tail = size.height * 1 / 5 // 꼬리가 시작되는 Y지점
-        val endY_tail = size.height * 4 / 5 // 꼬리가 끝나는 Y지점
-        val centerY = size.height * 4 / 5 // 선의 중심점
-        val lineLength = sqrt(2f) * 25f // 45도 각도에서의 선 길이, 대각선 길이 계산
+fun DrawFeedBackNotes(feedbackNoteList: List<Int>?, location: Int, modifier: Modifier) {
+    Log.d("undraw", "DrawFeedBackNotes, List length: ${feedbackNoteList?.size}")
+    if (!feedbackNoteList.isNullOrEmpty()) {
+        Canvas(modifier = modifier) {
+            val startX_measure = if (location == 1) {
+                1 * (size.width / 10) // 첫번째 마디 시작점
+            } else {
+                5 * (size.width / 10) // 두번째 마디 시작점
+            }
+            val measure_width = 8 * (size.width / 10) // 두 마디 넓이
+            val startY_tail = size.height * 1 / 5 // 꼬리가 시작되는 Y지점
+            val endY_tail = size.height * 4 / 5 // 꼬리가 끝나는 Y지점
+            val centerY = size.height * 4 / 5 // 선의 중심점
+            val lineLength = sqrt(2f) * 25f // 45도 각도에서의 선 길이, 대각선 길이 계산
 
-        for (i in 1..12) {
-            if (feedbackNoteList[i] == 1) {
-                val xOffset = startX_measure + i * (measure_width / 13) // 음표가 그려지는 곳
+            for (i in 1..24) {
+                if (feedbackNoteList[i] != 0) { // 받은 리스트의 값이 0이 아니면 친 곳
+                    val xOffset = startX_measure + i * (measure_width / 26) // 음표가 그려지는 곳
 
-                drawLine(
-                    color = Color.Red,
-                    start = Offset(x = xOffset + lineLength / 2, y = startY_tail),
-                    end = Offset(x = xOffset + lineLength / 2, y = endY_tail - lineLength / 2),
-                    strokeWidth = Stroke.DefaultMiter
-                )
+                    drawLine(
+                        color = Color.Red,
+                        start = Offset(x = xOffset + lineLength / 2, y = startY_tail),
+                        end = Offset(x = xOffset + lineLength / 2, y = endY_tail - lineLength / 2),
+                        strokeWidth = 10f
+                    )
 
-                // 45도 기울인 선을 그리기 위한 시작점과 끝점 계산
-                val start = Offset(x = xOffset - lineLength / 2, y = centerY + lineLength / 2)
-                val end = Offset(x = xOffset + lineLength / 2, y = centerY - lineLength / 2)
-                drawLine(
-                    color = Color.Red,
-                    start = start,
-                    end = end,
-                    strokeWidth = Stroke.DefaultMiter
-                )
+                    // 45도 기울인 선을 그리기 위한 시작점과 끝점 계산
+                    val start = Offset(x = xOffset - lineLength / 2, y = centerY + lineLength / 2)
+                    val end = Offset(x = xOffset + lineLength / 2, y = centerY - lineLength / 2)
+                    drawLine(
+                        color = Color.Red,
+                        start = start,
+                        end = end,
+                        strokeWidth = 10f
+                    )
+                }
             }
         }
     }
