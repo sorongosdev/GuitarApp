@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
     <application
-        android:name="com.chaquo.python.android.PyApplication"
+        android:name=".MyApplication"
 
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
