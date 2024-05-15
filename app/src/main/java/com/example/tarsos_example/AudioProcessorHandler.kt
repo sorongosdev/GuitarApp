@@ -4,9 +4,11 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import be.tarsos.dsp.AudioDispatcher
 import be.tarsos.dsp.io.android.AudioDispatcherFactory
 import be.tarsos.dsp.writer.WriterProcessor
+import com.chaquo.python.PyObject
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 import kotlinx.coroutines.CoroutineScope
@@ -34,12 +36,12 @@ class AudioProcessorHandler(private val context: Context) {
     private val timer = Timer()
 
     /**녹음 시작시 실행*/
-    fun SetupAudioProcessing() {
+    fun SetupAudioProcessing(viewModel: MyViewModel) {
+        Log.d("undraw", "SetupAudioProcessing")
         // 코루틴을 사용하여 메인 스레드에서 비동기 작업을 수행
         CoroutineScope(Dispatchers.Main).launch {
             // 시작 시간 측정
             start = System.currentTimeMillis()
-            Log.d("cutWav", "$start")
 
             // 현재 사용하고 있는 dispatcher 객체를 제거하고, 마이크로부터 입력을 받는 dispatcher 객체를 생성
             releaseDispatcher()
@@ -64,32 +66,24 @@ class AudioProcessorHandler(private val context: Context) {
             audioThread?.start()
 
             // 4.8초 후에 녹음 중지 (Timer와 TimerTask 대신 delay 사용)
-            delay(4800)
-            stopAudioProcessing()
+            delay(5000)
+            stopAudioProcessing(viewModel = viewModel)
+
         }
     }
 
 
     /**녹음 중지시 실행되는 리스너*/
-    fun stopAudioProcessing() {
+    fun stopAudioProcessing(viewModel: MyViewModel) {
         releaseDispatcher()
         timer.cancel()
         randomAccessFile?.close()
         randomAccessFile = null
-        transferWavToPy()
-        getFileList()
-
+        getResultList(viewModel = viewModel) // 연산 결과 리턴
     }
 
-    private fun getFileList() {
-        val filesList = File(context.filesDir.absolutePath).listFiles()
-        filesList?.forEach { file ->
-            Log.d("File Name", file.name)
-        }
-    }
-
-    /**녹음 중지시 wav 파일을 파이썬으로 넘겨주는 함수*/
-    fun transferWavToPy() {
+    /**녹음 중지시 wav 파일을 파이썬으로 넘겨주고 출력을 받아오는 함수*/
+    fun getResultList(viewModel: MyViewModel) {
         // 내부 저장소에 있는 파일의 경로를 지정
         val filePath = "${context.filesDir.absolutePath}/recorded_audio.wav"
 
@@ -106,11 +100,16 @@ class AudioProcessorHandler(private val context: Context) {
         val pyObj = py.getModule("example")
 
         // 읽은 바이트 데이터를 Python 코드에 전달
-        val result = waveBytes?.let { bytes ->
-            pyObj.callAttr("main", bytes)
+        val feedbackNoteListPyObject = waveBytes?.let { bytes ->
+            pyObj.callAttr("main", bytes).asList()
         }
 
-        Log.d("logTest", result.toString()); }
+        // feedbackNoteListPyObject를 Kotlin의 List<String>으로 변환
+        val feedbackNoteListKotlin: List<Int> =
+            feedbackNoteListPyObject?.map { it.toInt() } ?: listOf()
+
+        viewModel.updateFeedbackNoteList(feedbackNoteListKotlin)
+    }
 
 
     // wav 의 바이트를 읽음
@@ -128,5 +127,12 @@ class AudioProcessorHandler(private val context: Context) {
     private fun releaseDispatcher() {
         dispatcher?.stop()
         dispatcher = null
+    }
+
+    private fun getFileList() {
+        val filesList = File(context.filesDir.absolutePath).listFiles()
+        filesList?.forEach { file ->
+            Log.d("File Name", file.name)
+        }
     }
 }
