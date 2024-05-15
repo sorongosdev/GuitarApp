@@ -136,7 +136,14 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            Spacer(modifier = Modifier.fillMaxHeight(0.3f)) // 전체의 30% 공백
+            Spacer(modifier = Modifier.fillMaxHeight(0.2f)) // 전체의 30% 공백
+
+            ShowChords(
+                viewModel = viewModel,
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.fillMaxHeight(0.05f)) // 전체의 30% 공백
 
             // Box를 사용하여 DrawSheet와 DrawNotes를 겹치게 함, 표출 악보
             Box(
@@ -144,7 +151,7 @@ class MainActivity : ComponentActivity() {
                     .fillMaxWidth()
                     .height(200.dp),
             ) {
-                ShowChords(modifier = Modifier.fillMaxWidth())
+
 
                 DrawSheet(modifier = Modifier.matchParentSize()) // 악보 그림
                 DrawNotes(
@@ -167,7 +174,6 @@ class MainActivity : ComponentActivity() {
                         .height(200.dp)
                 )
             }
-
         }
     }
 

@@ -13,7 +13,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
+import com.example.tarsos_example.MyViewModel
+import com.example.tarsos_example.consts.ChordTypes
 import kotlin.math.sqrt
+import kotlin.random.Random
 
 /**악보 전체 틀을 그려주는 함수*/
 @Composable
@@ -125,7 +128,7 @@ fun DrawFeedBackNotes(feedbackNoteList: List<Int>?, location: Int, modifier: Mod
 }
 
 @Composable
-fun ShowChords(modifier: Modifier) {
+fun ShowChords(viewModel: MyViewModel, modifier: Modifier) {
     Canvas(modifier = modifier) {
         val startX_measure1 = 1 * (size.width / 10) // 첫번째 마디 시작점
         val startX_measure2 = 5 * (size.width / 10) // 두번째 마디 시작점
@@ -137,17 +140,28 @@ fun ShowChords(modifier: Modifier) {
 
         drawIntoCanvas { canvas ->
             canvas.nativeCanvas.drawText(
-                "텍스트",
+                getRandomChord(1,viewModel),
                 startX_measure1, // x 좌표
                 0f, // y 좌표
                 paint // Paint 객체
             )
             canvas.nativeCanvas.drawText(
-                "텍스트",
+                getRandomChord(2,viewModel),
                 startX_measure2, // x 좌표
                 0f, // y 좌표
                 paint // Paint 객체
             )
         }
     }
+}
+
+/// 랜덤으로 코드를 가져오는 함수
+fun getRandomChord(chordIndex: Int, viewModel: MyViewModel): String{
+    val randomInt = Random.nextInt(1,19)
+
+    if(chordIndex==1) viewModel.updateShownChord1(randomInt)
+    else viewModel.updateShownChord2(randomInt)
+
+    val randomChord = ChordTypes.chords_numbers[randomInt]
+    return randomChord!!
 }
