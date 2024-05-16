@@ -30,8 +30,12 @@ class MyViewModel : ViewModel() {
     private var _recordSecond = MutableStateFlow<Double>(0.0)
     val recordSecond: StateFlow<Double> = _recordSecond
 
+    /**녹음이 시작하고 지난 시간, 소수점 첫째자리까지 표시*/
+    private var _countDownSecond = MutableStateFlow<Int>(5)
+    val countDownSecond: StateFlow<Int> = _countDownSecond
+
     /**녹음중 유무*/
-    private var _isRecording = MutableStateFlow<Boolean>(true)
+    private var _isRecording = MutableStateFlow<Boolean>(false)
     val isRecording: StateFlow<Boolean> = _isRecording
 
     /****************************   함수들 **************************************/
@@ -45,11 +49,27 @@ class MyViewModel : ViewModel() {
     /**연산 후 피드백 노트 리스트를 업데이트 해주는 함수*/
     fun updateFeedbackNoteList(newList: List<Int>) {
         _feedbackNoteList.value = newList
-        Log.d("processbar", "updateFeedbackNoteList $newList")
+        Log.d("countdown", "updateFeedbackNoteList $newList")
     }
 
     /**녹음 진행 정도(초)를 업데이트 해주는 함수*/
     fun updateRecordSecond(newSecond: Double) {
         _recordSecond.value = newSecond
+    }
+
+    /**카운트 다운(박자)를 업데이트 해주는 함수*/
+    fun updateCountDownSecond(newSecond: Int) {
+        _countDownSecond.value = newSecond
+    }
+
+    /**녹음중 유무 변수를 세팅*/
+    fun updateRecordingState(isRecording: Boolean){
+        _isRecording.value = isRecording
+    }
+
+    /**init 버튼을 눌렀을 때, 초를 다시 세팅*/
+    fun init(){
+        _countDownSecond.value = 5
+        _recordSecond.value = 0.0
     }
 }

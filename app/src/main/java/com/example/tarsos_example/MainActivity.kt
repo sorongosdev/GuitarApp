@@ -81,6 +81,7 @@ class MainActivity : ComponentActivity() {
             Tarsos_exampleTheme {
                 val feedbackNoteListState = viewModel.feedbackNoteList.collectAsState()
                 val recordSecondState = viewModel.recordSecond.collectAsState()
+                val countDownSecondState = viewModel.countDownSecond.collectAsState()
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -89,6 +90,7 @@ class MainActivity : ComponentActivity() {
                     MainActivityUI(
                         feedbackNoteList = feedbackNoteListState,
                         recordSecond = recordSecondState,
+                        countDownSecond = countDownSecondState,
                         name = "Android"
                     )
                     SetupTarsosDSP()
@@ -104,6 +106,7 @@ class MainActivity : ComponentActivity() {
     fun MainActivityUI(
         feedbackNoteList: State<List<Int>>,
         recordSecond: State<Double>,
+        countDownSecond: State<Int>,
         name: String,
         modifier: Modifier = Modifier
     ) {
@@ -113,10 +116,17 @@ class MainActivity : ComponentActivity() {
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Text(text = recordSecond.value.toString())
-//                Text(text = "텍스트 자리")
+                Text(text = recordSecond.value.toString()) // 녹음 시작후 지난 초 표시
+                FloatingActionButton(
+                    onClick = { viewModel.init() }
+                ) {
+                    Text(
+                        text = "INIT",
+                        style = TextStyle(fontSize = 50.sp)
+                    )
+                }
                 FloatingActionButton(
                     onClick = { audioProcessorHandler.SetupAudioProcessing(viewModel) }
                     ) {
@@ -126,8 +136,10 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
+            Text(text = "Count Down : ${countDownSecond.value}", style = TextStyle(fontSize = 20.sp))
 
-            Spacer(modifier = Modifier.fillMaxHeight(0.2f)) // 전체의 30% 공백
+            Spacer(modifier = Modifier.fillMaxHeight(0.1f)) // 전체의 10% 공백
+
             ShowChords(
                 viewModel = viewModel,
                 modifier = Modifier

@@ -33,11 +33,23 @@ class AudioProcessorHandler(private val context: Context) {
 
     /**녹음 시작시 실행*/
     fun SetupAudioProcessing(viewModel: MyViewModel) {
-        Log.d("processbar", "SetupAudioProcessing")
+        Log.d("countdown", "SetupAudioProcessing")
         // 코루틴을 사용하여 메인 스레드에서 비동기 작업을 수행
         CoroutineScope(Dispatchers.Main).launch {
-            // 시작 시간 측정
-//            val start = System.currentTimeMillis()
+            viewModel.updateRecordingState(isRecording = false)
+
+            // 4박자에 대한 카운트 다운
+            val totalCountDownDelay = 2500L // 총 지연 시간
+            val countDownInterval = 2500L/4L // 로그를 기록할 간격 시간
+            var countDownElapsedTime = 0L // 경과 시간
+
+            while (countDownElapsedTime < totalCountDownDelay) {
+                delay(countDownInterval) // 지정된 간격만큼 대기
+                countDownElapsedTime += countDownInterval // 경과 시간 업데이트
+                val newSecond = (5.0 - countDownElapsedTime / 625.0).toInt()
+                viewModel.updateCountDownSecond(newSecond)
+                Log.d("countdown", "카운트 다운: $newSecond") // 초 아닌 박자임
+            }
 
             // 현재 사용하고 있는 dispatcher 객체를 제거하고, 마이크로부터 입력을 받는 dispatcher 객체를 생성
             releaseDispatcher()
@@ -59,6 +71,8 @@ class AudioProcessorHandler(private val context: Context) {
             audioThread = Thread(dispatcher, "Audio Thread")
             audioThread?.start()
 
+            viewModel.updateRecordingState(isRecording = true)
+
             // 5초 동안 진행 상황을 로그로 기록
             val totalDelay = 5000L // 총 지연 시간
             val interval = 100L // 로그를 기록할 간격 시간
@@ -68,19 +82,18 @@ class AudioProcessorHandler(private val context: Context) {
                 delay(interval) // 지정된 간격만큼 대기
                 elapsedTime += interval // 경과 시간 업데이트
                 viewModel.updateRecordSecond(elapsedTime/1000.0)
-                Log.d("processbar", "녹음 진행 중: ${elapsedTime / 1000.0}초")
+                Log.d("countdown", "녹음 진행 중: ${elapsedTime / 1000.0}초")
             }
 
             stopAudioProcessing(viewModel = viewModel)
         }
     }
 
-
-
     /**녹음 중지시 실행되는 리스너*/
     fun stopAudioProcessing(viewModel: MyViewModel) {
         releaseDispatcher()
         timer.cancel()
+        viewModel.updateRecordingState(isRecording = false)
         randomAccessFile?.close()
         randomAccessFile = null
         getResultList(viewModel = viewModel) // 연산 결과 리턴

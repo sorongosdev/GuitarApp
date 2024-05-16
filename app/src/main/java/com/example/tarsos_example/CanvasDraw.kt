@@ -157,10 +157,12 @@ fun DrawProcessBar(seconds: Double, modifier: Modifier) {
 fun ShowChords(viewModel: MyViewModel, modifier: Modifier) {
     /** viewModel의 recordSecond를 관찰*/
     val recordSecondState = viewModel.recordSecond.collectAsState() // 초
+    val countDownSecondState = viewModel.countDownSecond.collectAsState() // 초
     val shownChordState1 = viewModel.shownChord1.collectAsState() // 마디1에 보여주는 코드
     val shownChordState2 = viewModel.shownChord2.collectAsState() // 마디2에 보여주는 코드
+    val isRecordingState = viewModel.isRecording.collectAsState() // 마디2에 보여주는 코드
 
-    if (recordSecondState.value == 0.0 || recordSecondState.value == 5.0) { // TODO : 녹음중이 아닐 때만 그림, 녹음중 유무 변수 추가해서 로직 수정 필요
+    if (!(isRecordingState.value) && countDownSecondState.value == 5) {
         viewModel.updateChords(
             getRandomChord(viewModel),
             getRandomChord(viewModel)
