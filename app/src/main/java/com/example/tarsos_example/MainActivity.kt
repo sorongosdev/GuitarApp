@@ -35,6 +35,7 @@ import androidx.activity.viewModels
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -62,19 +63,11 @@ var tarsosDSPAudioFormat: TarsosDSPAudioFormat? = null
 class MainActivity : ComponentActivity() {
     private lateinit var audioProcessorHandler: AudioProcessorHandler
 
-    // noteListState를 정의하고 초기값을 빈 리스트로 설정합니다.
-    val feedbackNoteListState = MutableStateFlow(List(25) { 0 })
-    val recordSecondState = MutableStateFlow<Double>(0.0)
-
-    // ViewModel 인스턴스를 가져오기
-//    private val viewModel by viewModels<MyViewModel>()
-
     // ViewModel 인스턴스를 가져옴
     private val viewModel: MyViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        val viewModel by viewModels<MyViewModel>()
 
         // 권한 요청
         requestRecordAudioPermission()
@@ -82,38 +75,21 @@ class MainActivity : ComponentActivity() {
         if (!Python.isStarted()) {
             Python.start(AndroidPlatform(applicationContext));
         }
-        val py = Python.getInstance()
-        val pyObj = py.getModule("example")
-
-        // ViewModel의 feedbackNoteList StateFlow 관찰
-        lifecycleScope.launch {
-            // repeatOnLifecycle을 사용하여 STARTED 상태일 때만 collect가 실행되도록
-            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                launch {
-                    viewModel.feedbackNoteList.collect { noteList ->
-                        feedbackNoteListState.value = noteList
-                    }
-                }
-                launch {
-                    viewModel.recordSecond.collect { recordSecond ->
-                        recordSecondState.value = recordSecond
-                    }
-                }
-            }
-        }
-
 
         setContent {
             Tarsos_exampleTheme {
-
-                val feedbackNoteList by feedbackNoteListState.collectAsState()
-                val recordSecond by recordSecondState.collectAsState()
+                val feedbackNoteListState = viewModel.feedbackNoteList.collectAsState()
+                val recordSecondState = viewModel.recordSecond.collectAsState()
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainActivityUI(feedbackNoteList = feedbackNoteList,recordSecond = recordSecond, name = "Android")
+                    MainActivityUI(
+                        feedbackNoteList = feedbackNoteListState,
+                        recordSecond = recordSecondState,
+                        name = "Android"
+                    )
                     SetupTarsosDSP()
                 }
             }
@@ -124,7 +100,12 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun MainActivityUI(feedbackNoteList: List<Int>,recordSecond: Double, name: String, modifier: Modifier = Modifier) {
+    fun MainActivityUI(
+        feedbackNoteList: State<List<Int>>,
+        recordSecond: State<Double>,
+        name: String,
+        modifier: Modifier = Modifier
+    ) {
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Top
@@ -133,10 +114,10 @@ class MainActivity : ComponentActivity() {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = recordSecond.toString())
+                Text(text = recordSecond.value.toString())
+//                Text(text = "텍스트 자리")
                 FloatingActionButton(
-                    onClick = { audioProcessorHandler.SetupAudioProcessing(viewModel) },
-
+                    onClick = { audioProcessorHandler.SetupAudioProcessing(viewModel) }
                     ) {
                     Text(
                         text = "연주 시작",
@@ -146,7 +127,6 @@ class MainActivity : ComponentActivity() {
             }
 
             Spacer(modifier = Modifier.fillMaxHeight(0.2f)) // 전체의 30% 공백
-
             ShowChords(
                 viewModel = viewModel,
                 modifier = Modifier
@@ -160,7 +140,6 @@ class MainActivity : ComponentActivity() {
                     .fillMaxWidth()
                     .height(200.dp),
             ) {
-
 
                 DrawSheet(modifier = Modifier.matchParentSize()) // 악보 그림
                 DrawNotes(
@@ -178,7 +157,7 @@ class MainActivity : ComponentActivity() {
                         .height(200.dp)
                 ) // 음표 그림
                 DrawFeedBackNotes(
-                    feedbackNoteList = feedbackNoteList, location = 1, modifier = Modifier
+                    feedbackNoteList = feedbackNoteList.value, location = 1, modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
                 )

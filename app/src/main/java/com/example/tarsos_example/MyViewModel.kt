@@ -19,27 +19,29 @@ class MyViewModel : ViewModel() {
     val shownNoteList : StateFlow<List<Int>> = _shownNoteList
 
     /**마디1에 보여주는 코드, 사용자가 친 것과 비교해서 정답인지 알려주기 위해 필요*/
-    private var _shownChord1 = MutableStateFlow<Int>(0)
-    val shownChord1 : StateFlow<Int> = _shownChord1
+    private var _shownChord1 = MutableStateFlow<String>("")
+    val shownChord1 : StateFlow<String> = _shownChord1
 
     /**마디2에 보여주는 코드, 사용자가 친 것과 비교해서 정답인지 알려주기 위해 필요*/
-    private var _shownChord2 = MutableStateFlow<Int>(0)
-    val shownChord2 : StateFlow<Int> = _shownChord1
+    private var _shownChord2 = MutableStateFlow<String>("")
+    val shownChord2 : StateFlow<String> = _shownChord2
 
+    fun updateChords(chord1: String, chord2: String) {
+        _shownChord1.value = chord1
+        _shownChord2.value = chord2
+    }
+
+    /**녹음이 시작하고 지난 시간, 소수점 첫째자리까지 표시*/
     private var _recordSecond = MutableStateFlow<Double>(0.0)
     val recordSecond : StateFlow<Double> = _recordSecond
+
+    /**녹음중 유무*/
+    private var _isRecording = MutableStateFlow<Boolean>(true)
+    val isRecording : StateFlow<Boolean> = _isRecording
 
     fun updateFeedbackNoteList(newList: List<Int>) {
         _feedbackNoteList.value = newList
         Log.d("processbar","updateFeedbackNoteList // feedbackNoteList.value ${feedbackNoteList.value}")
-    }
-
-    fun updateShownChord1(newInt: Int) {
-        _shownChord1.value = newInt
-    }
-
-    fun updateShownChord2(newInt: Int) {
-        _shownChord2.value = newInt
     }
 
     fun updateRecordSecond(newSecond: Double){

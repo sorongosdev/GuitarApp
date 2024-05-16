@@ -68,10 +68,10 @@ chaquopy {
         // buildPython("/usr/bin/python3")
 
         // Sora Laptop Window
-         buildPython("C:/Users/Admin/AppData/Local/Programs/Python/Python312/python.exe")
+//         buildPython("C:/Users/Admin/AppData/Local/Programs/Python/Python312/python.exe")
 
         //Sora Desktop Window
-//        buildPython("C:/Users/dosor/AppData/Local/Programs/Python/Python312/python.exe")
+        buildPython("C:/Users/dosor/AppData/Local/Programs/Python/Python312/python.exe")
 
         pip {
             install("numpy")

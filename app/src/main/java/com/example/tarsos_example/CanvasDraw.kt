@@ -7,6 +7,9 @@ import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -21,6 +24,8 @@ import kotlin.random.Random
 /**악보 전체 틀을 그려주는 함수*/
 @Composable
 fun DrawSheet(modifier: Modifier = Modifier) {
+    Log.d("processbar", "DrawSheet")
+
     Canvas(modifier = modifier) {
         // 예제: 악보 선 그리기
         val startY = 0f
@@ -50,6 +55,8 @@ fun DrawSheet(modifier: Modifier = Modifier) {
 /**noteType, 그리는 위치(1또는 2)를 받아 음표를 그려주는 함수*/
 @Composable
 fun DrawNotes(noteType: List<Int>, location: Int, modifier: Modifier = Modifier) {
+    Log.d("processbar", "DrawNotes")
+
     Canvas(modifier = modifier) {
         val startX_measure = if (location == 1) {
             1 * (size.width / 10) // 첫번째 마디 시작점
@@ -91,6 +98,8 @@ fun DrawNotes(noteType: List<Int>, location: Int, modifier: Modifier = Modifier)
 
 @Composable
 fun DrawFeedBackNotes(feedbackNoteList: List<Int>?, location: Int, modifier: Modifier) {
+    Log.d("processbar", "DrawFeedBackNotes")
+
     if (!feedbackNoteList.isNullOrEmpty()) {
         Canvas(modifier = modifier) {
             val startX_measure = 1 * (size.width / 10) // 첫번째 마디 시작점
@@ -128,6 +137,20 @@ fun DrawFeedBackNotes(feedbackNoteList: List<Int>?, location: Int, modifier: Mod
 
 @Composable
 fun ShowChords(viewModel: MyViewModel, modifier: Modifier) {
+    Log.d("processbar", "ShowChords")
+    /** viewModel의 recordSecond를 관찰*/
+    val recordSecondState = viewModel.recordSecond.collectAsState()
+    val shownChordState1 = viewModel.shownChord1.collectAsState()
+    val shownChordState2 = viewModel.shownChord2.collectAsState()
+
+    if (recordSecondState.value == 0.0) { // 녹음중이 아닐 때만 그림, 녹음중 유무 변수 추가해서 로직 수정 필요
+        viewModel.updateChords(
+            getRandomChord(viewModel),
+            getRandomChord(viewModel)
+        )
+    }
+
+    // shouldDrawText가 true일 때 Canvas 그리기
     Canvas(modifier = modifier) {
         val startX_measure1 = 1 * (size.width / 10) // 첫번째 마디 시작점
         val startX_measure2 = 5 * (size.width / 10) // 두번째 마디 시작점
@@ -139,13 +162,13 @@ fun ShowChords(viewModel: MyViewModel, modifier: Modifier) {
 
         drawIntoCanvas { canvas ->
             canvas.nativeCanvas.drawText(
-                getRandomChord(1,viewModel),
+                shownChordState1.value,
                 startX_measure1, // x 좌표
                 0f, // y 좌표
                 paint // Paint 객체
             )
             canvas.nativeCanvas.drawText(
-                getRandomChord(2,viewModel),
+                shownChordState2.value,
                 startX_measure2, // x 좌표
                 0f, // y 좌표
                 paint // Paint 객체
@@ -154,13 +177,11 @@ fun ShowChords(viewModel: MyViewModel, modifier: Modifier) {
     }
 }
 
+
 /// 랜덤으로 코드를 가져오는 함수
-fun getRandomChord(chordIndex: Int, viewModel: MyViewModel): String{
-    val randomInt = Random.nextInt(1,19)
+fun getRandomChord(viewModel: MyViewModel): String {
+    val randomInt = Random.nextInt(1, 19)
 
-    if(chordIndex==1) viewModel.updateShownChord1(randomInt)
-    else viewModel.updateShownChord2(randomInt)
-
-    val randomChord = ChordTypes.chords_numbers[randomInt]
+    val randomChord = ChordTypes.chords_numbers[randomInt] // 보여줄 코드를 인덱스를 통해 맵에서 찾아줌
     return randomChord!!
 }
