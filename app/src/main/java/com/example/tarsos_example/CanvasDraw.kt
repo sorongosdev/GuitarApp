@@ -24,12 +24,9 @@ import kotlin.random.Random
 /**악보 전체 틀을 그려주는 함수*/
 @Composable
 fun DrawSheet(modifier: Modifier = Modifier) {
-    Log.d("processbar", "DrawSheet")
-
     Canvas(modifier = modifier) {
-        // 예제: 악보 선 그리기
-        val startY = 0f
-        val endY = size.height
+        val startY = 0f // 시트 그리기가 시작되는 Y 지점
+        val endY = size.height // 시트 그리기가 끝나는 Y 지점
         for (i in 1..9) {
             if (i == 1 || i == 5 || i == 9) {
                 val xOffset = i * (size.width / 10)
@@ -55,8 +52,6 @@ fun DrawSheet(modifier: Modifier = Modifier) {
 /**noteType, 그리는 위치(1또는 2)를 받아 음표를 그려주는 함수*/
 @Composable
 fun DrawNotes(noteType: List<Int>, location: Int, modifier: Modifier = Modifier) {
-    Log.d("processbar", "DrawNotes")
-
     Canvas(modifier = modifier) {
         val startX_measure = if (location == 1) {
             1 * (size.width / 10) // 첫번째 마디 시작점
@@ -96,10 +91,9 @@ fun DrawNotes(noteType: List<Int>, location: Int, modifier: Modifier = Modifier)
     }
 }
 
+/**피드백 노트를 받아와 화면에 빨간색으로 보여주는 함수*/
 @Composable
 fun DrawFeedBackNotes(feedbackNoteList: List<Int>?, location: Int, modifier: Modifier) {
-    Log.d("processbar", "DrawFeedBackNotes")
-
     if (!feedbackNoteList.isNullOrEmpty()) {
         Canvas(modifier = modifier) {
             val startX_measure = 1 * (size.width / 10) // 첫번째 마디 시작점
@@ -135,15 +129,38 @@ fun DrawFeedBackNotes(feedbackNoteList: List<Int>?, location: Int, modifier: Mod
     }
 }
 
+/**녹음 후 흐른 시간(초)을 받아와 진행바를 그려주는 함수*/
+@Composable
+fun DrawProcessBar(seconds: Double, modifier: Modifier) {
+    Canvas(modifier = modifier) {
+        val startX_measure = 1 * (size.width / 10) // 첫번째 마디 시작점
+        val measure_width = 8 * (size.width / 10) // 두 마디 넓이
+        val startY = 0f // 진행바 그리기가 시작되는 Y 지점
+        val endY = size.height // 진행바 그리기가 끝나는 Y 지점
+
+        val process = seconds / 5.0 // 녹음 진행 후 얼마나 지났는지
+
+        val xOffset = (startX_measure + process * measure_width).toFloat()
+
+        drawLine(
+            color = Color.Blue,
+            start = Offset(x = xOffset, y = startY),
+            end = Offset(x = xOffset, y = endY),
+            strokeWidth = 10f
+        )
+
+    }
+}
+
+/**사용자에게 코드를 보여주는 함수*/
 @Composable
 fun ShowChords(viewModel: MyViewModel, modifier: Modifier) {
-    Log.d("processbar", "ShowChords")
     /** viewModel의 recordSecond를 관찰*/
-    val recordSecondState = viewModel.recordSecond.collectAsState()
-    val shownChordState1 = viewModel.shownChord1.collectAsState()
-    val shownChordState2 = viewModel.shownChord2.collectAsState()
+    val recordSecondState = viewModel.recordSecond.collectAsState() // 초
+    val shownChordState1 = viewModel.shownChord1.collectAsState() // 마디1에 보여주는 코드
+    val shownChordState2 = viewModel.shownChord2.collectAsState() // 마디2에 보여주는 코드
 
-    if (recordSecondState.value == 0.0) { // 녹음중이 아닐 때만 그림, 녹음중 유무 변수 추가해서 로직 수정 필요
+    if (recordSecondState.value == 0.0 || recordSecondState.value == 5.0) { // TODO : 녹음중이 아닐 때만 그림, 녹음중 유무 변수 추가해서 로직 수정 필요
         viewModel.updateChords(
             getRandomChord(viewModel),
             getRandomChord(viewModel)
@@ -177,8 +194,7 @@ fun ShowChords(viewModel: MyViewModel, modifier: Modifier) {
     }
 }
 
-
-/// 랜덤으로 코드를 가져오는 함수
+/** 랜덤으로 코드를 가져오는 함수*/
 fun getRandomChord(viewModel: MyViewModel): String {
     val randomInt = Random.nextInt(1, 19)
 

@@ -16,35 +16,40 @@ class MyViewModel : ViewModel() {
 
     /**보여주는 악보, 사용자가 친 것과 비교해서 정답인지 알려주기 위해 필요*/
     private var _shownNoteList = MutableStateFlow(listOf<Int>())
-    val shownNoteList : StateFlow<List<Int>> = _shownNoteList
+    val shownNoteList: StateFlow<List<Int>> = _shownNoteList
 
     /**마디1에 보여주는 코드, 사용자가 친 것과 비교해서 정답인지 알려주기 위해 필요*/
     private var _shownChord1 = MutableStateFlow<String>("")
-    val shownChord1 : StateFlow<String> = _shownChord1
+    val shownChord1: StateFlow<String> = _shownChord1
 
     /**마디2에 보여주는 코드, 사용자가 친 것과 비교해서 정답인지 알려주기 위해 필요*/
     private var _shownChord2 = MutableStateFlow<String>("")
-    val shownChord2 : StateFlow<String> = _shownChord2
+    val shownChord2: StateFlow<String> = _shownChord2
 
+    /**녹음이 시작하고 지난 시간, 소수점 첫째자리까지 표시*/
+    private var _recordSecond = MutableStateFlow<Double>(0.0)
+    val recordSecond: StateFlow<Double> = _recordSecond
+
+    /**녹음중 유무*/
+    private var _isRecording = MutableStateFlow<Boolean>(true)
+    val isRecording: StateFlow<Boolean> = _isRecording
+
+    /****************************   함수들 **************************************/
+
+    /**사용자에게 보여줄 코드를 업데이트 해주는 함수*/
     fun updateChords(chord1: String, chord2: String) {
         _shownChord1.value = chord1
         _shownChord2.value = chord2
     }
 
-    /**녹음이 시작하고 지난 시간, 소수점 첫째자리까지 표시*/
-    private var _recordSecond = MutableStateFlow<Double>(0.0)
-    val recordSecond : StateFlow<Double> = _recordSecond
-
-    /**녹음중 유무*/
-    private var _isRecording = MutableStateFlow<Boolean>(true)
-    val isRecording : StateFlow<Boolean> = _isRecording
-
+    /**연산 후 피드백 노트 리스트를 업데이트 해주는 함수*/
     fun updateFeedbackNoteList(newList: List<Int>) {
         _feedbackNoteList.value = newList
-        Log.d("processbar","updateFeedbackNoteList // feedbackNoteList.value ${feedbackNoteList.value}")
+        Log.d("processbar", "updateFeedbackNoteList $newList")
     }
 
-    fun updateRecordSecond(newSecond: Double){
+    /**녹음 진행 정도(초)를 업데이트 해주는 함수*/
+    fun updateRecordSecond(newSecond: Double) {
         _recordSecond.value = newSecond
     }
 }

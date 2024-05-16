@@ -2,6 +2,7 @@ package com.example.tarsos_example
 
 import DrawFeedBackNotes
 import DrawNotes
+import DrawProcessBar
 import DrawSheet
 import ShowChords
 import android.content.pm.PackageManager
@@ -140,7 +141,6 @@ class MainActivity : ComponentActivity() {
                     .fillMaxWidth()
                     .height(200.dp),
             ) {
-
                 DrawSheet(modifier = Modifier.matchParentSize()) // 악보 그림
                 DrawNotes(
                     noteType = NoteTypes.note_1010, // 예시 음표 타입 리스트
@@ -160,6 +160,10 @@ class MainActivity : ComponentActivity() {
                     feedbackNoteList = feedbackNoteList.value, location = 1, modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
+                )
+                DrawProcessBar(
+                    seconds = recordSecond.value,
+                    modifier = Modifier.matchParentSize()
                 )
             }
         }
