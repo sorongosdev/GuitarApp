@@ -91,7 +91,6 @@ fun DrawNotes(noteType: List<Int>, location: Int, modifier: Modifier = Modifier)
 
 @Composable
 fun DrawFeedBackNotes(feedbackNoteList: List<Int>?, location: Int, modifier: Modifier) {
-    Log.d("undraw", "DrawFeedBackNotes, List length: ${feedbackNoteList?.size}")
     if (!feedbackNoteList.isNullOrEmpty()) {
         Canvas(modifier = modifier) {
             val startX_measure = 1 * (size.width / 10) // 첫번째 마디 시작점
@@ -119,7 +118,7 @@ fun DrawFeedBackNotes(feedbackNoteList: List<Int>?, location: Int, modifier: Mod
                         color = Color.Red,
                         start = start,
                         end = end,
-                        strokeWidth = 100f
+                        strokeWidth = 20f
                     )
                 }
             }

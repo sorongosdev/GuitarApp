@@ -18,16 +18,20 @@ class MyViewModel : ViewModel() {
     private var _shownNoteList = MutableStateFlow(listOf<Int>())
     val shownNoteList : StateFlow<List<Int>> = _shownNoteList
 
-    /**보여주는 코드, 사용자가 친 것과 비교해서 정답인지 알려주기 위해 필요*/
+    /**마디1에 보여주는 코드, 사용자가 친 것과 비교해서 정답인지 알려주기 위해 필요*/
     private var _shownChord1 = MutableStateFlow<Int>(0)
     val shownChord1 : StateFlow<Int> = _shownChord1
 
+    /**마디2에 보여주는 코드, 사용자가 친 것과 비교해서 정답인지 알려주기 위해 필요*/
     private var _shownChord2 = MutableStateFlow<Int>(0)
     val shownChord2 : StateFlow<Int> = _shownChord1
 
+    private var _recordSecond = MutableStateFlow<Double>(0.0)
+    val recordSecond : StateFlow<Double> = _recordSecond
+
     fun updateFeedbackNoteList(newList: List<Int>) {
         _feedbackNoteList.value = newList
-        Log.d("undraw","updateFeedbackNoteList // feedbackNoteList.value ${feedbackNoteList.value}")
+        Log.d("processbar","updateFeedbackNoteList // feedbackNoteList.value ${feedbackNoteList.value}")
     }
 
     fun updateShownChord1(newInt: Int) {
@@ -36,5 +40,9 @@ class MyViewModel : ViewModel() {
 
     fun updateShownChord2(newInt: Int) {
         _shownChord2.value = newInt
+    }
+
+    fun updateRecordSecond(newSecond: Double){
+        _recordSecond.value = newSecond
     }
 }

@@ -52,6 +52,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
@@ -63,6 +64,7 @@ class MainActivity : ComponentActivity() {
 
     // noteListState를 정의하고 초기값을 빈 리스트로 설정합니다.
     val feedbackNoteListState = MutableStateFlow(List(25) { 0 })
+    val recordSecondState = MutableStateFlow<Double>(0.0)
 
     // ViewModel 인스턴스를 가져오기
 //    private val viewModel by viewModels<MyViewModel>()
@@ -85,26 +87,33 @@ class MainActivity : ComponentActivity() {
 
         // ViewModel의 feedbackNoteList StateFlow 관찰
         lifecycleScope.launch {
-            Log.d("undraw", "lifecycleScope.launch")
-            // repeatOnLifecycle을 사용하여 STARTED 상태일 때만 collect가 실행되도록 합니다.
+            // repeatOnLifecycle을 사용하여 STARTED 상태일 때만 collect가 실행되도록
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.feedbackNoteList.collect { noteList ->
-                    feedbackNoteListState.value = noteList
-                    Log.d("undraw", "collect, noteList.size ${noteList.size}")
+                launch {
+                    viewModel.feedbackNoteList.collect { noteList ->
+                        feedbackNoteListState.value = noteList
+                    }
+                }
+                launch {
+                    viewModel.recordSecond.collect { recordSecond ->
+                        recordSecondState.value = recordSecond
+                    }
                 }
             }
         }
+
 
         setContent {
             Tarsos_exampleTheme {
 
                 val feedbackNoteList by feedbackNoteListState.collectAsState()
+                val recordSecond by recordSecondState.collectAsState()
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainActivityUI(feedbackNoteList = feedbackNoteList, name = "Android")
+                    MainActivityUI(feedbackNoteList = feedbackNoteList,recordSecond = recordSecond, name = "Android")
                     SetupTarsosDSP()
                 }
             }
@@ -115,7 +124,7 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun MainActivityUI(feedbackNoteList: List<Int>, name: String, modifier: Modifier = Modifier) {
+    fun MainActivityUI(feedbackNoteList: List<Int>,recordSecond: Double, name: String, modifier: Modifier = Modifier) {
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Top
@@ -124,7 +133,7 @@ class MainActivity : ComponentActivity() {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = "text test")
+                Text(text = recordSecond.toString())
                 FloatingActionButton(
                     onClick = { audioProcessorHandler.SetupAudioProcessing(viewModel) },
 

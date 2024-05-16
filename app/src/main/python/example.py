@@ -818,6 +818,7 @@ def main(wave_bytes):
         if difference not in filtered_values:
             results[non_zero_indices[i]] = 0
     print(results)
+    return results
 
     # print(all_freq_num)
 
