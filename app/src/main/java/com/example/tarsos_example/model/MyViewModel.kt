@@ -1,4 +1,4 @@
-package com.example.tarsos_example
+package com.example.tarsos_example.model
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -31,12 +31,16 @@ class MyViewModel : ViewModel() {
     val recordSecond: StateFlow<Double> = _recordSecond
 
     /**녹음이 시작하고 지난 시간, 소수점 첫째자리까지 표시*/
-    private var _countDownSecond = MutableStateFlow<Int>(5)
+    private var _countDownSecond = MutableStateFlow<Int>(4)
     val countDownSecond: StateFlow<Int> = _countDownSecond
 
     /**녹음중 유무*/
     private var _isRecording = MutableStateFlow<Boolean>(false)
     val isRecording: StateFlow<Boolean> = _isRecording
+
+    /**비프음 출력 유무*/
+    private var _isBeeping = MutableStateFlow<Boolean>(false)
+    val isBeeping: StateFlow<Boolean> = _isBeeping
 
     /****************************   함수들 **************************************/
 
@@ -63,13 +67,18 @@ class MyViewModel : ViewModel() {
     }
 
     /**녹음중 유무 변수를 세팅*/
-    fun updateRecordingState(isRecording: Boolean){
+    fun updateRecordingState(isRecording: Boolean) {
         _isRecording.value = isRecording
     }
 
+    /**녹음중 유무 변수를 세팅*/
+    fun updateBeepingState(isBeeping: Boolean) {
+        _isBeeping.value = isBeeping
+    }
+
     /**init 버튼을 눌렀을 때, 초를 다시 세팅*/
-    fun init(){
-        _countDownSecond.value = 5
+    fun init() {
+        _countDownSecond.value = 4
         _recordSecond.value = 0.0
     }
 }

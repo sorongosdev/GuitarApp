@@ -3,20 +3,16 @@
 *
 * Canvas 를 이용해서 악보를 그려주는 부분
 * *******************/
-import android.util.Log
 import androidx.compose.foundation.Canvas
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
-import com.example.tarsos_example.MyViewModel
+import com.example.tarsos_example.model.MyViewModel
 import com.example.tarsos_example.consts.ChordTypes
 import kotlin.math.sqrt
 import kotlin.random.Random
@@ -162,7 +158,7 @@ fun ShowChords(viewModel: MyViewModel, modifier: Modifier) {
     val shownChordState2 = viewModel.shownChord2.collectAsState() // 마디2에 보여주는 코드
     val isRecordingState = viewModel.isRecording.collectAsState() // 마디2에 보여주는 코드
 
-    if (!(isRecordingState.value) && countDownSecondState.value == 5) {
+    if (!(isRecordingState.value) && countDownSecondState.value == 4) { // 녹음중이지 않으면서, 카운트다운되고 있지 않는 상태라면
         viewModel.updateChords(
             getRandomChord(viewModel),
             getRandomChord(viewModel)
