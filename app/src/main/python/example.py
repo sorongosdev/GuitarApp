@@ -11,10 +11,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import wave
 import math
-import io
 
 path     = "./"
-filename = '100-E7-DUDU.wav'
+filename = '110-C7-DXDU.wav'
 
 note_threshold = 5_000.0    # 120   # 50_000.0   #  3_000.0
 
@@ -82,7 +81,7 @@ def divide_buffer_into_non_overlapping_chunks(buffer, max_len): # max_len -> fft
 def getFFT(data, rate):
     # Returns fft_freq and fft, fft_res_len.
     len_data = len(data)                # 입력 데이터의 길이 계산
-    data = data * np.hamming(len_data)  # 입력 데이터에 hamming_window를 적용하여 스펙트럼의 누설을 감소
+    data = data * np.blackman(len_data)  # 입력 데이터에 hamming_window를 적용하여 스펙트럼의 누설을 감소
 
     # fft 연산 후 magnitude 배열
     fft = np.fft.rfft(data)             # 입력 데이터에 대해 실수 fft를 수행한다. fft의 결과로 복소수 numpy 배열을 반환한다.
@@ -617,6 +616,15 @@ def to_str_f4(value):
     # Returns a string with a float without decimals.
     return "{0:.4f}".format(value)
 
+def visualize_all_freqs(chunk_num, all_freqs):
+    plt.figure(figsize=(10, 4))
+    freqs, values = zip(*all_freqs)
+    plt.plot(freqs, values)
+    plt.title(f'Chunk {chunk_num} - Frequency vs Value')
+    plt.xlabel('Frequency (Hz)')
+    plt.ylabel('Value')
+    plt.grid(True)
+    plt.show()
 
 def main(wave_bytes):
     print("\nPolyphonic note detector\n")
@@ -701,7 +709,6 @@ def main(wave_bytes):
         final_chord = find_matching_chord_for_a_chunk(nearest_key, chunks_top_results, guitar_chords_notes)
         print(final_chord, "코드")
         all_chords.append(final_chord)
-
         all_freq_num.append(len(all_freqs))
 
         chunk_num += 1
@@ -819,7 +826,20 @@ def main(wave_bytes):
             results[non_zero_indices[i]] = 0
     print(results)
 
-    # print(all_freq_num)
+    print(all_freq_num)
+
+    # chunk 순서(시간)와 value를 분리하여 리스트로 저장
+    chunk_order = [x[0] for x in all_values]  # x축: chunk 순서
+    values = [x[1] for x in all_values]  # y축: value
+
+    # Plot 생성
+    plt.figure(figsize=(15, 7))  # plot 크기 설정
+    plt.plot(chunk_order, values, marker='o', linestyle='-', color='b')  # chunk 순서에 따른 value를 선과 점으로 표시
+    plt.title('Max Values of each chunks ' + filename)  # plot 제목
+    plt.xlabel('Chunk num')  # x축 라벨
+    plt.ylabel('Value')  # y축 라벨
+    plt.grid(True)  # 그리드 표시
+    plt.show()  # plot 보여주기
 
 if __name__ == "__main__":
     main()
