@@ -11,6 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import wave
 import math
+import io
 
 path     = "./"
 filename = '110-C7-DXDU.wav'
