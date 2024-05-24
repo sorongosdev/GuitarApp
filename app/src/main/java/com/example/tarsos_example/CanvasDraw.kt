@@ -3,6 +3,7 @@
 *
 * Canvas 를 이용해서 악보를 그려주는 부분
 * *******************/
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -43,6 +44,32 @@ fun DrawSheet(modifier: Modifier = Modifier) {
             end = Offset(x = 9 * (size.width / 10), y = threeQuartersY), // 가로줄 끝점 조정
             strokeWidth = Stroke.DefaultMiter
         )
+    }
+}
+
+@Composable
+fun DrawAll(modifier: Modifier = Modifier) {
+    Log.d("div","drawAll")
+    Canvas(modifier = modifier) {
+        val startX_measure = 1 * (size.width / 10) // 첫번째 마디 시작점
+
+        val measure_width = 8 * (size.width / 10) // 두 마디 넓이
+        val startY = size.height * 3 / 5 // div가 시작되는 Y지점
+        val endY = size.height * 4 / 5 // 꼬리가 끝나는 Y지점
+
+
+        for (i in 1..24) {
+            if (NoteTypes.note_feedback[i] == 1) { // 첫번째 마디 그리기
+                val xOffset1 = startX_measure + i * (measure_width / 25) // 음표가 그려지는 곳
+
+                drawLine(
+                    color = Color.Green,
+                    start = Offset(x = xOffset1, y = startY),
+                    end = Offset(x = xOffset1, y = endY),
+                    strokeWidth = Stroke.DefaultMiter
+                )
+            }
+        }
     }
 }
 

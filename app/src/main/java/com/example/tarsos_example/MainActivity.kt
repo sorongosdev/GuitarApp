@@ -1,5 +1,6 @@
 package com.example.tarsos_example
 
+import DrawAll
 import DrawFeedBackNotes
 import DrawNotes
 import DrawProcessBar
@@ -154,11 +155,16 @@ class MainActivity : ComponentActivity() {
                         .fillMaxWidth()
                         .height(200.dp)
                 ) // 음표 그림
+                DrawAll(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp))
+
                 DrawFeedBackNotes(
                     feedbackNoteList = feedbackNoteList.value, location = 1, modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
                 )
+
                 DrawProcessBar(
                     seconds = recordSecond.value,
                     modifier = Modifier.matchParentSize()
