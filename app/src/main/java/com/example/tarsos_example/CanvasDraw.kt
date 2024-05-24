@@ -134,7 +134,7 @@ fun DrawProcessBar(seconds: Double, modifier: Modifier) {
         val startY = 0f // 진행바 그리기가 시작되는 Y 지점
         val endY = size.height // 진행바 그리기가 끝나는 Y 지점
 
-        val process = seconds / 5.0 // 녹음 진행 후 얼마나 지났는지
+        val process = seconds / 4.8 // 녹음 진행 후 얼마나 지났는지
 
         val xOffset = (startX_measure + process * measure_width).toFloat()
 

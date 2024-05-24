@@ -98,7 +98,7 @@ class AudioProcessorHandler(private val context: Context) {
             viewModel.updateRecordingState(isRecording = true)
 
             // 5초 동안 진행 상황을 로그로 기록
-            val totalDelay = 5000L // 총 지연 시간
+            val totalDelay = 4800L // 총 지연 시간
             val interval = 100L // 로그를 기록할 간격 시간
             var elapsedTime = 0L // 경과 시간
             while (elapsedTime < totalDelay) {
