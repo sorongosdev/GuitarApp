@@ -15,8 +15,11 @@ class MyViewModel : ViewModel() {
     val feedbackNoteList: StateFlow<List<Int>> = _feedbackNoteList
 
     /**보여주는 악보, 사용자가 친 것과 비교해서 정답인지 알려주기 위해 필요*/
-    private var _shownNoteList = MutableStateFlow(listOf<Int>())
-    val shownNoteList: StateFlow<List<Int>> = _shownNoteList
+    private var _shownNote1 = MutableStateFlow(listOf<Int>())
+    val shownNote1: StateFlow<List<Int>> = _shownNote1
+
+    private var _shownNote2 = MutableStateFlow(listOf<Int>())
+    val shownNote2: StateFlow<List<Int>> = _shownNote2
 
     /**마디1에 보여주는 코드, 사용자가 친 것과 비교해서 정답인지 알려주기 위해 필요*/
     private var _shownChord1 = MutableStateFlow<String>("")
@@ -43,6 +46,11 @@ class MyViewModel : ViewModel() {
     val isBeeping: StateFlow<Boolean> = _isBeeping
 
     /****************************   함수들 **************************************/
+    /**사용자에게 보여줄 음표 리스트를 업데이트 해주는 함수*/
+    fun updateNotes(note1: List<Int>, note2: List<Int>){
+        _shownNote1.value = note1
+        _shownNote2.value = note2
+    }
 
     /**사용자에게 보여줄 코드를 업데이트 해주는 함수*/
     fun updateChords(chord1: String, chord2: String) {

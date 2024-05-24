@@ -40,6 +40,7 @@ import com.example.tarsos_example.consts.NoteTypes
 import com.example.tarsos_example.model.MyViewModel
 import java.io.File
 import java.io.IOException
+import kotlin.random.Random
 
 var tarsosDSPAudioFormat: TarsosDSPAudioFormat? = null
 
@@ -111,14 +112,17 @@ class MainActivity : ComponentActivity() {
                 }
                 FloatingActionButton(
                     onClick = { audioProcessorHandler.SetupAudioProcessing(viewModel) }
-                    ) {
+                ) {
                     Text(
                         text = "연주 시작",
                         style = TextStyle(fontSize = 50.sp)
                     )
                 }
             }
-            Text(text = "Count Down : ${countDownSecond.value}", style = TextStyle(fontSize = 20.sp))
+            Text(
+                text = "Count Down : ${countDownSecond.value}",
+                style = TextStyle(fontSize = 20.sp)
+            )
 
             Spacer(modifier = Modifier.fillMaxHeight(0.1f)) // 전체의 10% 공백
 
@@ -137,15 +141,15 @@ class MainActivity : ComponentActivity() {
             ) {
                 DrawSheet(modifier = Modifier.matchParentSize()) // 악보 그림
                 DrawNotes(
-                    noteType = NoteTypes.note_1010, // 예시 음표 타입 리스트
-                    location = 2,
+                    viewModel = viewModel,
+                    location = 1,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
                 ) // 음표 그림
                 DrawNotes(
-                    noteType = NoteTypes.note_1011, // 예시 음표 타입 리스트
-                    location = 1,
+                    viewModel = viewModel,
+                    location = 2,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
@@ -159,9 +163,14 @@ class MainActivity : ComponentActivity() {
                     seconds = recordSecond.value,
                     modifier = Modifier.matchParentSize()
                 )
+                //TODO: 음표 3개 중 2개 랜덤 표출
+
+                //TODO: 그자리에 정답이면 초록색, 틀리면 빨간색으로
             }
         }
     }
+
+
 
     private fun requestRecordAudioPermission() {
         if (ContextCompat.checkSelfPermission(

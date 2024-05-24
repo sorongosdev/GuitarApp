@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import com.example.tarsos_example.model.MyViewModel
 import com.example.tarsos_example.consts.ChordTypes
+import com.example.tarsos_example.consts.NoteTypes
 import kotlin.math.sqrt
 import kotlin.random.Random
 
@@ -47,13 +48,20 @@ fun DrawSheet(modifier: Modifier = Modifier) {
 
 /**noteType, 그리는 위치(1또는 2)를 받아 음표를 그려주는 함수*/
 @Composable
-fun DrawNotes(noteType: List<Int>, location: Int, modifier: Modifier = Modifier) {
+fun DrawNotes(viewModel: MyViewModel, location: Int, modifier: Modifier = Modifier) {
+    val countDownSecondState = viewModel.countDownSecond.collectAsState() // 초
+    val isRecordingState = viewModel.isRecording.collectAsState() // 마디2에 보여주는 코드
+
+    if (!(isRecordingState.value) && countDownSecondState.value == 4) { // 녹음중이지 않으면서, 카운트다운되고 있지 않는 상태라면
+        viewModel.updateNotes(
+            getRandomNote(),
+            getRandomNote()
+        )
+    }
     Canvas(modifier = modifier) {
-        val startX_measure = if (location == 1) {
-            1 * (size.width / 10) // 첫번째 마디 시작점
-        } else {
-            5 * (size.width / 10) // 두번째 마디 시작점
-        }
+        val startX_measure1 = 1 * (size.width / 10) // 첫번째 마디 시작점
+        val startX_measure2 = 5 * (size.width / 10) // 두번째 마디 시작점
+
         val measure_width = 4 * (size.width / 10) // 한 마디 넓이
         val startY_tail = size.height * 1 / 5 // 꼬리가 시작되는 Y지점
         val endY_tail = size.height * 4 / 5 // 꼬리가 끝나는 Y지점
@@ -63,19 +71,19 @@ fun DrawNotes(noteType: List<Int>, location: Int, modifier: Modifier = Modifier)
         // for 문 간소화
         listOf(1, 4, 7, 10).forEach { i ->
             val noteIndex = (i - 1) / 3 // { 0,1 / 1,4 / 2,7 / 3,10 } =======> { 3n+1 = i }
-            if (noteType[noteIndex] == 1) {
-                val xOffset = startX_measure + i * (measure_width / 13) // 음표가 그려지는 곳
+            if (viewModel.shownNote1.value[noteIndex] == 1) { // 첫번째 마디 그리기
+                val xOffset1 = startX_measure1 + i * (measure_width / 13) // 음표가 그려지는 곳
 
                 drawLine(
                     color = Color.Black,
-                    start = Offset(x = xOffset + lineLength / 2, y = startY_tail),
-                    end = Offset(x = xOffset + lineLength / 2, y = endY_tail - lineLength / 2),
+                    start = Offset(x = xOffset1 + lineLength / 2, y = startY_tail),
+                    end = Offset(x = xOffset1 + lineLength / 2, y = endY_tail - lineLength / 2),
                     strokeWidth = Stroke.DefaultMiter
                 )
 
                 // 45도 기울인 선을 그리기 위한 시작점과 끝점 계산
-                val start = Offset(x = xOffset - lineLength / 2, y = centerY + lineLength / 2)
-                val end = Offset(x = xOffset + lineLength / 2, y = centerY - lineLength / 2)
+                val start = Offset(x = xOffset1 - lineLength / 2, y = centerY + lineLength / 2)
+                val end = Offset(x = xOffset1 + lineLength / 2, y = centerY - lineLength / 2)
                 drawLine(
                     color = Color.Black,
                     start = start,
@@ -83,6 +91,69 @@ fun DrawNotes(noteType: List<Int>, location: Int, modifier: Modifier = Modifier)
                     strokeWidth = Stroke.DefaultMiter
                 )
             }
+
+            if (viewModel.shownNote2.value[noteIndex] == 1) { // 첫번째 마디 그리기
+                val xOffset2 = startX_measure2 + i * (measure_width / 13) // 음표가 그려지는 곳
+
+                drawLine(
+                    color = Color.Black,
+                    start = Offset(x = xOffset2 + lineLength / 2, y = startY_tail),
+                    end = Offset(x = xOffset2 + lineLength / 2, y = endY_tail - lineLength / 2),
+                    strokeWidth = Stroke.DefaultMiter
+                )
+
+                // 45도 기울인 선을 그리기 위한 시작점과 끝점 계산
+                val start = Offset(x = xOffset2 - lineLength / 2, y = centerY + lineLength / 2)
+                val end = Offset(x = xOffset2 + lineLength / 2, y = centerY - lineLength / 2)
+                drawLine(
+                    color = Color.Black,
+                    start = start,
+                    end = end,
+                    strokeWidth = Stroke.DefaultMiter
+                )
+            }
+        }
+    }
+}
+
+/**사용자에게 코드를 보여주는 함수*/
+@Composable
+fun ShowChords(viewModel: MyViewModel, modifier: Modifier) {
+    val countDownSecondState = viewModel.countDownSecond.collectAsState() // 초
+    val shownChordState1 = viewModel.shownChord1.collectAsState() // 마디1에 보여주는 코드
+    val shownChordState2 = viewModel.shownChord2.collectAsState() // 마디2에 보여주는 코드
+    val isRecordingState = viewModel.isRecording.collectAsState() // 마디2에 보여주는 코드
+
+    if (!(isRecordingState.value) && countDownSecondState.value == 4) { // 녹음중이지 않으면서, 카운트다운되고 있지 않는 상태라면
+        viewModel.updateChords(
+            getRandomChord(),
+            getRandomChord()
+        )
+    }
+
+    // shouldDrawText가 true일 때 Canvas 그리기
+    Canvas(modifier = modifier) {
+        val startX_measure1 = 1 * (size.width / 10) // 첫번째 마디 시작점
+        val startX_measure2 = 5 * (size.width / 10) // 두번째 마디 시작점
+
+        val paint = android.graphics.Paint().apply {
+            color = android.graphics.Color.BLACK // 텍스트 색상 설정
+            textSize = 40f // 텍스트 크기 설정
+        }
+
+        drawIntoCanvas { canvas ->
+            canvas.nativeCanvas.drawText(
+                shownChordState1.value,
+                startX_measure1, // x 좌표
+                0f, // y 좌표
+                paint // Paint 객체
+            )
+            canvas.nativeCanvas.drawText(
+                shownChordState2.value,
+                startX_measure2, // x 좌표
+                0f, // y 좌표
+                paint // Paint 객체
+            )
         }
     }
 }
@@ -134,7 +205,7 @@ fun DrawProcessBar(seconds: Double, modifier: Modifier) {
         val startY = 0f // 진행바 그리기가 시작되는 Y 지점
         val endY = size.height // 진행바 그리기가 끝나는 Y 지점
 
-        val process = seconds / 5.0 // 녹음 진행 후 얼마나 지났는지
+        val process = seconds / 4.8 // 녹음 진행 후 얼마나 지났는지
 
         val xOffset = (startX_measure + process * measure_width).toFloat()
 
@@ -148,54 +219,24 @@ fun DrawProcessBar(seconds: Double, modifier: Modifier) {
     }
 }
 
-/**사용자에게 코드를 보여주는 함수*/
-@Composable
-fun ShowChords(viewModel: MyViewModel, modifier: Modifier) {
-    /** viewModel의 recordSecond를 관찰*/
-    val recordSecondState = viewModel.recordSecond.collectAsState() // 초
-    val countDownSecondState = viewModel.countDownSecond.collectAsState() // 초
-    val shownChordState1 = viewModel.shownChord1.collectAsState() // 마디1에 보여주는 코드
-    val shownChordState2 = viewModel.shownChord2.collectAsState() // 마디2에 보여주는 코드
-    val isRecordingState = viewModel.isRecording.collectAsState() // 마디2에 보여주는 코드
-
-    if (!(isRecordingState.value) && countDownSecondState.value == 4) { // 녹음중이지 않으면서, 카운트다운되고 있지 않는 상태라면
-        viewModel.updateChords(
-            getRandomChord(viewModel),
-            getRandomChord(viewModel)
-        )
-    }
-
-    // shouldDrawText가 true일 때 Canvas 그리기
-    Canvas(modifier = modifier) {
-        val startX_measure1 = 1 * (size.width / 10) // 첫번째 마디 시작점
-        val startX_measure2 = 5 * (size.width / 10) // 두번째 마디 시작점
-
-        val paint = android.graphics.Paint().apply {
-            color = android.graphics.Color.BLACK // 텍스트 색상 설정
-            textSize = 40f // 텍스트 크기 설정
-        }
-
-        drawIntoCanvas { canvas ->
-            canvas.nativeCanvas.drawText(
-                shownChordState1.value,
-                startX_measure1, // x 좌표
-                0f, // y 좌표
-                paint // Paint 객체
-            )
-            canvas.nativeCanvas.drawText(
-                shownChordState2.value,
-                startX_measure2, // x 좌표
-                0f, // y 좌표
-                paint // Paint 객체
-            )
-        }
-    }
-}
-
 /** 랜덤으로 코드를 가져오는 함수*/
-fun getRandomChord(viewModel: MyViewModel): String {
+fun getRandomChord(): String {
     val randomInt = Random.nextInt(1, 19)
 
     val randomChord = ChordTypes.chords_numbers[randomInt] // 보여줄 코드를 인덱스를 통해 맵에서 찾아줌
     return randomChord!!
+}
+
+/** 랜덤으로 노트를 가져오는 함수*/
+fun getRandomNote(): List<Int> {
+    val randomInt = Random.nextInt(1, 3)
+
+    return when (randomInt) {
+        1 -> NoteTypes.note_1111
+        2 -> NoteTypes.note_1011
+        3 -> NoteTypes.note_1010
+        else -> {
+            listOf<Int>(0, 0, 0, 0)
+        }
+    }
 }
