@@ -58,9 +58,9 @@ fun DrawAll(modifier: Modifier = Modifier) {
         val endY = size.height * 4 / 5 // 꼬리가 끝나는 Y지점
 
 
-        for (i in 1..24) {
+        for (i in 1..25) {
             if (NoteTypes.note_feedback[i] == 1) { // 첫번째 마디 그리기
-                val xOffset1 = startX_measure + i * (measure_width / 25) // 음표가 그려지는 곳
+                val xOffset1 = startX_measure + i * (measure_width / 26) // 음표가 그려지는 곳
 
                 drawLine(
                     color = Color.Green,

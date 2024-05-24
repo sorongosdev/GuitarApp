@@ -737,19 +737,35 @@ def main(wave_bytes):
     print(peak_chunk_nums)
 
     # 각 숫자로부터 뒤로 3개의 숫자를 포함하는 이중리스트 생성
+    is_it_onetwothree = 1     # peack_chunk_nums가 -1이 나왔을때 -1, 0이 나왔을때 0, 안나왔을때 1로 설정
     if -1 in peak_chunk_nums:
-        extended_peak_chunks = [0, 1, 2]
+        extended_peak_chunks = [1, 2, 3]
+        is_it_onetwothree = -1
+    elif 0 in peak_chunk_nums:
+        extended_peak_chunks = [1, 2, 3]
+        is_it_onetwothree = 0
     else:
         extended_peak_chunks = [[num + i for i in range(3)] for num in peak_chunk_nums]
     print(extended_peak_chunks)
 
+    # 중복되는 [1,2,3] 있으면 하나만 남겨두고 제거
+    unique_extended_peak_chunks = []
+    for chunk in extended_peak_chunks:
+        if chunk not in unique_extended_peak_chunks:
+            unique_extended_peak_chunks.append(chunk)
+    print(unique_extended_peak_chunks)
 
     print("\n---------------코드 확정 과정 및 결과----------------")
     final_chord_list = []
     final_chord_matching_scores = []
     final_chord_matching_scores_list = []
-    for current_target_chunk_nums in extended_peak_chunks:
+    for current_target_chunk_nums in unique_extended_peak_chunks:
         # 1. 해당하는 chunk의 조 결과를 all_keys를 통해 확인하고, 해당하는 chunk의 조를 최종적으로 확정
+
+        if is_it_onetwothree == -1:
+            chunk_target_chunk_nums = [0, 1, 2]
+        elif is_it_onetwothree == 0:
+            chunk_target_chunk_nums = [0, 1, 2]
 
         ## 원하는 chunk별, value 기준 상위 n개 {chunk_num:(freq, value, note_name), ...} 출력
         chunks_top_results = get_chunks_results(all_top_results, current_target_chunk_nums, top_n)
