@@ -124,7 +124,7 @@ fun DrawNotes(viewModel: MyViewModel, location: Int, modifier: Modifier = Modifi
             }
 
             if (viewModel.shownNote2.value[noteIndex] == 1) { // 두번째 마디 그리기
-                val xOffset2 = startX_measure2 + i * (measure_width / (WavConsts.CHUNK_CNT/2+1)) // 음표가 그려지는 곳
+                val xOffset2 = startX_measure2 + i * (measure_width / 13) // 음표가 그려지는 곳
 
                 drawLine(
                     color = Color.Black,
@@ -251,7 +251,7 @@ fun DrawProcessBar(seconds: Double, modifier: Modifier) {
         val startY = 0f // 진행바 그리기가 시작되는 Y 지점
         val endY = size.height // 진행바 그리기가 끝나는 Y 지점
 
-        val process = seconds / (WavConsts.WAV_LENGTH_MS / 100.0) // 녹음 진행 후 얼마나 지났는지
+        val process = seconds / (WavConsts.WAV_LENGTH_MS / 1000.0) // 녹음 진행 후 얼마나 지났는지
 
         val xOffset = (startX_measure + process * measure_width).toFloat()
 

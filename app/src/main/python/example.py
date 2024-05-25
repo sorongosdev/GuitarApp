@@ -331,7 +331,7 @@ def find_nearest_key(found_unique_notes, keys_freq):
         for note in notes:
             if note in found_unique_notes:
                 match_score += 1
-                index = found_unique_notes.index(음표)  # 현재 노트의 found_notes에서의 인덱스
+                index = found_unique_notes.index(note)  # 현재 노트의 found_notes에서의 인덱스
                 current_key_min_index = min(current_key_min_index, index)
 
         # 더 높은 match_score를 가진 조를 찾거나, 동일한 match_score이지만 더 낮은 인덱스를 가진 조를 찾는다
