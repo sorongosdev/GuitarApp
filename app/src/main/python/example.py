@@ -493,37 +493,28 @@ def calculate_increase_differences(sorted_peak_chunks, all_values):
     differences = []
 
     for chunk_num in sorted_peak_chunks:
-        current_chunk_values = []
-        increasing_trend_found = False
+        # 현재 청크 번호의 값 찾기
+        current_value = next(value for c_num, value in all_values if c_num == chunk_num)
 
-        for i in range(len(all_values)):
-            c_num, value = all_values[i]
-            # 현재 청크 번호보다 작은 청크만 고려
-            if c_num < chunk_num:
-                if not current_chunk_values:
-                    current_chunk_values.append(value)
-                else:
-                    _, prev_value = all_values[i-1]
-                    if value > prev_value:
-                        # 증가 추세가 확인되면 이전 값까지만 유지하고 나머지는 삭제
-                        current_chunk_values = [prev_value, value]
-                        increasing_trend_found = True
-                    elif not increasing_trend_found:
-                        # 감소 추세이면 현재 값 추가
-                        current_chunk_values.append(value)
+        # 현재 청크 이전까지의 값들 중에서 증가 추세를 확인
+        previous_values = [value for c_num, value in all_values if c_num < chunk_num]
 
-        if not current_chunk_values:  # 현재 청크 이전 값이 없는 경우, 차이를 계산할 수 없음
-            continue
+        # 증가 추세 시작 지점 찾기
+        start_increase_value = None
+        for i in range(len(previous_values)-1, 0, -1):
+            # 뒤에서부터 확인하여 현재 값이 이전 값보다 작으면 증가 추세 시작점으로 판단
+            if previous_values[i] < previous_values[i-1]:
+                start_increase_value = previous_values[i]
+                break
 
-        # 증가 추세가 시작되는 지점 찾기 (증가하기 전 최소값)
-        min_value_before_increase = min(current_chunk_values)
-
-        # 해당 chunk 번호에 해당하는 value 추출
-        chunk_value = next((value for c_num, value in all_values if c_num == chunk_num), None)
-
-        # 증가 추세가 시작된 지점부터 최대값까지의 차이 계산
-        if chunk_value is not None:
-            difference = chunk_value - min_value_before_increase
+        if start_increase_value is not None:
+            # 차이 계산 후 추가
+            difference = current_value - start_increase_value
+            differences.append(difference)
+        else:
+            # 만약 모든 이전 값들이 증가 추세에 있었다면, 가장 처음 값을 증가 시작점으로 간주
+            start_increase_value = previous_values[0]
+            difference = current_value - start_increase_value
             differences.append(difference)
 
     return differences
@@ -538,7 +529,7 @@ def filter_euphony(differences):
         next_diff = differences[i + 1]
 
         # 현재 원소가 다음 원소보다 크고, 그 차이가 현재 원소의 5%보다 작은 경우 여음으로 판단
-        if current_diff > next_diff and next_diff < current_diff * 0.05:
+        if current_diff > next_diff and next_diff < current_diff * 0.2:
             euphony_indices.append(i+1)  # 다음 원소(여음으로 판단된 원소) 인덱스 저장
 
     # 여음으로 판정된 원소를 제외하고 반환 목록에 추가
@@ -779,8 +770,8 @@ def main(wave_bytes):
     previous_peak_chunk_nums = [chunk[0]-1 for chunk in peak_chunks]
     print(previous_peak_chunk_nums)
 
-    extended_peak_chunks = []
     # 각 숫자로부터 뒤로 3개의 숫자를 포함하는 이중리스트 생성
+    extended_peak_chunks = []
     # is_it_onetwothree = 1  # peack_chunk_nums가 -1이 나왔을때 -1, 0이 나왔을때 0, 안나왔을때 1로 설정
     # -1이나 0이 있을 경우, [1, 2, 3]을 추가
     if -1 in previous_peak_chunk_nums:
@@ -885,8 +876,14 @@ def main(wave_bytes):
     print("\n---------------박자 여음 처리 이후, 코드 및 박자 결과----------------")
     for i, difference in enumerate(differences):
         if difference not in filtered_differences:
-            results[peak_chunk_nums[i]] = 0
+            results[peak_chunk_nums[i]-1] = 0
     print(results)
+
+    # chunk 24에서 peak 값이 나왔을 경우, 23에서 박자를 친것으로 판단이 되는데, 그냥 안친걸로 판단할래
+    # if len(results) < 25:
+    #     # 인덱스 23과 24를 0으로 설정
+    #     results[23] = 0
+    #     results[24] = 0
 
     # 73개 list로 늘리기
     results = expand_results(results)
