@@ -3,6 +3,7 @@ package com.example.tarsos_example
 import DrawDiv
 import DrawProcessBar
 import DrawSheet
+import NewDrawNotes
 import ShowChords
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -145,9 +146,19 @@ class MainActivity : ComponentActivity() {
             ) {
                 DrawSheet(modifier = Modifier.matchParentSize()) // 악보 그림
 
-                DrawDiv(modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp))
+                DrawDiv(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                )
+
+                NewDrawNotes(
+                    viewModel = viewModel,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                )
+
                 DrawProcessBar(
                     seconds = barSecond.value,
                     modifier = Modifier.matchParentSize()
@@ -155,7 +166,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
 
 
     private fun requestRecordAudioPermission() {

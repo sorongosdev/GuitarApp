@@ -49,6 +49,7 @@ fun DrawSheet(modifier: Modifier = Modifier) {
         )
     }
 }
+
 /**악보 구분선 그리는 함수*/
 @Composable
 fun DrawDiv(modifier: Modifier = Modifier) {
@@ -63,7 +64,7 @@ fun DrawDiv(modifier: Modifier = Modifier) {
 
         for (i in 1..CHUNK_CNT) {
             if (NoteTypes.note_feedback[i] == 1) { // 첫번째 마디 그리기
-                val xOffset1 = startX_measure + i * (measure_width / (CHUNK_CNT+1)) // 음표가 그려지는 곳
+                val xOffset1 = startX_measure + i * (measure_width / (CHUNK_CNT + 1)) // 음표가 그려지는 곳
                 drawLine(
                     color = Color.Green,
                     start = Offset(x = xOffset1, y = startY),
@@ -74,6 +75,7 @@ fun DrawDiv(modifier: Modifier = Modifier) {
         }
     }
 }
+
 /**noteType, 그리는 위치(1또는 2)를 받아 음표를 그려주는 함수*/
 @Composable
 fun DrawNotes(viewModel: MyViewModel, location: Int, modifier: Modifier = Modifier) {
@@ -145,7 +147,7 @@ fun DrawNotes(viewModel: MyViewModel, location: Int, modifier: Modifier = Modifi
 }
 
 @Composable
-fun NewDrawNotes(viewModel: MyViewModel, location: Int, modifier: Modifier = Modifier) {
+fun NewDrawNotes(viewModel: MyViewModel, modifier: Modifier = Modifier) {
     val countDownSecondState = viewModel.countDownSecond.collectAsState() // 초
     val isRecordingState = viewModel.isRecording.collectAsState() // 마디2에 보여주는 코드
 
@@ -165,11 +167,12 @@ fun NewDrawNotes(viewModel: MyViewModel, location: Int, modifier: Modifier = Mod
         val centerY = size.height * 4 / 5 // 선의 중심점
         val lineLength = sqrt(2f) * 25f // 45도 각도에서의 선 길이, 대각선 길이 계산
 
-        // for 문 간소화
-        listOf(1, 4, 7, 10).forEach { i ->
-            val noteIndex = (i - 1) / 3 // { 0,1 / 1,4 / 2,7 / 3,10 } =======> { 3n+1 = i }
-            if (viewModel.shownNote1.value[noteIndex] == 1) { // 첫번째 마디 그리기
-                val xOffset1 = startX_measure1 + i * (measure_width / 13) // 음표가 그려지는 곳
+        // 마디1 그리기
+        listOf(2, 8, 14, 20).forEach { i ->
+            val noteIndex =
+                (i - 2) / 6 // { 0,2 / 1,8 / 2,14 / 3,20 }  =====> {6n+2 = i} ===> (i-2)/6
+            if (viewModel.shownNote1.value[noteIndex] == 1) {
+                val xOffset1 = startX_measure1 + i * (measure_width / 25)
 
                 drawLine(
                     color = Color.Black,
@@ -188,20 +191,24 @@ fun NewDrawNotes(viewModel: MyViewModel, location: Int, modifier: Modifier = Mod
                     strokeWidth = Stroke.DefaultMiter
                 )
             }
-
-            if (viewModel.shownNote2.value[noteIndex] == 1) { // 두번째 마디 그리기
-                val xOffset2 = startX_measure2 + i * (measure_width / 13) // 음표가 그려지는 곳
+        }
+        // 마디2 그리기
+        listOf(1, 7, 13, 19).forEach { i ->
+            val noteIndex =
+                (i - 1) / 6 // { 0,1 / 1,7 / 2,13 / 3,19 }  =====> {6n+1 = i} ===> (i-1)/6
+            if (viewModel.shownNote2.value[noteIndex] == 1) {
+                val xOffset1 = startX_measure2 + i * (measure_width / 25)
 
                 drawLine(
                     color = Color.Black,
-                    start = Offset(x = xOffset2 + lineLength / 2, y = startY_tail),
-                    end = Offset(x = xOffset2 + lineLength / 2, y = endY_tail - lineLength / 2),
+                    start = Offset(x = xOffset1 + lineLength / 2, y = startY_tail),
+                    end = Offset(x = xOffset1 + lineLength / 2, y = endY_tail - lineLength / 2),
                     strokeWidth = Stroke.DefaultMiter
                 )
 
                 // 45도 기울인 선을 그리기 위한 시작점과 끝점 계산
-                val start = Offset(x = xOffset2 - lineLength / 2, y = centerY + lineLength / 2)
-                val end = Offset(x = xOffset2 + lineLength / 2, y = centerY - lineLength / 2)
+                val start = Offset(x = xOffset1 - lineLength / 2, y = centerY + lineLength / 2)
+                val end = Offset(x = xOffset1 + lineLength / 2, y = centerY - lineLength / 2)
                 drawLine(
                     color = Color.Black,
                     start = start,
@@ -259,7 +266,7 @@ fun ShowChords(viewModel: MyViewModel, modifier: Modifier) {
 @Composable
 fun DrawFeedBackNotes(feedbackNoteList: List<Int>?, modifier: Modifier) {
     val CHUNK_CNT = WavConsts.CHUNK_CNT
-    val HALF_CHUNK_CNT = CHUNK_CNT/2
+    val HALF_CHUNK_CNT = CHUNK_CNT / 2
     if (!feedbackNoteList.isNullOrEmpty()) {
         Canvas(modifier = modifier) {
             val startX_measure1 = 1 * (size.width / 10) // 첫번째 마디 시작점
@@ -276,11 +283,11 @@ fun DrawFeedBackNotes(feedbackNoteList: List<Int>?, modifier: Modifier) {
             for (i in 1..CHUNK_CNT) {
                 if (i <= (HALF_CHUNK_CNT)) {
                     startX = startX_measure1
-                    xOffset = startX + i * (measure_width / (HALF_CHUNK_CNT+1))
+                    xOffset = startX + i * (measure_width / (HALF_CHUNK_CNT + 1))
 
                 } else {
                     startX = startX_measure2
-                    xOffset = startX + (i - HALF_CHUNK_CNT) * (measure_width / (HALF_CHUNK_CNT+1))
+                    xOffset = startX + (i - HALF_CHUNK_CNT) * (measure_width / (HALF_CHUNK_CNT + 1))
                 }
 
                 if (feedbackNoteList[i] != 0) { // 첫번째 마디 그리기
@@ -311,7 +318,7 @@ fun DrawFeedBackNotes(feedbackNoteList: List<Int>?, modifier: Modifier) {
 /**녹음 후 흐른 시간(초)을 받아와 진행바를 그려주는 함수*/
 @Composable
 fun DrawProcessBar(seconds: Double, modifier: Modifier) {
-    Log.d("startBar","DrawProcessBar")
+    Log.d("startBar", "DrawProcessBar")
     Canvas(modifier = modifier) {
         val startX_measure = 1 * (size.width / 10) // 첫번째 마디 시작점
 //        val startX_measure = 1 * (size.width / 10) // 프로세스바 시작점
