@@ -15,6 +15,7 @@ class MyViewModel : ViewModel() {
     private var _feedbackNoteList = MutableStateFlow(List(WavConsts.CHUNK_CNT+1) { 0 })
     val feedbackNoteList: StateFlow<List<Int>> = _feedbackNoteList
 
+    /**====================================보여지는 악보, 코드========================================*/
     /**보여주는 악보, 사용자가 친 것과 비교해서 정답인지 알려주기 위해 필요*/
     private var _shownNote1 = MutableStateFlow(listOf<Int>())
     val shownNote1: StateFlow<List<Int>> = _shownNote1
@@ -29,7 +30,9 @@ class MyViewModel : ViewModel() {
     /**마디2에 보여주는 코드, 사용자가 친 것과 비교해서 정답인지 알려주기 위해 필요*/
     private var _shownChord2 = MutableStateFlow<String>("")
     val shownChord2: StateFlow<String> = _shownChord2
+    /**===========================================================================================*/
 
+    /**====================================초 관련=================================================*/
     /**녹음이 시작하고 지난 시간, 소수점 첫째자리까지 표시*/
     private var _recordSecond = MutableStateFlow<Double>(0.0)
     val recordSecond: StateFlow<Double> = _recordSecond
@@ -37,6 +40,11 @@ class MyViewModel : ViewModel() {
     /**녹음이 시작하고 지난 시간, 소수점 첫째자리까지 표시*/
     private var _countDownSecond = MutableStateFlow<Int>(4)
     val countDownSecond: StateFlow<Int> = _countDownSecond
+
+    /**프로세스바 유지 시간*/
+    private var _barSecond = MutableStateFlow<Double>(0.0)
+    val barSecond: StateFlow<Double> = _barSecond
+    /**===========================================================================================*/
 
     /**녹음중 유무*/
     private var _isRecording = MutableStateFlow<Boolean>(false)
@@ -62,12 +70,15 @@ class MyViewModel : ViewModel() {
     /**연산 후 피드백 노트 리스트를 업데이트 해주는 함수*/
     fun updateFeedbackNoteList(newList: List<Int>) {
         _feedbackNoteList.value = newList
-        Log.d("countdown", "updateFeedbackNoteList $newList")
     }
 
     /**녹음 진행 정도(초)를 업데이트 해주는 함수*/
     fun updateRecordSecond(newSecond: Double) {
         _recordSecond.value = newSecond
+    }
+
+    fun updateBarSecond(newSecond: Double) {
+        _barSecond.value = newSecond
     }
 
     /**카운트 다운(박자)를 업데이트 해주는 함수*/
