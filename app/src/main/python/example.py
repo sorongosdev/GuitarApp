@@ -20,7 +20,7 @@ note_threshold = 5_000.0    # 120   # 50_000.0   #  3_000.0
 
 # Parameters
 sample_rate  = 44100                     # Sampling Frequency
-fft_len      = 8820  # 8820-100bpm # 8192-110bpm    # Length of the FFT window
+fft_len      = 9900 # 8820-100bpm # 8192-110bpm    # Length of the FFT window
 overlap      = 0.5                       # Hop overlap percentage between windows
 hop_length   = int(fft_len*(1-overlap))  # Number of samples between successive frames
 
