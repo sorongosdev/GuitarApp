@@ -145,7 +145,10 @@ class AudioProcessorHandler(private val context: Context) {
         // 읽은 바이트 데이터를 Python 코드에 전달
         val feedbackNoteListPyObject = waveBytes?.let { bytes ->
             pyObj.callAttr("main", bytes).asList()
+
         }
+
+        Log.d("intErr","feedbackNoteListPyObject ${feedbackNoteListPyObject?.size}")
 
         // feedbackNoteListPyObject를 Kotlin의 List<String>으로 변환
         val feedbackNoteListKotlin: List<Int> =

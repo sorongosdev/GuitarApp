@@ -2,11 +2,8 @@ package com.example.tarsos_example.consts
 
 object WavConsts {
     /**청크 개수*/
-//    const val CHUNK_CNT: Int = 72
     const val CHUNK_CNT: Int = 24
-
-    /**WAV 파일 길이, ms단위*/
-    const val WAV_PERIOD: Long = 4800L
+    const val FEEDBACK_CHUNK_CNT: Int = 72
 
     const val BAR_PERIOD = 5000L
 

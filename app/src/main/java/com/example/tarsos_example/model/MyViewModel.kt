@@ -3,6 +3,7 @@ package com.example.tarsos_example.model
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.tarsos_example.consts.NoteTypes
 import com.example.tarsos_example.consts.WavConsts
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,10 +13,10 @@ import kotlin.coroutines.coroutineContext
 class MyViewModel : ViewModel() {
 
     /**파이썬으로부터 받은 사용자 연주 피드백 리스트*/
-    private var _feedbackNoteList = MutableStateFlow(List(WavConsts.CHUNK_CNT+1) { 0 })
+    private var _feedbackNoteList = MutableStateFlow(List(WavConsts.FEEDBACK_CHUNK_CNT+1) { 0 })
     val feedbackNoteList: StateFlow<List<Int>> = _feedbackNoteList
 
-    /**====================================보여지는 악보, 코드========================================*/
+    /**==============================================================악보, 코드*/
     /**보여주는 악보, 사용자가 친 것과 비교해서 정답인지 알려주기 위해 필요*/
     private var _shownNote1 = MutableStateFlow(listOf<Int>())
     val shownNote1: StateFlow<List<Int>> = _shownNote1
@@ -30,9 +31,13 @@ class MyViewModel : ViewModel() {
     /**마디2에 보여주는 코드, 사용자가 친 것과 비교해서 정답인지 알려주기 위해 필요*/
     private var _shownChord2 = MutableStateFlow<String>("")
     val shownChord2: StateFlow<String> = _shownChord2
-    /**===========================================================================================*/
+    
+    /**정답이 되는 노트*/
+    private var _answerNote = MutableStateFlow(listOf<Int>())
+    val answerNote: StateFlow<List<Int>> = _answerNote
+    /**============================================================================*/
 
-    /**====================================초 관련=================================================*/
+    /**========================================================================초 관련*/
     /**녹음이 시작하고 지난 시간, 소수점 첫째자리까지 표시*/
     private var _recordSecond = MutableStateFlow<Double>(0.0)
     val recordSecond: StateFlow<Double> = _recordSecond
@@ -44,7 +49,7 @@ class MyViewModel : ViewModel() {
     /**프로세스바 유지 시간*/
     private var _barSecond = MutableStateFlow<Double>(0.0)
     val barSecond: StateFlow<Double> = _barSecond
-    /**===========================================================================================*/
+    /**=============================================================================*/
 
     /**녹음중 유무*/
     private var _isRecording = MutableStateFlow<Boolean>(false)
@@ -55,10 +60,26 @@ class MyViewModel : ViewModel() {
     val isBeeping: StateFlow<Boolean> = _isBeeping
 
     /****************************   함수들 **************************************/
+    /**노트 타입별로 길이 4인 리스트를 받아 12개인 리스트로 반환해주는 함수*/
+    private fun match_answer(note: List<Int>): List<Int> {
+        return when(note) {
+            NoteTypes.note_1111 -> NoteTypes.answer_note_1111
+            NoteTypes.note_1011 -> NoteTypes.answer_note_1011
+            NoteTypes.note_1010 -> NoteTypes.answer_note_1010
+            else -> List(12){0} // 해당하는 노트값이 없을 때 0으로 이루어진 리스트 반환
+        }
+    }
+
     /**사용자에게 보여줄 음표 리스트를 업데이트 해주는 함수*/
     fun updateNotes(note1: List<Int>, note2: List<Int>){
         _shownNote1.value = note1
         _shownNote2.value = note2
+
+        val answer_note1 = match_answer(note1)
+        val answer_note2 = match_answer(note2)
+
+        // note1과 note2에 해당하는 정답 리스트를 합쳐서 업데이트
+        _answerNote.value = answer_note1 + answer_note2
     }
 
     /**사용자에게 보여줄 코드를 업데이트 해주는 함수*/
@@ -100,5 +121,6 @@ class MyViewModel : ViewModel() {
     fun init() {
         _countDownSecond.value = 4
         _recordSecond.value = 0.0
+        _barSecond.value = 0.0
     }
 }

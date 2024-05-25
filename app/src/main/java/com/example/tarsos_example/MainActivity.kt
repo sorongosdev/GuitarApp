@@ -1,6 +1,7 @@
 package com.example.tarsos_example
 
 import DrawDiv
+import DrawFeedBackNotes
 import DrawProcessBar
 import DrawSheet
 import NewDrawNotes
@@ -155,6 +156,12 @@ class MainActivity : ComponentActivity() {
                 NewDrawNotes(
                     viewModel = viewModel,
                     modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                )
+
+                DrawFeedBackNotes(
+                    feedbackNoteList = feedbackNoteList.value, modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
                 )
