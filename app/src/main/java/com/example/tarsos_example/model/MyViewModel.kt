@@ -3,6 +3,7 @@ package com.example.tarsos_example.model
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.tarsos_example.consts.WavConsts
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -11,7 +12,7 @@ import kotlin.coroutines.coroutineContext
 class MyViewModel : ViewModel() {
 
     /**파이썬으로부터 받은 사용자 연주 피드백 리스트*/
-    private var _feedbackNoteList = MutableStateFlow(List(25) { 0 })
+    private var _feedbackNoteList = MutableStateFlow(List(WavConsts.CHUNK_CNT+1) { 0 })
     val feedbackNoteList: StateFlow<List<Int>> = _feedbackNoteList
 
     /**보여주는 악보, 사용자가 친 것과 비교해서 정답인지 알려주기 위해 필요*/

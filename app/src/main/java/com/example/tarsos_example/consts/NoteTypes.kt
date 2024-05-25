@@ -11,9 +11,9 @@ object NoteTypes {
 //        1,1,1,1,1, // 5~9
 //        1,1,1,1,1, // 10~14
 //        1,1,1,1,1, // 15~19
-//        1,1,1,1,1,1 // 20~24
+//        1,1,1,1,1,1 // 20~25
 //    )
-    val note_feedback = List(WavConsts.CHUNK_CNT+1){1}
+    val note_feedback = List(WavConsts.CHUNK_CNT+2){1}
 
     val dummyList = listOf<Double>(
         0.6,1.2,1.8,2.4,
