@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.nativeCanvas
 import com.example.tarsos_example.model.MyViewModel
 import com.example.tarsos_example.consts.ChordTypes
 import com.example.tarsos_example.consts.NoteTypes
+import com.example.tarsos_example.consts.WavConsts
 import java.time.Instant
 import java.util.Date
 import kotlin.math.sqrt
@@ -52,6 +53,7 @@ fun DrawSheet(modifier: Modifier = Modifier) {
 @Composable
 fun DrawAll(modifier: Modifier = Modifier) {
     Log.d("div", "drawAll")
+    val CHUNK_CNT = WavConsts.CHUNK_CNT
     Canvas(modifier = modifier) {
         val startX_measure = 1 * (size.width / 10) // 첫번째 마디 시작점
 
@@ -60,9 +62,9 @@ fun DrawAll(modifier: Modifier = Modifier) {
         val endY = size.height * 4 / 5 // 꼬리가 끝나는 Y지점
 
 
-        for (i in 1..25) {
+        for (i in 1..CHUNK_CNT+1) {
             if (NoteTypes.note_feedback[i] == 1) { // 첫번째 마디 그리기
-                val xOffset1 = startX_measure + i * (measure_width / 26) // 음표가 그려지는 곳
+                val xOffset1 = startX_measure + i * (measure_width / (CHUNK_CNT+2)) // 음표가 그려지는 곳
 
                 drawLine(
                     color = Color.Green,
@@ -122,7 +124,7 @@ fun DrawNotes(viewModel: MyViewModel, location: Int, modifier: Modifier = Modifi
             }
 
             if (viewModel.shownNote2.value[noteIndex] == 1) { // 두번째 마디 그리기
-                val xOffset2 = startX_measure2 + i * (measure_width / 13) // 음표가 그려지는 곳
+                val xOffset2 = startX_measure2 + i * (measure_width / (WavConsts.CHUNK_CNT/2+1)) // 음표가 그려지는 곳
 
                 drawLine(
                     color = Color.Black,
@@ -190,6 +192,8 @@ fun ShowChords(viewModel: MyViewModel, modifier: Modifier) {
 /**피드백 노트를 받아와 화면에 빨간색으로 보여주는 함수*/
 @Composable
 fun DrawFeedBackNotes(feedbackNoteList: List<Int>?, modifier: Modifier) {
+    val CHUNK_CNT = WavConsts.CHUNK_CNT
+    val HALF_CHUNK_CNT = CHUNK_CNT/2
     if (!feedbackNoteList.isNullOrEmpty()) {
         Canvas(modifier = modifier) {
             val startX_measure1 = 1 * (size.width / 10) // 첫번째 마디 시작점
@@ -203,14 +207,14 @@ fun DrawFeedBackNotes(feedbackNoteList: List<Int>?, modifier: Modifier) {
             var startX = startX_measure1
             var xOffset = startX + (measure_width / 13)
 
-            for (i in 1..24) {
-                if (i <= 12) {
+            for (i in 1..CHUNK_CNT) {
+                if (i <= (HALF_CHUNK_CNT)) {
                     startX = startX_measure1
-                    xOffset = startX + i * (measure_width / 13)
+                    xOffset = startX + i * (measure_width / (HALF_CHUNK_CNT+1))
 
                 } else {
                     startX = startX_measure2
-                    xOffset = startX + (i - 12) * (measure_width / 13)
+                    xOffset = startX + (i - HALF_CHUNK_CNT) * (measure_width / (HALF_CHUNK_CNT+1))
                 }
 
                 if (feedbackNoteList[i] != 0) { // 첫번째 마디 그리기
@@ -247,7 +251,7 @@ fun DrawProcessBar(seconds: Double, modifier: Modifier) {
         val startY = 0f // 진행바 그리기가 시작되는 Y 지점
         val endY = size.height // 진행바 그리기가 끝나는 Y 지점
 
-        val process = seconds / 4.8 // 녹음 진행 후 얼마나 지났는지
+        val process = seconds / (WavConsts.WAV_LENGTH_MS / 100.0) // 녹음 진행 후 얼마나 지났는지
 
         val xOffset = (startX_measure + process * measure_width).toFloat()
 
@@ -266,7 +270,7 @@ fun DrawProcessBar(seconds: Double, modifier: Modifier) {
 
         NoteTypes.dummyList.forEach { i ->
             if (seconds == i)
-                Log.d("syncBeep", "DrawProcessBar time ${seconds} ${Instant.now().toEpochMilli()}")
+                Log.d("syncBeep", "DrawProcessBar time ${seconds}")
         }
 
         drawIntoCanvas { canvas ->
@@ -282,9 +286,10 @@ fun DrawProcessBar(seconds: Double, modifier: Modifier) {
 
 /** 랜덤으로 코드를 가져오는 함수*/
 fun getRandomChord(): String {
-    val randomInt = Random.nextInt(1, 19)
+    val chordMap = ChordTypes.chords_numbers // 코드 맵
+    val randomInt = Random.nextInt(1, chordMap.size) // 1~19 랜덤 정수
 
-    val randomChord = ChordTypes.chords_numbers[randomInt] // 보여줄 코드를 인덱스를 통해 맵에서 찾아줌
+    val randomChord = chordMap[randomInt] // 보여줄 코드를 인덱스를 통해 맵에서 찾아줌
     return randomChord!!
 }
 

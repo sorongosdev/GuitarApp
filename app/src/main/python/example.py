@@ -20,7 +20,7 @@ note_threshold = 5_000.0    # 120   # 50_000.0   #  3_000.0
 
 # Parameters
 sample_rate  = 44100                     # Sampling Frequency
-fft_len      = 8820  # 8820-100bpm # 8192-110bpm    # Length of the FFT window
+fft_len      = 9900 # 8820-100bpm # 8192-110bpm    # Length of the FFT window
 overlap      = 0.5                       # Hop overlap percentage between windows
 hop_length   = int(fft_len*(1-overlap))  # Number of samples between successive frames
 
@@ -331,7 +331,7 @@ def find_nearest_key(found_unique_notes, keys_freq):
         for note in notes:
             if note in found_unique_notes:
                 match_score += 1
-                index = found_unique_notes.index(note)  # 현재 노트의 found_notes에서의 인덱스
+                index = found_unique_notes.index(음표)  # 현재 노트의 found_notes에서의 인덱스
                 current_key_min_index = min(current_key_min_index, index)
 
         # 더 높은 match_score를 가진 조를 찾거나, 동일한 match_score이지만 더 낮은 인덱스를 가진 조를 찾는다
@@ -627,6 +627,16 @@ def visualize_all_freqs(chunk_num, all_freqs):
     plt.grid(True)
     plt.show()
 
+def expand_results(results):
+    new_results = [results[0]]  # 첫 번째 원소는 그대로 옮김
+
+    # 나머지 24개의 원소를 각각 3번씩 반복하여 추가
+    for element in results[1:]:
+        new_results.extend([element] * 3)
+
+    return new_results
+
+
 def main(wave_bytes):
     print("\nPolyphonic note detector\n")
 
@@ -842,6 +852,11 @@ def main(wave_bytes):
         if difference not in filtered_values:
             results[non_zero_indices[i]] = 0
     print(results)
+
+    # 73개 list로 늘리기
+    results = expand_results(results)
+    print(results)
+    print(len(results))
     return results
 
     print(all_freq_num)
