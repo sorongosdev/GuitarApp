@@ -20,7 +20,7 @@ note_threshold = 5_000.0    # 120   # 50_000.0   #  3_000.0
 
 # Parameters
 sample_rate  = 44100                     # Sampling Frequency
-fft_len      = 9900 # 8820-100bpm # 8192-110bpm    # Length of the FFT window
+fft_len      = 9700 # 9700 # 8820-100bpm # 8192-110bpm    # Length of the FFT window
 overlap      = 0.5                       # Hop overlap percentage between windows
 hop_length   = int(fft_len*(1-overlap))  # Number of samples between successive frames
 
@@ -458,7 +458,7 @@ def find_matching_chord(chord_matching_scores_list):
 
     return best_chord_list
 
-# 기타 박자 추정
+# 기타 박자 추정 - 앞뒤 chunk보다 중간 chunk가 큼
 def find_chunks_with_peak_values(all_values):
     peak_chunks = []
 
@@ -487,36 +487,67 @@ def find_chunks_with_peak_values(all_values):
 
     return peak_chunks
 
-# 기타 박자 여음 처리를 위한 앞뒤 value 차이 계산
-def calculate_value_differences(values_list):
-    differences_list = []
-    for values in values_list:
-        if len(values) == 3:
-            diff = abs(values[1] - values[0])
-            differences_list.append(diff)
-            # differences_list.append([diff1, diff2])
-        elif len(values) == 2:
-            diff = abs(values[1]-values[0])
-            differences_list.append(diff)
-        else:
-            differences_list.append(0)
+# 증가하기 시작한 부분부터 max value까지의 차 구하기
+def calculate_increase_differences(sorted_peak_chunks, all_values):
+    differences = []
 
-    return differences_list
+    for chunk_num in sorted_peak_chunks:
+        current_chunk_values = []
+        increasing_trend_found = False
 
-# 기타 박자 여음 처리를 위한 임계값을 정해서 이보다 큰 것만 담음
-def remove_small_values(values):
-    if len(values) == 0:
-        return values
+        for i in range(len(all_values)):
+            c_num, value = all_values[i]
+            # 현재 청크 번호보다 작은 청크만 고려
+            if c_num < chunk_num:
+                if not current_chunk_values:
+                    current_chunk_values.append(value)
+                else:
+                    _, prev_value = all_values[i-1]
+                    if value > prev_value:
+                        # 증가 추세가 확인되면 이전 값까지만 유지하고 나머지는 삭제
+                        current_chunk_values = [prev_value, value]
+                        increasing_trend_found = True
+                    elif not increasing_trend_found:
+                        # 감소 추세이면 현재 값 추가
+                        current_chunk_values.append(value)
 
-    # 가장 큰 값의 0.5% 계산
-    max_value = max(values)
-    threshold = max_value * 0.009
-    print(threshold)
+        if not current_chunk_values:  # 현재 청크 이전 값이 없는 경우, 차이를 계산할 수 없음
+            continue
 
-    # 임계값보다 큰 값들만 포함하여 새로운 리스트 생성
-    filtered_values = [value for value in values if value > threshold]
+        # 증가 추세가 시작되는 지점 찾기 (증가하기 전 최소값)
+        min_value_before_increase = min(current_chunk_values)
 
-    return filtered_values
+        # 해당 chunk 번호에 해당하는 value 추출
+        chunk_value = next((value for c_num, value in all_values if c_num == chunk_num), None)
+
+        # 증가 추세가 시작된 지점부터 최대값까지의 차이 계산
+        if chunk_value is not None:
+            difference = chunk_value - min_value_before_increase
+            differences.append(difference)
+
+
+    return differences
+
+# 기타 박자 여음 처리
+def filter_euphony(differences):
+    filtered_differences = []
+    euphony_indices = []  # 여음으로 판단된 원소의 인덱스 저장
+
+    for i in range(len(differences) - 1):
+        current_diff = differences[i]
+        next_diff = differences[i + 1]
+
+        # 현재 원소가 다음 원소보다 크고, 그 차이가 현재 원소의 5%보다 작은 경우 여음으로 판단
+        if current_diff > next_diff and next_diff < current_diff * 0.05:
+            euphony_indices.append(i+1)  # 다음 원소(여음으로 판단된 원소) 인덱스 저장
+
+    # 여음으로 판정된 원소를 제외하고 반환 목록에 추가
+    for i, diff in enumerate(differences):
+        if i not in euphony_indices:
+            filtered_differences.append(diff)
+
+    return filtered_differences
+
 
 def PitchSpectralHps(X, freq_buckets, f_s, buffer_rms):
 
@@ -737,25 +768,27 @@ def main(wave_bytes):
     print("\n---------------chunk별 시작 시간----------------")
     print(chunk_times)
 
+
     print("\n---------------박자 확정 과정 및 결과---------------")
     peak_chunks = find_chunks_with_peak_values(all_values)
-    sorted_peak_chunks = sorted(peak_chunks, key=lambda x: x[1], reverse=True)
-    print(sorted_peak_chunks)
+    print(peak_chunks)
+    # sorted_peak_chunks = sorted(peak_chunks, key=lambda x: x[1], reverse=True)
+    # print(sorted_peak_chunks)
 
     # 박자 친 부분 확정
-    peak_chunk_nums = [chunk[0]-1 for chunk in peak_chunks]
-    print(peak_chunk_nums)
+    previous_peak_chunk_nums = [chunk[0]-1 for chunk in peak_chunks]
+    print(previous_peak_chunk_nums)
 
     # 각 숫자로부터 뒤로 3개의 숫자를 포함하는 이중리스트 생성
     is_it_onetwothree = 1     # peack_chunk_nums가 -1이 나왔을때 -1, 0이 나왔을때 0, 안나왔을때 1로 설정
-    if -1 in peak_chunk_nums:
+    if -1 in previous_peak_chunk_nums:
         extended_peak_chunks = [1, 2, 3]
         is_it_onetwothree = -1
-    elif 0 in peak_chunk_nums:
+    elif 0 in previous_peak_chunk_nums:
         extended_peak_chunks = [1, 2, 3]
         is_it_onetwothree = 0
     else:
-        extended_peak_chunks = [[num + i for i in range(3)] for num in peak_chunk_nums]
+        extended_peak_chunks = [[num + i for i in range(3)] for num in previous_peak_chunk_nums]
     print(extended_peak_chunks)
 
     # 중복되는 [1,2,3] 있으면 하나만 남겨두고 제거
@@ -764,6 +797,7 @@ def main(wave_bytes):
         if chunk not in unique_extended_peak_chunks:
             unique_extended_peak_chunks.append(chunk)
     print(unique_extended_peak_chunks)
+
 
     print("\n---------------코드 확정 과정 및 결과----------------")
     final_chord_list = []
@@ -810,7 +844,7 @@ def main(wave_bytes):
 
     print("\n---------------박자 여음 처리 이전, 코드 및 박자 결과----------------")
     # 박자 체크
-    results = [1 if i in peak_chunk_nums else 0 for i in range(0, chunk_num+1)]
+    results = [1 if i in previous_peak_chunk_nums else 0 for i in range(0, chunk_num+1)]
     print(results)
     # 코드 체크
     chord_pointer = 0
@@ -825,32 +859,26 @@ def main(wave_bytes):
     print(results)
 
 
-    print("\n---------------박자 여음 처리 과정----------------")
-    # 0이 아닌 chunk 뒤로 2개까지의 value 모아서, 총 3개의 value로 이중리스트
-    non_zero_indices = [i for i, val in enumerate(results) if val != 0]
-    selected_chunks_values = []
-    for index in non_zero_indices:
-        chunk_nums_to_check = [index, index + 1, index + 2]
-        temp_values = []
-        for chunk_num in chunk_nums_to_check:
-            if chunk_num <= len(all_values):
-                temp_values.append(all_values[chunk_num - 1][1])
-        selected_chunks_values.append(temp_values)
-    print(selected_chunks_values)
+    print("\n---------------박자 여음 처리 과정 및 결과----------------")
+    # 박자 친 부분, 즉 가운데 chunk
+    peak_chunk_nums = [i+1 for i, val in enumerate(results) if val != 0]
+    print(peak_chunk_nums)
 
-    # 앞, 중간 chunk value 값 차이들 저장
-    differences = calculate_value_differences(selected_chunks_values)
+    print(all_values)
+
+    # 증가하기 시작한 부분의 value와 max value까지의 차 저장
+    differences = calculate_increase_differences(peak_chunk_nums, all_values)
     print(differences)
 
-    # 임계값 설정
-    filtered_values = remove_small_values(differences)
-    print(filtered_values)
+    # 차를 봤을때 앞에 차보다 많이 작으면 여음으로 판정하여 differneces에서 차에 대한걸 삭제함
+    filtered_differences = filter_euphony(differences)
+    print(filtered_differences)
 
 
-    print("\n---------------코드 및 박자 결과----------------")
+    print("\n---------------박자 여음 처리 이후, 코드 및 박자 결과----------------")
     for i, difference in enumerate(differences):
-        if difference not in filtered_values:
-            results[non_zero_indices[i]] = 0
+        if difference not in filtered_differences:
+            results[peak_chunk_nums[i]] = 0
     print(results)
 
     # 73개 list로 늘리기
@@ -859,7 +887,7 @@ def main(wave_bytes):
     print(len(results))
     return results
 
-    print(all_freq_num)
+    # print(all_freq_num)
 
     # chunk 순서(시간)와 value를 분리하여 리스트로 저장
     chunk_order = [x[0] for x in all_values]  # x축: chunk 순서
