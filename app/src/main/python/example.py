@@ -627,6 +627,16 @@ def visualize_all_freqs(chunk_num, all_freqs):
     plt.grid(True)
     plt.show()
 
+def expand_results(results):
+    new_results = [results[0]]  # 첫 번째 원소는 그대로 옮김
+
+    # 나머지 24개의 원소를 각각 3번씩 반복하여 추가
+    for element in results[1:]:
+        new_results.extend([element] * 3)
+
+    return new_results
+
+
 def main(wave_bytes):
     print("\nPolyphonic note detector\n")
 
@@ -842,6 +852,11 @@ def main(wave_bytes):
         if difference not in filtered_values:
             results[non_zero_indices[i]] = 0
     print(results)
+
+    # 73개 list로 늘리기
+    results = expand_results(results)
+    print(results)
+    print(len(results))
     return results
 
     print(all_freq_num)
