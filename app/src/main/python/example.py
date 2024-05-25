@@ -14,7 +14,7 @@ import math
 import io
 
 path     = "./"
-filename = '100-E7-DUDU.wav'
+filename = '110-C7-DXDU.wav'
 
 note_threshold = 5_000.0    # 120   # 50_000.0   #  3_000.0
 
@@ -82,7 +82,7 @@ def divide_buffer_into_non_overlapping_chunks(buffer, max_len): # max_len -> fft
 def getFFT(data, rate):
     # Returns fft_freq and fft, fft_res_len.
     len_data = len(data)                # 입력 데이터의 길이 계산
-    data = data * np.hamming(len_data)  # 입력 데이터에 hamming_window를 적용하여 스펙트럼의 누설을 감소
+    data = data * np.blackman(len_data)  # 입력 데이터에 hamming_window를 적용하여 스펙트럼의 누설을 감소
 
     # fft 연산 후 magnitude 배열
     fft = np.fft.rfft(data)             # 입력 데이터에 대해 실수 fft를 수행한다. fft의 결과로 복소수 numpy 배열을 반환한다.
@@ -617,6 +617,15 @@ def to_str_f4(value):
     # Returns a string with a float without decimals.
     return "{0:.4f}".format(value)
 
+def visualize_all_freqs(chunk_num, all_freqs):
+    plt.figure(figsize=(10, 4))
+    freqs, values = zip(*all_freqs)
+    plt.plot(freqs, values)
+    plt.title(f'Chunk {chunk_num} - Frequency vs Value')
+    plt.xlabel('Frequency (Hz)')
+    plt.ylabel('Value')
+    plt.grid(True)
+    plt.show()
 
 def main(wave_bytes):
     print("\nPolyphonic note detector\n")
@@ -701,7 +710,6 @@ def main(wave_bytes):
         final_chord = find_matching_chord_for_a_chunk(nearest_key, chunks_top_results, guitar_chords_notes)
         print(final_chord, "코드")
         all_chords.append(final_chord)
-
         all_freq_num.append(len(all_freqs))
 
         chunk_num += 1
@@ -729,19 +737,35 @@ def main(wave_bytes):
     print(peak_chunk_nums)
 
     # 각 숫자로부터 뒤로 3개의 숫자를 포함하는 이중리스트 생성
+    is_it_onetwothree = 1     # peack_chunk_nums가 -1이 나왔을때 -1, 0이 나왔을때 0, 안나왔을때 1로 설정
     if -1 in peak_chunk_nums:
-        extended_peak_chunks = [0, 1, 2]
+        extended_peak_chunks = [1, 2, 3]
+        is_it_onetwothree = -1
+    elif 0 in peak_chunk_nums:
+        extended_peak_chunks = [1, 2, 3]
+        is_it_onetwothree = 0
     else:
         extended_peak_chunks = [[num + i for i in range(3)] for num in peak_chunk_nums]
     print(extended_peak_chunks)
 
+    # 중복되는 [1,2,3] 있으면 하나만 남겨두고 제거
+    unique_extended_peak_chunks = []
+    for chunk in extended_peak_chunks:
+        if chunk not in unique_extended_peak_chunks:
+            unique_extended_peak_chunks.append(chunk)
+    print(unique_extended_peak_chunks)
 
     print("\n---------------코드 확정 과정 및 결과----------------")
     final_chord_list = []
     final_chord_matching_scores = []
     final_chord_matching_scores_list = []
-    for current_target_chunk_nums in extended_peak_chunks:
+    for current_target_chunk_nums in unique_extended_peak_chunks:
         # 1. 해당하는 chunk의 조 결과를 all_keys를 통해 확인하고, 해당하는 chunk의 조를 최종적으로 확정
+
+        if is_it_onetwothree == -1:
+            chunk_target_chunk_nums = [0, 1, 2]
+        elif is_it_onetwothree == 0:
+            chunk_target_chunk_nums = [0, 1, 2]
 
         ## 원하는 chunk별, value 기준 상위 n개 {chunk_num:(freq, value, note_name), ...} 출력
         chunks_top_results = get_chunks_results(all_top_results, current_target_chunk_nums, top_n)
@@ -820,7 +844,20 @@ def main(wave_bytes):
     print(results)
     return results
 
-    # print(all_freq_num)
+    print(all_freq_num)
+
+    # chunk 순서(시간)와 value를 분리하여 리스트로 저장
+    chunk_order = [x[0] for x in all_values]  # x축: chunk 순서
+    values = [x[1] for x in all_values]  # y축: value
+
+    # Plot 생성
+    plt.figure(figsize=(15, 7))  # plot 크기 설정
+    plt.plot(chunk_order, values, marker='o', linestyle='-', color='b')  # chunk 순서에 따른 value를 선과 점으로 표시
+    plt.title('Max Values of each chunks ' + filename)  # plot 제목
+    plt.xlabel('Chunk num')  # x축 라벨
+    plt.ylabel('Value')  # y축 라벨
+    plt.grid(True)  # 그리드 표시
+    plt.show()  # plot 보여주기
 
 if __name__ == "__main__":
     main()

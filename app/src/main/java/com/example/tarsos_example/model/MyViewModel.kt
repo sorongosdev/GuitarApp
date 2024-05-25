@@ -1,4 +1,4 @@
-package com.example.tarsos_example
+package com.example.tarsos_example.model
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -15,8 +15,11 @@ class MyViewModel : ViewModel() {
     val feedbackNoteList: StateFlow<List<Int>> = _feedbackNoteList
 
     /**보여주는 악보, 사용자가 친 것과 비교해서 정답인지 알려주기 위해 필요*/
-    private var _shownNoteList = MutableStateFlow(listOf<Int>())
-    val shownNoteList: StateFlow<List<Int>> = _shownNoteList
+    private var _shownNote1 = MutableStateFlow(listOf<Int>())
+    val shownNote1: StateFlow<List<Int>> = _shownNote1
+
+    private var _shownNote2 = MutableStateFlow(listOf<Int>())
+    val shownNote2: StateFlow<List<Int>> = _shownNote2
 
     /**마디1에 보여주는 코드, 사용자가 친 것과 비교해서 정답인지 알려주기 위해 필요*/
     private var _shownChord1 = MutableStateFlow<String>("")
@@ -31,14 +34,23 @@ class MyViewModel : ViewModel() {
     val recordSecond: StateFlow<Double> = _recordSecond
 
     /**녹음이 시작하고 지난 시간, 소수점 첫째자리까지 표시*/
-    private var _countDownSecond = MutableStateFlow<Int>(5)
+    private var _countDownSecond = MutableStateFlow<Int>(4)
     val countDownSecond: StateFlow<Int> = _countDownSecond
 
     /**녹음중 유무*/
     private var _isRecording = MutableStateFlow<Boolean>(false)
     val isRecording: StateFlow<Boolean> = _isRecording
 
+    /**비프음 출력 유무*/
+    private var _isBeeping = MutableStateFlow<Boolean>(false)
+    val isBeeping: StateFlow<Boolean> = _isBeeping
+
     /****************************   함수들 **************************************/
+    /**사용자에게 보여줄 음표 리스트를 업데이트 해주는 함수*/
+    fun updateNotes(note1: List<Int>, note2: List<Int>){
+        _shownNote1.value = note1
+        _shownNote2.value = note2
+    }
 
     /**사용자에게 보여줄 코드를 업데이트 해주는 함수*/
     fun updateChords(chord1: String, chord2: String) {
@@ -63,13 +75,18 @@ class MyViewModel : ViewModel() {
     }
 
     /**녹음중 유무 변수를 세팅*/
-    fun updateRecordingState(isRecording: Boolean){
+    fun updateRecordingState(isRecording: Boolean) {
         _isRecording.value = isRecording
     }
 
+    /**녹음중 유무 변수를 세팅*/
+    fun updateBeepingState(isBeeping: Boolean) {
+        _isBeeping.value = isBeeping
+    }
+
     /**init 버튼을 눌렀을 때, 초를 다시 세팅*/
-    fun init(){
-        _countDownSecond.value = 5
+    fun init() {
+        _countDownSecond.value = 4
         _recordSecond.value = 0.0
     }
 }

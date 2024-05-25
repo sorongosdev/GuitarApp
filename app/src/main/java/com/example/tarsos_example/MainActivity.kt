@@ -1,5 +1,6 @@
 package com.example.tarsos_example
 
+import DrawAll
 import DrawFeedBackNotes
 import DrawNotes
 import DrawProcessBar
@@ -19,45 +20,28 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.tarsos_example.ui.theme.Tarsos_exampleTheme
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
 import androidx.compose.ui.unit.dp
 
 import be.tarsos.dsp.io.TarsosDSPAudioFormat
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import java.nio.ByteOrder
 import android.Manifest
 import android.content.Context
-import android.provider.ContactsContract.CommonDataKinds.Note
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 import com.example.tarsos_example.consts.NoteTypes
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
+import com.example.tarsos_example.model.MyViewModel
 import java.io.File
 import java.io.IOException
+import kotlin.random.Random
 
 var tarsosDSPAudioFormat: TarsosDSPAudioFormat? = null
 
@@ -129,14 +113,17 @@ class MainActivity : ComponentActivity() {
                 }
                 FloatingActionButton(
                     onClick = { audioProcessorHandler.SetupAudioProcessing(viewModel) }
-                    ) {
+                ) {
                     Text(
                         text = "연주 시작",
                         style = TextStyle(fontSize = 50.sp)
                     )
                 }
             }
-            Text(text = "Count Down : ${countDownSecond.value}", style = TextStyle(fontSize = 20.sp))
+            Text(
+                text = "Count Down : ${countDownSecond.value}",
+                style = TextStyle(fontSize = 20.sp)
+            )
 
             Spacer(modifier = Modifier.fillMaxHeight(0.1f)) // 전체의 10% 공백
 
@@ -155,31 +142,41 @@ class MainActivity : ComponentActivity() {
             ) {
                 DrawSheet(modifier = Modifier.matchParentSize()) // 악보 그림
                 DrawNotes(
-                    noteType = NoteTypes.note_1010, // 예시 음표 타입 리스트
-                    location = 2,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                ) // 음표 그림
-                DrawNotes(
-                    noteType = NoteTypes.note_1011, // 예시 음표 타입 리스트
+                    viewModel = viewModel,
                     location = 1,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
                 ) // 음표 그림
+                DrawNotes(
+                    viewModel = viewModel,
+                    location = 2,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                ) // 음표 그림
+                DrawAll(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp))
+
                 DrawFeedBackNotes(
-                    feedbackNoteList = feedbackNoteList.value, location = 1, modifier = Modifier
+                    feedbackNoteList = feedbackNoteList.value, modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
                 )
+
                 DrawProcessBar(
                     seconds = recordSecond.value,
                     modifier = Modifier.matchParentSize()
                 )
+                //TODO: 음표 3개 중 2개 랜덤 표출
+
+                //TODO: 그자리에 정답이면 초록색, 틀리면 빨간색으로
             }
         }
     }
+
+
 
     private fun requestRecordAudioPermission() {
         if (ContextCompat.checkSelfPermission(
