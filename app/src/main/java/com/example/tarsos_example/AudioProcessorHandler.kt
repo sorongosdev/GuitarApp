@@ -19,6 +19,8 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
 import java.io.RandomAccessFile
+import java.time.Instant
+import java.util.Date
 import java.util.Timer
 
 class AudioProcessorHandler(private val context: Context) {
@@ -42,30 +44,32 @@ class AudioProcessorHandler(private val context: Context) {
             viewModel.updateBeepingState(isBeeping = true) // 비프음 재생 시작 전에 true로 설정
 
             // 4박자에 대한 카운트 다운
-            val totalCountDownDelay = 2500L // 총 지연 시간
-            val countDownInterval = 2500L / 4L // 로그를 기록할 간격 시간
+            val totalCountDownDelay = 2400L // 총 지연 시간
+            val countDownInterval = 2400L / 4L // 로그를 기록할 간격 시간
             var countDownElapsedTime = 0L // 경과 시간
 
             while (countDownElapsedTime < totalCountDownDelay) {
                 delay(countDownInterval) // 지정된 간격만큼 대기
                 countDownElapsedTime += countDownInterval // 경과 시간 업데이트
-                val newSecond = (4.0 - countDownElapsedTime / 625.0).toInt()
+                val newSecond = (4.0 - countDownElapsedTime / countDownInterval).toInt()
                 viewModel.updateCountDownSecond(newSecond)
 
                 // 메트로놈 소리
                 playBeep()
-
-                Log.d("beep", "카운트 다운: $newSecond") // 초 아닌 박자임
+                if(newSecond == 0){
+                    Log.d("syncBeep","countdown start ${(4.0 - countDownElapsedTime / countDownInterval)}")
+                }
+                Log.d("syncBeep","countdownBeep ${newSecond} ${Instant.now().toEpochMilli()}")
             }
 
             // 카운트 다운 종료 후 625ms 간격으로 지속적으로 소리 내기
             beepJob = CoroutineScope(Dispatchers.IO).launch {
-                val beepInterval = 625L // 비프음 간격
+                val beepInterval = countDownInterval // 비프음 간격
 
                 while (viewModel.isBeeping.value) {
                     delay(beepInterval)
                     playBeep()
-                    Log.d("beep", "beep sound ${viewModel.recordSecond.value}")
+                    Log.d("syncBeep","secondBeep ${viewModel.recordSecond.value} ${Instant.now().toEpochMilli()}")
                 }
 
 //                while (isActive) { // 코루틴이 활성 상태인 동안 반복

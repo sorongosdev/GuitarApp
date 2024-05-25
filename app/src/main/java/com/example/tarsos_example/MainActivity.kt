@@ -160,7 +160,7 @@ class MainActivity : ComponentActivity() {
                     .height(200.dp))
 
                 DrawFeedBackNotes(
-                    feedbackNoteList = feedbackNoteList.value, location = 1, modifier = Modifier
+                    feedbackNoteList = feedbackNoteList.value, modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
                 )

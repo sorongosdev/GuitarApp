@@ -16,6 +16,8 @@ import androidx.compose.ui.graphics.nativeCanvas
 import com.example.tarsos_example.model.MyViewModel
 import com.example.tarsos_example.consts.ChordTypes
 import com.example.tarsos_example.consts.NoteTypes
+import java.time.Instant
+import java.util.Date
 import kotlin.math.sqrt
 import kotlin.random.Random
 
@@ -49,7 +51,7 @@ fun DrawSheet(modifier: Modifier = Modifier) {
 
 @Composable
 fun DrawAll(modifier: Modifier = Modifier) {
-    Log.d("div","drawAll")
+    Log.d("div", "drawAll")
     Canvas(modifier = modifier) {
         val startX_measure = 1 * (size.width / 10) // 첫번째 마디 시작점
 
@@ -119,7 +121,7 @@ fun DrawNotes(viewModel: MyViewModel, location: Int, modifier: Modifier = Modifi
                 )
             }
 
-            if (viewModel.shownNote2.value[noteIndex] == 1) { // 첫번째 마디 그리기
+            if (viewModel.shownNote2.value[noteIndex] == 1) { // 두번째 마디 그리기
                 val xOffset2 = startX_measure2 + i * (measure_width / 13) // 음표가 그려지는 곳
 
                 drawLine(
@@ -187,20 +189,31 @@ fun ShowChords(viewModel: MyViewModel, modifier: Modifier) {
 
 /**피드백 노트를 받아와 화면에 빨간색으로 보여주는 함수*/
 @Composable
-fun DrawFeedBackNotes(feedbackNoteList: List<Int>?, location: Int, modifier: Modifier) {
+fun DrawFeedBackNotes(feedbackNoteList: List<Int>?, modifier: Modifier) {
     if (!feedbackNoteList.isNullOrEmpty()) {
         Canvas(modifier = modifier) {
-            val startX_measure = 1 * (size.width / 10) // 첫번째 마디 시작점
-            val measure_width = 8 * (size.width / 10) // 두 마디 넓이
+            val startX_measure1 = 1 * (size.width / 10) // 첫번째 마디 시작점
+            val startX_measure2 = 5 * (size.width / 10) // 두번째 마디 시작점
+            val measure_width = 4 * (size.width / 10) // 한 마디 넓이
             val startY_tail = size.height * 1 / 5 // 꼬리가 시작되는 Y지점
             val endY_tail = size.height * 4 / 5 // 꼬리가 끝나는 Y지점
             val centerY = size.height * 4 / 5 // 선의 중심점
             val lineLength = sqrt(2f) * 25f // 45도 각도에서의 선 길이, 대각선 길이 계산
 
-            for (i in 1..24) {
-                if (feedbackNoteList[i] != 0) { // 받은 리스트의 값이 0이 아니면 친 곳
-                    val xOffset = startX_measure + i * (measure_width / 26) // 음표가 그려지는 곳
+            var startX = startX_measure1
+            var xOffset = startX + (measure_width / 13)
 
+            for (i in 1..24) {
+                if (i <= 12) {
+                    startX = startX_measure1
+                    xOffset = startX + i * (measure_width / 13)
+
+                } else {
+                    startX = startX_measure2
+                    xOffset = startX + (i - 12) * (measure_width / 13)
+                }
+
+                if (feedbackNoteList[i] != 0) { // 첫번째 마디 그리기
                     drawLine(
                         color = Color.Red,
                         start = Offset(x = xOffset + lineLength / 2, y = startY_tail),
@@ -215,10 +228,12 @@ fun DrawFeedBackNotes(feedbackNoteList: List<Int>?, location: Int, modifier: Mod
                         color = Color.Red,
                         start = start,
                         end = end,
-                        strokeWidth = 20f
+                        strokeWidth = 10f
                     )
                 }
             }
+
+
         }
     }
 }
@@ -243,6 +258,25 @@ fun DrawProcessBar(seconds: Double, modifier: Modifier) {
             strokeWidth = 10f
         )
 
+        //===============================
+        val paint = android.graphics.Paint().apply {
+            color = android.graphics.Color.BLACK // 텍스트 색상 설정
+            textSize = 40f // 텍스트 크기 설정
+        }
+
+        NoteTypes.dummyList.forEach { i ->
+            if (seconds == i)
+                Log.d("syncBeep", "DrawProcessBar time ${seconds} ${Instant.now().toEpochMilli()}")
+        }
+
+        drawIntoCanvas { canvas ->
+            canvas.nativeCanvas.drawText(
+                seconds.toString(),
+                xOffset, // x 좌표
+                0f, // y 좌표
+                paint // Paint 객체
+            )
+        }
     }
 }
 
