@@ -6,13 +6,14 @@ object NoteTypes {
     val note_1011 = listOf<Int>(1,0,1,1)
     val note_1010 = listOf<Int>(1,0,1,0)
 
-    val note_feedback = listOf<Int>(
-        1,1,1,1,1, // 0~4
-        1,1,1,1,1, // 5~9
-        1,1,1,1,1, // 10~14
-        1,1,1,1,1, // 15~19
-        1,1,1,1,1,1 // 20~24
-    )
+//    val note_feedback = listOf<Int>(
+//        1,1,1,1,1, // 0~4
+//        1,1,1,1,1, // 5~9
+//        1,1,1,1,1, // 10~14
+//        1,1,1,1,1, // 15~19
+//        1,1,1,1,1,1 // 20~24
+//    )
+    val note_feedback = List(WavConsts.CHUNK_CNT+1){1}
 
     val dummyList = listOf<Double>(
         0.6,1.2,1.8,2.4,
