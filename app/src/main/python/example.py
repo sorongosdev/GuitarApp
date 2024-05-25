@@ -20,7 +20,7 @@ note_threshold = 5_000.0    # 120   # 50_000.0   #  3_000.0
 
 # Parameters
 sample_rate  = 44100                     # Sampling Frequency
-fft_len      = 9700 # 9700 # 8820-100bpm # 8192-110bpm    # Length of the FFT window
+fft_len      = 8820    # 8820-100bpm # 8192-110bpm    # Length of the FFT window
 overlap      = 0.5                       # Hop overlap percentage between windows
 hop_length   = int(fft_len*(1-overlap))  # Number of samples between successive frames
 
@@ -487,6 +487,7 @@ def find_chunks_with_peak_values(all_values):
 
     return peak_chunks
 
+
 # 증가하기 시작한 부분부터 max value까지의 차 구하기
 def calculate_increase_differences(sorted_peak_chunks, all_values):
     differences = []
@@ -524,7 +525,6 @@ def calculate_increase_differences(sorted_peak_chunks, all_values):
         if chunk_value is not None:
             difference = chunk_value - min_value_before_increase
             differences.append(difference)
-
 
     return differences
 
@@ -779,17 +779,23 @@ def main(wave_bytes):
     previous_peak_chunk_nums = [chunk[0]-1 for chunk in peak_chunks]
     print(previous_peak_chunk_nums)
 
+    extended_peak_chunks = []
     # 각 숫자로부터 뒤로 3개의 숫자를 포함하는 이중리스트 생성
-    is_it_onetwothree = 1     # peack_chunk_nums가 -1이 나왔을때 -1, 0이 나왔을때 0, 안나왔을때 1로 설정
+    # is_it_onetwothree = 1  # peack_chunk_nums가 -1이 나왔을때 -1, 0이 나왔을때 0, 안나왔을때 1로 설정
+    # -1이나 0이 있을 경우, [1, 2, 3]을 추가
     if -1 in previous_peak_chunk_nums:
-        extended_peak_chunks = [1, 2, 3]
-        is_it_onetwothree = -1
-    elif 0 in previous_peak_chunk_nums:
-        extended_peak_chunks = [1, 2, 3]
-        is_it_onetwothree = 0
-    else:
-        extended_peak_chunks = [[num + i for i in range(3)] for num in previous_peak_chunk_nums]
-    print(extended_peak_chunks)
+        extended_peak_chunks.append([1, 2, 3])
+        previous_peak_chunk_nums.remove(-1)  # 처리된 -1 제거
+        # is_it_onetwothree = -1
+    if 0 in previous_peak_chunk_nums:
+        extended_peak_chunks.append([1, 2, 3])
+        previous_peak_chunk_nums.remove(0)  # 처리된 0 제거
+        # is_it_onetwothree = 0
+
+    # 나머지 숫자들에 대해 각 숫자로부터 뒤로 3개의 숫자를 포함하는 리스트 추가
+    for num in previous_peak_chunk_nums:
+        extended_peak_chunks.append([num + i for i in range(3)])
+
 
     # 중복되는 [1,2,3] 있으면 하나만 남겨두고 제거
     unique_extended_peak_chunks = []
@@ -806,11 +812,12 @@ def main(wave_bytes):
     for current_target_chunk_nums in unique_extended_peak_chunks:
         # 1. 해당하는 chunk의 조 결과를 all_keys를 통해 확인하고, 해당하는 chunk의 조를 최종적으로 확정
 
-        if is_it_onetwothree == -1:
-            chunk_target_chunk_nums = [0, 1, 2]
-        elif is_it_onetwothree == 0:
-            chunk_target_chunk_nums = [0, 1, 2]
+        # if is_it_onetwothree == -1:
+        #     chunk_target_chunk_nums = [0, 1, 2]
+        # elif is_it_onetwothree == 0:
+        #     chunk_target_chunk_nums = [0, 1, 2]
 
+        print("current_target_chunk_nums : ", current_target_chunk_nums)
         ## 원하는 chunk별, value 기준 상위 n개 {chunk_num:(freq, value, note_name), ...} 출력
         chunks_top_results = get_chunks_results(all_top_results, current_target_chunk_nums, top_n)
         # for chunk_number, results in chunks_top_results.items():
