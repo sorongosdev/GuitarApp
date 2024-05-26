@@ -885,48 +885,24 @@ def main(wave_bytes, rms_list):
 
     # 인덱스 15 이후의 요소들 중 0이 아닌 정수만 한 칸 앞으로 당기기
     i = 15
-    original_length = len(results)  # 원래 리스트의 길이 저장
-    while i < original_length - 1:
-        # 현재 인덱스와 다음 인덱스의 값
-        current_val = results[i]
-        next_val = results[i + 1]
-
-        # (1, 1)인 경우
-        if current_val != 0 and next_val != 0:
-            j = i + 1
-            while j < original_length - 1:
-                results[j] = results[j + 1]
-                j += 1
-            results[j] = 0
-
-        # (1, 0)인 경우
-        elif current_val != 0 and next_val == 0:
-            j = i + 1
-            while j < original_length - 1:
-                results[j] = results[j + 1]
-                j += 1
-            results[j] = 0
+    while i < len(results) - 1:
+        # 현재 인덱스가 0이 아니고, 다음 인덱스도 0이 아닌 경우,
+        # 현재 인덱스를 건너뛰고 다음 연속된 0이 아닌 정수까지 이동
+        if results[i] != 0 and results[i + 1] != 0:
             i += 1
-
-        # (0, 1)인 경우
-        elif current_val == 0 and next_val != 0:
-            j = i
-            while j < original_length - 1:
-                results[j] = results[j + 1]
-                j += 1
-            results[j] = 0
-
-        # (0, 0)인 경우
-        elif current_val == 0 and next_val == 0:
-            j = i
-            while j < original_length - 1:
-                results[j] = results[j + 1]
-                j += 1
-            results[j] = 0
-
+            while i < len(results) and results[i] != 0:
+                i += 1
+        # 현재 인덱스가 0이 아니지만 다음 인덱스가 0이 아닌 경우, 한 칸 앞으로 당김
+        elif results[i + 1] != 0:
+            results[i] = results[i + 1]
+            results[i + 1] = 0
+            i += 1
+        # 다음 인덱스가 0인 경우, 현재 인덱스도 0으로 설정하고 다음 인덱스로 이동
         else:
+            results[i] = 0
             i += 1
-    results += [0] * original_length # 원래 리스트의 크기만큼 뒤에 0을 채우기
+    # 마지막 요소를 0으로 설정
+    results[-1] = 0
     print("앞댕 : ", results)
 
     # 인덱스 27 이후의 모든 요소를 0으로 설정
