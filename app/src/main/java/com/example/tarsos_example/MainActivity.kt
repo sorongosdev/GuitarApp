@@ -2,6 +2,7 @@ package com.example.tarsos_example
 
 import DrawDiv
 import DrawFeedBackNotes
+import DrawPaintNotes
 import DrawProcessBar
 import DrawSheet
 import NewDrawNotes
@@ -63,6 +64,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             Tarsos_exampleTheme {
+                val paintNoteListState = viewModel.paintNoteList.collectAsState()
                 val feedbackNoteListState = viewModel.feedbackNoteList.collectAsState()
                 val barSecondState = viewModel.barSecond.collectAsState()
                 val recordSecondState = viewModel.recordSecond.collectAsState()
@@ -73,6 +75,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     MainActivityUI(
+                        paintNoteList = paintNoteListState,
                         feedbackNoteList = feedbackNoteListState,
                         barSecond = barSecondState,
                         recordSecond = recordSecondState,
@@ -91,6 +94,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun MainActivityUI(
         feedbackNoteList: State<List<Int>>,
+        paintNoteList: State<List<Int>>,
         barSecond: State<Double>,
         recordSecond: State<Double>,
         countDownSecond: State<Int>,
@@ -160,8 +164,16 @@ class MainActivity : ComponentActivity() {
                         .height(200.dp)
                 )
 
-                DrawFeedBackNotes(
-                    feedbackNoteList = feedbackNoteList.value, modifier = Modifier
+//                DrawFeedBackNotes(
+//                    feedbackNoteList = feedbackNoteList.value, modifier = Modifier
+//                        .fillMaxWidth()
+//                        .height(200.dp)
+//                )
+
+                /**피드백리스트와 정답리스트를 기반으로 다시 노트를 그림*/
+                DrawPaintNotes(
+                   paintNoteList = paintNoteList.value,
+                    modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
                 )

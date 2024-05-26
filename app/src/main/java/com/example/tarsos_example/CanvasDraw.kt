@@ -244,6 +244,67 @@ fun DrawFeedBackNotes(feedbackNoteList: List<Int>?, modifier: Modifier) {
         }
     }
 }
+/**피드백리스트와 정답리스트를 기반으로 다시 노트를 그림*/
+
+@Composable
+fun DrawPaintNotes(paintNoteList: List<Int>?, modifier: Modifier) {
+    val feedbackChunkCnt = WavConsts.FEEDBACK_CHUNK_CNT
+    val halfFeedbackChunkCnt = feedbackChunkCnt / 2
+    if (!paintNoteList.isNullOrEmpty()) {
+        Canvas(modifier = modifier) {
+            val startX_measure1 = 1 * (size.width / 10) // 첫번째 마디 시작점
+            val startX_measure2 = 5 * (size.width / 10) // 두번째 마디 시작점
+            val measure_width = 4 * (size.width / 10) // 한 마디 넓이
+            val startY_tail = size.height * 1 / 5 // 꼬리가 시작되는 Y지점
+            val endY_tail = size.height * 4 / 5 // 꼬리가 끝나는 Y지점
+            val centerY = size.height * 4 / 5 // 선의 중심점
+            val lineLength = sqrt(2f) * 25f // 45도 각도에서의 선 길이, 대각선 길이 계산
+
+            var startX = startX_measure1
+            var xOffset = startX + (halfFeedbackChunkCnt + 1)
+
+            for (i in 1..feedbackChunkCnt) {
+                if (i <= (halfFeedbackChunkCnt)) { // 마디1 인덱스 설정
+                    startX = startX_measure1
+                    xOffset = startX + i * (measure_width / (halfFeedbackChunkCnt + 1))
+
+                } else { // 마디2 X인덱스 설정
+                    startX = startX_measure2
+                    xOffset = startX + (i - halfFeedbackChunkCnt) * (measure_width / (halfFeedbackChunkCnt + 1))
+                }
+
+                val answer_stroke = 10f
+                val answer_color = Color.Blue
+                val normal_stroke = 10f
+                val normal_color = Color.Red
+
+                val selected_stroke = if (paintNoteList[i] == 2) answer_stroke else normal_stroke
+                val selected_color = if (paintNoteList[i] == 2) answer_color else normal_color
+
+                if (paintNoteList[i] != 0) { // 첫번째 마디 그리기
+                    drawLine(
+                        color = selected_color,
+                        start = Offset(x = xOffset + lineLength / 2, y = startY_tail),
+                        end = Offset(x = xOffset + lineLength / 2, y = endY_tail - lineLength / 2),
+                        strokeWidth = selected_stroke
+                    )
+
+                    // 45도 기울인 선을 그리기 위한 시작점과 끝점 계산
+                    val start = Offset(x = xOffset - lineLength / 2, y = centerY + lineLength / 2)
+                    val end = Offset(x = xOffset + lineLength / 2, y = centerY - lineLength / 2)
+                    drawLine(
+                        color = selected_color,
+                        start = start,
+                        end = end,
+                        strokeWidth = selected_stroke
+                    )
+                }
+            }
+
+
+        }
+    }
+}
 
 /**녹음 후 흐른 시간(초)을 받아와 진행바를 그려주는 함수*/
 @Composable
@@ -272,11 +333,6 @@ fun DrawProcessBar(seconds: Double, modifier: Modifier) {
             color = android.graphics.Color.BLACK // 텍스트 색상 설정
             textSize = 40f // 텍스트 크기 설정
         }
-
-//        NoteTypes.dummyList.forEach { i ->
-//            if (seconds == i)
-//                Log.d("syncBeep", "DrawProcessBar time ${seconds}")
-//        }
 
         drawIntoCanvas { canvas ->
             canvas.nativeCanvas.drawText(

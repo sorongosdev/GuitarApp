@@ -4,6 +4,7 @@ object WavConsts {
     /**청크 개수*/
     const val CHUNK_CNT: Int = 24
     const val FEEDBACK_CHUNK_CNT: Int = 72
+    const val HALF_FEEDBACK_CHUNK_CNT: Int = 36
 
     const val BAR_PERIOD = 5000L
 
