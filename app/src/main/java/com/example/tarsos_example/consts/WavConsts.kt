@@ -24,5 +24,7 @@ object WavConsts {
     /**프로세스바가 시작하는 시점*/
     const val START_BAR_MOM = 2200L
 
+    /**녹음을 시작하는 시점*/
     const val START_CNT_UP_MOM = 2400L
+    const val START_RECORD_MOM = 1800L
 }
