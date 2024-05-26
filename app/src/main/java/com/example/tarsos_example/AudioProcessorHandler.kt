@@ -42,6 +42,7 @@ class AudioProcessorHandler(private val context: Context) {
             val totalInterval = WavConsts.TOT_INTERVAL // 로그를 기록할 간격 시간
             val beepInterval = WavConsts.BEEP_INTERVAL
             var totalElapsedTime = 0L // 경과 시간
+            val startRecordMoment = WavConsts.START_RECORD_MOM // 녹음 시작 시간
             val startCountUpMoment = WavConsts.START_CNT_UP_MOM
             val startBarMoment = WavConsts.START_BAR_MOM
 
@@ -57,7 +58,7 @@ class AudioProcessorHandler(private val context: Context) {
                 }
 
                 //녹음 시작 시점
-                if (totalElapsedTime == startCountUpMoment) {
+                if (totalElapsedTime == startRecordMoment) {
                     viewModel.updateCountDownSecond(0) // 녹음이 시작되면 카운트다운을 0으로 바꿈
 
                     releaseDispatcher()
@@ -86,7 +87,7 @@ class AudioProcessorHandler(private val context: Context) {
                     viewModel.updateBarSecond((totalElapsedTime - startBarMoment) / 1000.0)
                 }
 
-                //카운트 업
+                //카운트 업 시작, 2400L
                 if (totalElapsedTime >= startCountUpMoment) {
                     viewModel.updateRecordSecond((totalElapsedTime - startCountUpMoment) / 1000.0) // 초 업데이트는 200L 간격으로
 
