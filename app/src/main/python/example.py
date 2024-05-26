@@ -529,7 +529,7 @@ def filter_euphony(differences):
         next_diff = differences[i + 1]
 
         # 현재 원소가 다음 원소보다 크고, 그 차이가 현재 원소의 5%보다 작은 경우 여음으로 판단
-        if current_diff > next_diff and next_diff < current_diff * 0.038:
+        if current_diff > next_diff and next_diff < current_diff * 0.033:
             euphony_indices.append(i+1)  # 다음 원소(여음으로 판단된 원소) 인덱스 저장
 
     # 여음으로 판정된 원소를 제외하고 반환 목록에 추가
@@ -905,9 +905,9 @@ def main(wave_bytes):
     print("앞댕 : ", results)
 
 
-    # 인덱스 25 이후의 모든 요소를 0으로 설정
-    if len(results) > 25:
-        for i in range(25, len(results)):
+    # 인덱스 27 이후의 모든 요소를 0으로 설정
+    if len(results) > 27:
+        for i in range(27, len(results)):
             results[i] = 0
     print("0설 : ",results)
     print(len(results))
