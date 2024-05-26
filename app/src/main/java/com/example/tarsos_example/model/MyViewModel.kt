@@ -107,11 +107,11 @@ class MyViewModel : ViewModel() {
         val updatedPaintNoteList = _paintNoteList.value.toMutableList()
 
         for (i in 0..<WavConsts.FEEDBACK_CHUNK_CNT) {
-            if (feedbackNoteList[i] != 0 && _answerNote.value[i] == 0) { // 피드백리스트의 값이 0이 아닌 정수라면 정답리스트의 원소를 1로 (오답)
+            if (feedbackNoteList[i+1] != 0 && _answerNote.value[i] == 0) { // 피드백리스트의 값이 0이 아닌 정수라면 정답리스트의 원소를 1로 (오답)
                 updatedPaintNoteList[i] = 1
             }
 
-            if (feedbackNoteList[i] != 0 && _answerNote.value[i] == 1) { // 정답리스트와 피드백 노트 리스트를 비교해서 둘다 1이라면 값을 2로 바꿈 (정답)
+            if (feedbackNoteList[i+1] != 0 && _answerNote.value[i] == 1) { // 정답리스트와 피드백 노트 리스트를 비교해서 둘다 1이라면 값을 2로 바꿈 (정답)
                 updatedPaintNoteList[i] = 2
             }
         }

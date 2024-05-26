@@ -261,16 +261,16 @@ fun DrawPaintNotes(paintNoteList: List<Int>?, modifier: Modifier) {
             val lineLength = sqrt(2f) * 25f // 45도 각도에서의 선 길이, 대각선 길이 계산
 
             var startX = startX_measure1
-            var xOffset = startX + (halfFeedbackChunkCnt + 1)
+            var xOffset = startX
 
-            for (i in 1..feedbackChunkCnt) {
+            for (i in 0..feedbackChunkCnt) { // 0~72
                 if (i <= (halfFeedbackChunkCnt)) { // 마디1 인덱스 설정
                     startX = startX_measure1
-                    xOffset = startX + i * (measure_width / (halfFeedbackChunkCnt + 1))
+                    xOffset = startX + (i+3) * (measure_width / (halfFeedbackChunkCnt + 1))
 
                 } else { // 마디2 X인덱스 설정
                     startX = startX_measure2
-                    xOffset = startX + (i - halfFeedbackChunkCnt) * (measure_width / (halfFeedbackChunkCnt + 1))
+                    xOffset = (startX + ((i+1.5) - halfFeedbackChunkCnt) * (measure_width / (halfFeedbackChunkCnt + 1))).toFloat()
                 }
 
                 val answer_stroke = 10f

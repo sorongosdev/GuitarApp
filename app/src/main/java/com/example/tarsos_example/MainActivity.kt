@@ -157,18 +157,13 @@ class MainActivity : ComponentActivity() {
                         .height(200.dp)
                 )
 
+                /**악보를 그림*/
                 NewDrawNotes(
                     viewModel = viewModel,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
                 )
-
-//                DrawFeedBackNotes(
-//                    feedbackNoteList = feedbackNoteList.value, modifier = Modifier
-//                        .fillMaxWidth()
-//                        .height(200.dp)
-//                )
 
                 /**피드백리스트와 정답리스트를 기반으로 다시 노트를 그림*/
                 DrawPaintNotes(
