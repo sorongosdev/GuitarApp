@@ -107,7 +107,8 @@ class AudioProcessorHandler(private val context: Context) {
     /**녹음 중지시 실행되는 리스너*/
     suspend fun stopAudioProcessing(viewModel: MyViewModel) {
         viewModel.updateBeepingState(false) // 비프음이 중지되었다는 것을 알림
-        beepJob?.join() // 비프음 재생이 완전히 중지될 때까지 대기
+//        beepJob?.join() // 비프음 재생이 완전히 중지될 때까지 대기
+        delay(600)
         releaseDispatcher()
         viewModel.updateRecordingState(isRecording = false)
         randomAccessFile?.close()

@@ -529,7 +529,7 @@ def filter_euphony(differences):
         next_diff = differences[i + 1]
 
         # 현재 원소가 다음 원소보다 크고, 그 차이가 현재 원소의 5%보다 작은 경우 여음으로 판단
-        if current_diff > next_diff and next_diff < current_diff * 0.2:
+        if current_diff > next_diff and next_diff < current_diff * 0.04:
             euphony_indices.append(i+1)  # 다음 원소(여음으로 판단된 원소) 인덱스 저장
 
     # 여음으로 판정된 원소를 제외하고 반환 목록에 추가
@@ -672,7 +672,7 @@ def main(wave_bytes):
 
     all_top_results = [] # [(chunk_num, freq, value, note_name), ...]
     all_values = []      # chunk별 상위 1개의 value 모음, [(chunk_num, value), ....]
-    all_freq_num = [0, ]    # chunk별 추출된 freq 모음
+    # all_freq_num = [0, ]    # chunk별 추출된 freq 모음
     all_keys = []        # 추정한 조 모음, [(chunk_num, nearest_key), ...]
     all_chords = []      # 추정한 코드 모음, ['G', 'null', ...]
     chunk_num = 0
@@ -742,7 +742,7 @@ def main(wave_bytes):
         final_chord = find_matching_chord_for_a_chunk(nearest_key, chunks_top_results, guitar_chords_notes)
         print(final_chord, "코드")
         all_chords.append(final_chord)
-        all_freq_num.append(len(all_freqs))
+        # all_freq_num.append(len(all_freqs))
 
         chunk_num += 1
 
@@ -874,24 +874,25 @@ def main(wave_bytes):
 
 
     print("\n---------------박자 여음 처리 이후, 코드 및 박자 결과----------------")
+    print(all_values)
+
     for i, difference in enumerate(differences):
         if difference not in filtered_differences:
             results[peak_chunk_nums[i]-1] = 0
     print(results)
 
-    # chunk 24에서 peak 값이 나왔을 경우, 23에서 박자를 친것으로 판단이 되는데, 그냥 안친걸로 판단할래
-    # if len(results) < 25:
-    #     # 인덱스 23과 24를 0으로 설정
-    #     results[23] = 0
-    #     results[24] = 0
+    # 인덱스 25 이후의 모든 요소를 0으로 설정
+    if len(results) > 25:
+        for i in range(25, len(results)):
+            results[i] = 0
+    print(results)
 
-    # 73개 list로 늘리기
+    # 원소 1개를 3개로 늘려서 list 반환
     results = expand_results(results)
     print(results)
     print(len(results))
     return results
 
-    # print(all_freq_num)
 
     # chunk 순서(시간)와 value를 분리하여 리스트로 저장
     chunk_order = [x[0] for x in all_values]  # x축: chunk 순서
