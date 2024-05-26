@@ -529,7 +529,7 @@ def filter_euphony(differences):
         next_diff = differences[i + 1]
 
         # 현재 원소가 다음 원소보다 크고, 그 차이가 현재 원소의 5%보다 작은 경우 여음으로 판단
-        if current_diff > next_diff and next_diff < current_diff * 0.04:
+        if current_diff > next_diff and next_diff < current_diff * 0.038:
             euphony_indices.append(i+1)  # 다음 원소(여음으로 판단된 원소) 인덱스 저장
 
     # 여음으로 판정된 원소를 제외하고 반환 목록에 추가
@@ -879,13 +879,44 @@ def main(wave_bytes):
     for i, difference in enumerate(differences):
         if difference not in filtered_differences:
             results[peak_chunk_nums[i]-1] = 0
-    print(results)
+    print("원본 : ", results)
+    print(len(results))
+
+    # 인덱스 15 이후의 요소들 중 0이 아닌 정수만 한 칸 앞으로 당기기
+    i = 15
+    while i < len(results) - 1:
+        # 현재 인덱스가 0이 아니고, 다음 인덱스도 0이 아닌 경우,
+        # 현재 인덱스를 건너뛰고 다음 연속된 0이 아닌 정수까지 이동
+        if results[i] != 0 and results[i + 1] != 0:
+            i += 1
+            while i < len(results) and results[i] != 0:
+                i += 1
+        # 현재 인덱스가 0이 아니지만 다음 인덱스가 0이 아닌 경우, 한 칸 앞으로 당김
+        elif results[i + 1] != 0:
+            results[i] = results[i + 1]
+            results[i + 1] = 0
+            i += 1
+        # 다음 인덱스가 0인 경우, 현재 인덱스도 0으로 설정하고 다음 인덱스로 이동
+        else:
+            results[i] = 0
+            i += 1
+    # 마지막 요소를 0으로 설정
+    results[-1] = 0
+    print("앞댕 : ", results)
+
 
     # 인덱스 25 이후의 모든 요소를 0으로 설정
     if len(results) > 25:
         for i in range(25, len(results)):
             results[i] = 0
-    print(results)
+    print("0설 : ",results)
+    print(len(results))
+
+    # 인덱스 1과 2의 요소를 삭제
+    del results[1]  # 인덱스 1의 요소 삭제
+    del results[1]  # 원래 인덱스 2의 요소가 삭제되면서 인덱스가 한 칸씩 당겨지므로 다시 인덱스 1의 요소를 삭제
+    print("삭제 : ",results)
+    print(len(results))
 
     # 원소 1개를 3개로 늘려서 list 반환
     results = expand_results(results)
