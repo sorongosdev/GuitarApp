@@ -107,45 +107,100 @@ class MyViewModel : ViewModel() {
         val updatedPaintNoteList = _paintNoteList.value.toMutableList()
 
         for (i in 0..<WavConsts.FEEDBACK_CHUNK_CNT) {
-            if (feedbackNoteList[i+1] != 0 && _answerNote.value[i] == 0) { // 피드백리스트의 값이 0이 아닌 정수라면 정답리스트의 원소를 1로 (오답)
+            if (feedbackNoteList[i + 1] != 0 && _answerNote.value[i] == 0) { // 피드백리스트의 값이 0이 아닌 정수라면 정답리스트의 원소를 1로 (오답)
                 updatedPaintNoteList[i] = 1
             }
 
-            if (feedbackNoteList[i+1] != 0 && _answerNote.value[i] == 1) { // 정답리스트와 피드백 노트 리스트를 비교해서 둘다 1이라면 값을 2로 바꿈 (정답)
+            if (feedbackNoteList[i + 1] != 0 && _answerNote.value[i] == 1) { // 정답리스트와 피드백 노트 리스트를 비교해서 둘다 1이라면 값을 2로 바꿈 (정답)
                 updatedPaintNoteList[i] = 2
             }
         }
         for (i in 1..<WavConsts.FEEDBACK_CHUNK_CNT - 1) { // 1~70
             // 연속된 1이 있으면 그 3묶음은 오답이라고 판단하고 첫번째 위치에만 1을 남김
-            if (updatedPaintNoteList[i - 1] == 1 && updatedPaintNoteList[i] == 1 && updatedPaintNoteList[i + 1] == 1) {
+            if (updatedPaintNoteList[i - 1] == 1 && updatedPaintNoteList[i] == 1 && updatedPaintNoteList[i + 1] == 1) { // 3개 다 오답
                 updatedPaintNoteList[i] = 0
                 updatedPaintNoteList[i + 1] = 0
             }
 
             Log.d("answerNote", "_answerNote.value ${_answerNote.value}")
-
+            /**========================================================================*/
             // 3묶음 중 하나라도 정답이면 3묶음 모두 지우고 정답 인 곳에 음표 그리기
             // 3묶음 중 정답과 가장 가까운 인덱스를 찾음
-//            if (updatedPaintNoteList[i - 1] == 2 || updatedPaintNoteList[i] == 2 || updatedPaintNoteList[i + 1] == 2) {
-//                // ex: 4,5,6 ==> 6만 범위
-//                // ex: 5,6,7 ==> 6,7이 범위
-//                // ex: 6,7,8 ==> 7,8이 범위
-//                if(i)
-////                if (_answerNote.value[i - 1] == 1) {
-////                    updatedPaintNoteList[i] = 0
-////                    updatedPaintNoteList[i + 1] = 0
-////                } else if (_answerNote.value[i] == 1) {
-////                    updatedPaintNoteList[i - 1] = 0
-////                    updatedPaintNoteList[i + 1] = 0
-////                } else if (_answerNote.value[i + 1] == 1) {
-////                    updatedPaintNoteList[i - 1] = 0
-////                    updatedPaintNoteList[i] = 0
-////                }
-//                // i-1 또는 i 또는 i+1 ========= 0또는 9또는 18또는 27
-//            }
+            /**======================================================================================================*/
+            if (updatedPaintNoteList[i - 1] == 2 && updatedPaintNoteList[i] == 2 && updatedPaintNoteList[i + 1] == 2) { // 3개 다 정답
+                val rightBoundIndex = WavConsts.FEEDBACK_CHUNK_CNT - 1
+                //=============================================================================================좌에 치우쳐져 있을 때
+                if (i - 1 == 0) { // 0부터 3개 연속 정답일 때
+                    updatedPaintNoteList[i] = 0
+                    updatedPaintNoteList[i + 1] = 0
+                } else if (_answerNote.value[i - 2] == 0 && _answerNote.value[i + 2] == 1) { // 3묶음의 왼쪽 인덱스가 0보다 크면서, 정답 범위의 왼쪽에 있음
+                    updatedPaintNoteList[i - 1] = 0
+                    updatedPaintNoteList[i] = 0
+                    updatedPaintNoteList[i + 1] = 0
+                    updatedPaintNoteList[i + 2] = 2
+                } else if (i - 3 >= 0 && _answerNote.value[i - 3] == 0 && _answerNote.value[i + 3] == 1) {
+                    updatedPaintNoteList[i - 1] = 0
+                    updatedPaintNoteList[i] = 0
+                }
+                //=======================================================================================================딱 중심
+                else if (i - 4 >= 0 && _answerNote.value[i - 4] == 0 && _answerNote.value[i + 4] == 0) {
+                    updatedPaintNoteList[i - 1] = 0
+                    updatedPaintNoteList[i + 1] = 0
+                }
+                //=========================================================================================================우로 치우쳐짐
+                else if (_answerNote.value[i] != 2 && i + 1 == rightBoundIndex) {
+                    updatedPaintNoteList[i - 1] = 0
+                    updatedPaintNoteList[i] = 0
+                } else if (_answerNote.value[i] != 2 && _answerNote.value[i + 2] == 0 && _answerNote.value[i - 2] == 1) {
+                    updatedPaintNoteList[i - 2] = 2
+                    updatedPaintNoteList[i - 1] = 0
+                    updatedPaintNoteList[i] = 0
+                    updatedPaintNoteList[i + 1] = 0
+                } else if (_answerNote.value[i] != 2 && i + 3 <= rightBoundIndex && _answerNote.value[i + 3] == 0 && _answerNote.value[i - 3] == 1) {
+                    updatedPaintNoteList[i + 1] = 0
+                    updatedPaintNoteList[i] = 0
+                }
+                //============================================================================================================
+            } else if (updatedPaintNoteList[i - 1] == 2 && updatedPaintNoteList[i] == 1 && updatedPaintNoteList[i + 1] == 1) { // 앞에 한 개만 정답
+                val shiftedAnswerIndex = (i - 1) - 3
+                if (updatedPaintNoteList[shiftedAnswerIndex] == 2) { // 만약 원점이 이미 2라면
+                    updatedPaintNoteList[i - 1] = 1 // 앞에 한 개를 오답으로 만들고 나머지를 0으로 만듦
+                    updatedPaintNoteList[i] = 0
+                    updatedPaintNoteList[i + 1] = 0
+                } else { // 원점이 2가 아니라면
+                    updatedPaintNoteList[i - 1] = 0
+                    updatedPaintNoteList[i] = 0
+                    updatedPaintNoteList[i + 1] = 0
+                    updatedPaintNoteList[shiftedAnswerIndex] = 2
+                }
+            } else if (updatedPaintNoteList[i - 1] == 2 && updatedPaintNoteList[i] == 2 && updatedPaintNoteList[i + 1] == 1) { // 앞에 두 개 정답
+                val shiftedAnswerIndex = (i - 1) - 2
+                if (updatedPaintNoteList[shiftedAnswerIndex] == 2) { // 만약 원점이 이미 2라면
+                    updatedPaintNoteList[i - 1] = 1 // 앞에 한 개를 오답으로 만들고 나머지를 0으로 만듦
+                    updatedPaintNoteList[i] = 0
+                    updatedPaintNoteList[i + 1] = 0
+                } else { // 원점이 2가 아니라면
+                    updatedPaintNoteList[i - 1] = 0
+                    updatedPaintNoteList[i] = 0
+                    updatedPaintNoteList[i + 1] = 0
+                    updatedPaintNoteList[shiftedAnswerIndex] = 2
+                }
+            } else if (updatedPaintNoteList[i - 1] == 1 && updatedPaintNoteList[i] == 1 && updatedPaintNoteList[i + 1] == 2) { // 뒤에 한 개 정답
+                val shiftedAnswerIndex = (i + 1) + 3
+                updatedPaintNoteList[i - 1] = 0
+                updatedPaintNoteList[i] = 0
+                updatedPaintNoteList[i + 1] = 0
+                updatedPaintNoteList[shiftedAnswerIndex] = 2
+            } else if (updatedPaintNoteList[i - 1] == 1 && updatedPaintNoteList[i] == 2 && updatedPaintNoteList[i + 1] == 2) { // 뒤에 두 개만 정답
+                val shiftedAnswerIndex = (i + 1) + 2
+                updatedPaintNoteList[i - 1] = 0
+                updatedPaintNoteList[i] = 0
+                updatedPaintNoteList[i + 1] = 0
+                updatedPaintNoteList[shiftedAnswerIndex] = 2
+            }
+            /**========================================================================*/
+
         }
-        // TODO: 3묶음 모두 오답이면 앞으로 합쳐서 하나로 보이게
-        // TODO: 3묶음 중 하나라도 정답이면 3묶음 모두 지우고 정답 인 곳에 음표 그리기
         _paintNoteList.value = updatedPaintNoteList
 
         Log.d("answerNote", "_paintNoteList.value ${_paintNoteList.value}")
