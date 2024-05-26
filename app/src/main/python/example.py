@@ -659,7 +659,7 @@ def expand_results(results):
     return new_results
 
 
-def main(wave_bytes):
+def main(wave_bytes, rms_list):
     print("\nPolyphonic note detector\n")
 
     unique_notes = get_unique_key()
@@ -808,7 +808,7 @@ def main(wave_bytes):
         # elif is_it_onetwothree == 0:
         #     chunk_target_chunk_nums = [0, 1, 2]
 
-        print("current_target_chunk_nums : ", current_target_chunk_nums)
+        # print("current_target_chunk_nums : ", current_target_chunk_nums)
         ## 원하는 chunk별, value 기준 상위 n개 {chunk_num:(freq, value, note_name), ...} 출력
         chunks_top_results = get_chunks_results(all_top_results, current_target_chunk_nums, top_n)
         # for chunk_number, results in chunks_top_results.items():
@@ -875,6 +875,7 @@ def main(wave_bytes):
 
     print("\n---------------박자 여음 처리 이후, 코드 및 박자 결과----------------")
     print(all_values)
+    print(rms_list)
 
     for i, difference in enumerate(differences):
         if difference not in filtered_differences:
@@ -904,7 +905,6 @@ def main(wave_bytes):
     results[-1] = 0
     print("앞댕 : ", results)
 
-
     # 인덱스 27 이후의 모든 요소를 0으로 설정
     if len(results) > 27:
         for i in range(27, len(results)):
@@ -923,20 +923,6 @@ def main(wave_bytes):
     print(results)
     print(len(results))
     return results
-
-
-    # chunk 순서(시간)와 value를 분리하여 리스트로 저장
-    chunk_order = [x[0] for x in all_values]  # x축: chunk 순서
-    values = [x[1] for x in all_values]  # y축: value
-
-    # Plot 생성
-    plt.figure(figsize=(15, 7))  # plot 크기 설정
-    plt.plot(chunk_order, values, marker='o', linestyle='-', color='b')  # chunk 순서에 따른 value를 선과 점으로 표시
-    plt.title('Max Values of each chunks ' + filename)  # plot 제목
-    plt.xlabel('Chunk num')  # x축 라벨
-    plt.ylabel('Value')  # y축 라벨
-    plt.grid(True)  # 그리드 표시
-    plt.show()  # plot 보여주기
 
 if __name__ == "__main__":
     main()

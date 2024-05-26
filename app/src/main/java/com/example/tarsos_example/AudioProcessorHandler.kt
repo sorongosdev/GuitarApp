@@ -29,6 +29,8 @@ class AudioProcessorHandler(private val context: Context) {
     private val bufferOverlap = 0 // 버퍼 겹침
 
     private var beepJob: Job? = null // 비프음 재생 관리하는 Job 객체
+    private val rmsList = mutableListOf<Pair<Double, Long>>() // RMS 값과 time 저장할 리스트
+    // private val pyPair = mutableListOf<Pair<ByteArray, List<Pair<Double, Long>>>>()
 
     /**녹음 시작시 실행*/
     fun SetupAudioProcessing(viewModel: MyViewModel) {
@@ -75,6 +77,12 @@ class AudioProcessorHandler(private val context: Context) {
                     val recordProcessor = WriterProcessor(tarsosDSPAudioFormat, randomAccessFile)
                     dispatcher?.addAudioProcessor(recordProcessor)
 
+                    // RMSProcessor 추가
+                    dispatcher?.addAudioProcessor(RMSProcessor { rms ->
+                        // Log.d("RMS Time", "RMS: $rms dB")
+                        rmsList.add(Pair(rms, totalElapsedTime))
+                    })
+
                     // dispatcher로 Thread 실행
                     audioThread = Thread(dispatcher, "Audio Thread")
                     audioThread?.start()
@@ -92,7 +100,7 @@ class AudioProcessorHandler(private val context: Context) {
                     viewModel.updateRecordSecond((totalElapsedTime - startCountUpMoment) / 1000.0) // 초 업데이트는 200L 간격으로
 
                     if (totalElapsedTime % beepInterval == 0L) { // 비프음은 600L 간격으로
-                        Log.d("startBar", "countUp ${totalElapsedTime}")
+                        Log.d("RMS Time", "countUp ${totalElapsedTime}")
                         playBeep()
                     }
                 }
@@ -146,11 +154,11 @@ class AudioProcessorHandler(private val context: Context) {
 
         // 읽은 바이트 데이터를 Python 코드에 전달
         val feedbackNoteListPyObject = waveBytes?.let { bytes ->
-            pyObj.callAttr("main", bytes).asList()
-
+            pyObj.callAttr("main", bytes, rmsList).asList()
         }
+        rmsList.clear()
 
-        Log.d("intErr","feedbackNoteListPyObject ${feedbackNoteListPyObject?.size}")
+        Log.d("intErr", "feedbackNoteListPyObject ${feedbackNoteListPyObject?.size}")
 
         // feedbackNoteListPyObject를 Kotlin의 List<String>으로 변환
         val feedbackNoteListKotlin: List<Int> =

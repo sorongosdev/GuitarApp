@@ -63,6 +63,10 @@ class MyViewModel : ViewModel() {
     private var _isBeeping = MutableStateFlow<Boolean>(false)
     val isBeeping: StateFlow<Boolean> = _isBeeping
 
+    /**현재 데시벨*/
+//    private var _currentDb = MutableStateFlow<Double>(0.0)
+//    val currentDb : StateFlow<Double> = _currentDb
+
     /****************************   함수들 **************************************/
     /**노트 타입별로 길이 4인 리스트를 받아 12개인 리스트로 반환해주는 함수*/
     private fun match_answer(note: List<Int>): List<Int> {
@@ -237,4 +241,10 @@ class MyViewModel : ViewModel() {
         _recordSecond.value = 0.0
         _barSecond.value = 0.0
     }
+
+
+    /**데시벨 찍어보기 위한 함수*/
+//    fun updateCurrentDb(db: Double){
+//        Log.d("answerNote", "_paintNoteList.value ${_paintNoteList.value}")
+//    }
 }
