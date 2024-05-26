@@ -86,6 +86,7 @@ class MyViewModel : ViewModel() {
         //정답 리스트를 위한 마디1 끝 값 1로 바꾸기
         draft_answer_note1[halfFeedbackChunkCnt - 1] = 1
         draft_answer_note1[halfFeedbackChunkCnt - 2] = 1
+        draft_answer_note1[halfFeedbackChunkCnt - 3] = 1
 
         // note1과 note2에 해당하는 정답 리스트를 합쳐서 업데이트
         _answerNote.value = draft_answer_note1 + draft_answer_note2
@@ -99,22 +100,54 @@ class MyViewModel : ViewModel() {
     }
 
     /**연산 후 피드백 노트 리스트를 업데이트 해주는 함수*/
-    fun updateFeedbackNoteList(newList: List<Int>) {
-        _feedbackNoteList.value = newList
+    fun updateFeedbackNoteList(feedbackNoteList: List<Int>) {
+        _feedbackNoteList.value = feedbackNoteList
 
         Log.d("answerNote", "_feedbackNoteList.value ${_feedbackNoteList.value}")
         val updatedPaintNoteList = _paintNoteList.value.toMutableList()
 
         for (i in 0..<WavConsts.FEEDBACK_CHUNK_CNT) {
-            if (newList[i] != 0) { // 피드백리스트의 값이 0이 아닌 정수라면 정답리스트의 원소를 1로
+            if (feedbackNoteList[i] != 0 && _answerNote.value[i] == 0) { // 피드백리스트의 값이 0이 아닌 정수라면 정답리스트의 원소를 1로 (오답)
                 updatedPaintNoteList[i] = 1
             }
 
-            if (newList[i] != 0 && _answerNote.value[i] == 1) { // 정답리스트와 피드백 노트 리스트를 비교해서 둘다 1이라면 값을 2로 바꿈
+            if (feedbackNoteList[i] != 0 && _answerNote.value[i] == 1) { // 정답리스트와 피드백 노트 리스트를 비교해서 둘다 1이라면 값을 2로 바꿈 (정답)
                 updatedPaintNoteList[i] = 2
             }
         }
+        for (i in 1..<WavConsts.FEEDBACK_CHUNK_CNT - 1) { // 1~70
+            // 연속된 1이 있으면 그 3묶음은 오답이라고 판단하고 첫번째 위치에만 1을 남김
+            if (updatedPaintNoteList[i - 1] == 1 && updatedPaintNoteList[i] == 1 && updatedPaintNoteList[i + 1] == 1) {
+                updatedPaintNoteList[i] = 0
+                updatedPaintNoteList[i + 1] = 0
+            }
+
+            Log.d("answerNote", "_answerNote.value ${_answerNote.value}")
+
+            // 3묶음 중 하나라도 정답이면 3묶음 모두 지우고 정답 인 곳에 음표 그리기
+            // 3묶음 중 정답과 가장 가까운 인덱스를 찾음
+//            if (updatedPaintNoteList[i - 1] == 2 || updatedPaintNoteList[i] == 2 || updatedPaintNoteList[i + 1] == 2) {
+//                // ex: 4,5,6 ==> 6만 범위
+//                // ex: 5,6,7 ==> 6,7이 범위
+//                // ex: 6,7,8 ==> 7,8이 범위
+//                if(i)
+////                if (_answerNote.value[i - 1] == 1) {
+////                    updatedPaintNoteList[i] = 0
+////                    updatedPaintNoteList[i + 1] = 0
+////                } else if (_answerNote.value[i] == 1) {
+////                    updatedPaintNoteList[i - 1] = 0
+////                    updatedPaintNoteList[i + 1] = 0
+////                } else if (_answerNote.value[i + 1] == 1) {
+////                    updatedPaintNoteList[i - 1] = 0
+////                    updatedPaintNoteList[i] = 0
+////                }
+//                // i-1 또는 i 또는 i+1 ========= 0또는 9또는 18또는 27
+//            }
+        }
+        // TODO: 3묶음 모두 오답이면 앞으로 합쳐서 하나로 보이게
+        // TODO: 3묶음 중 하나라도 정답이면 3묶음 모두 지우고 정답 인 곳에 음표 그리기
         _paintNoteList.value = updatedPaintNoteList
+
         Log.d("answerNote", "_paintNoteList.value ${_paintNoteList.value}")
     }
 
@@ -144,6 +177,7 @@ class MyViewModel : ViewModel() {
 
     /**init 버튼을 눌렀을 때, 초를 다시 세팅*/
     fun init() {
+        _paintNoteList.value = List(WavConsts.FEEDBACK_CHUNK_CNT + 1) { 0 }
         _countDownSecond.value = 4
         _recordSecond.value = 0.0
         _barSecond.value = 0.0
