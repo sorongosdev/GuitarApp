@@ -60,7 +60,7 @@ class AudioProcessorHandler(private val context: Context) {
 
                 //녹음 시작 시점
                 if (totalElapsedTime == startRecordMoment) {
-                    viewModel.updateCountDownSecond(0) // 녹음이 시작되면 카운트다운을 0으로 바꿈
+//                    viewModel.updateCountDownSecond(0) // 녹음이 시작되면 카운트다운을 0으로 바꿈
 
                     releaseDispatcher()
                     dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(
@@ -96,6 +96,8 @@ class AudioProcessorHandler(private val context: Context) {
 
                 //카운트 업 시작, 2400L
                 if (totalElapsedTime >= startCountUpMoment) {
+                    viewModel.updateCountDownSecond(0) // 녹음이 시작되면 카운트다운을 0으로 바꿈
+
                     viewModel.updateRecordSecond((totalElapsedTime - startCountUpMoment) / 1000.0) // 초 업데이트는 200L 간격으로
 
                     if (totalElapsedTime % beepInterval == 0L) { // 비프음은 600L 간격으로
