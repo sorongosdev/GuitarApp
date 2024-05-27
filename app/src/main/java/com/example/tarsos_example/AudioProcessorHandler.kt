@@ -29,7 +29,7 @@ class AudioProcessorHandler(private val context: Context) {
     private val bufferOverlap = 0 // 버퍼 겹침
 
     private var beepJob: Job? = null // 비프음 재생 관리하는 Job 객체
-    private val rmsList = mutableListOf<Pair<Double, Long>>() // RMS 값과 time 저장할 리스트
+    private val rmsList = mutableListOf<Pair<Long, Double>>() // RMS 값과 time 저장할 리스트
     // private val pyPair = mutableListOf<Pair<ByteArray, List<Pair<Double, Long>>>>()
 
     /**녹음 시작시 실행*/
@@ -80,7 +80,7 @@ class AudioProcessorHandler(private val context: Context) {
                     // RMSProcessor 추가
                     dispatcher?.addAudioProcessor(RMSProcessor { rms ->
                         // Log.d("RMS Time", "RMS: $rms dB")
-                        rmsList.add(Pair(rms, totalElapsedTime))
+                        rmsList.add(Pair(totalElapsedTime, rms))
                     })
 
                     // dispatcher로 Thread 실행
