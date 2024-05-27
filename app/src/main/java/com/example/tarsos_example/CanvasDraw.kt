@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
+import com.example.tarsos_example.consts.AnswerTypes
 import com.example.tarsos_example.model.MyViewModel
 import com.example.tarsos_example.consts.ChordTypes
 import com.example.tarsos_example.consts.NoteTypes
@@ -273,31 +274,33 @@ fun DrawPaintNotes(paintNoteList: List<Int>?, modifier: Modifier) {
                     xOffset = (startX + ((i+1.5) - halfFeedbackChunkCnt) * (measure_width / (halfFeedbackChunkCnt + 1))).toFloat()
                 }
 
-                val answer_stroke = 10f
-                val answer_color = Color.Blue
-                val normal_stroke = 10f
-                val normal_color = Color.Red
+                val selected_color = AnswerTypes.answerCodeMap[paintNoteList[i]]
+                val selected_stroke = 10f
 
-                val selected_stroke = if (paintNoteList[i] == 2) answer_stroke else normal_stroke
-                val selected_color = if (paintNoteList[i] == 2) answer_color else normal_color
+//                val selected_stroke = if (paintNoteList[i] == 3) answer_stroke else normal_stroke
+//                val selected_color = if (paintNoteList[i] == 3) answer_color else normal_color
 
                 if (paintNoteList[i] != 0) { // 첫번째 마디 그리기
-                    drawLine(
-                        color = selected_color,
-                        start = Offset(x = xOffset + lineLength / 2, y = startY_tail),
-                        end = Offset(x = xOffset + lineLength / 2, y = endY_tail - lineLength / 2),
-                        strokeWidth = selected_stroke
-                    )
+                    if (selected_color != null) {
+                        drawLine(
+                            color = selected_color,
+                            start = Offset(x = xOffset + lineLength / 2, y = startY_tail),
+                            end = Offset(x = xOffset + lineLength / 2, y = endY_tail - lineLength / 2),
+                            strokeWidth = selected_stroke
+                        )
+                    }
 
                     // 45도 기울인 선을 그리기 위한 시작점과 끝점 계산
                     val start = Offset(x = xOffset - lineLength / 2, y = centerY + lineLength / 2)
                     val end = Offset(x = xOffset + lineLength / 2, y = centerY - lineLength / 2)
-                    drawLine(
-                        color = selected_color,
-                        start = start,
-                        end = end,
-                        strokeWidth = selected_stroke
-                    )
+                    if (selected_color != null) {
+                        drawLine(
+                            color = selected_color,
+                            start = start,
+                            end = end,
+                            strokeWidth = selected_stroke
+                        )
+                    }
                 }
             }
 
