@@ -2,6 +2,7 @@ package com.example.tarsos_example.model
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import com.example.tarsos_example.consts.AnswerTypes
 import com.example.tarsos_example.consts.ChordTypes
 import com.example.tarsos_example.consts.NoteTypes
 import com.example.tarsos_example.consts.WavConsts
@@ -93,7 +94,6 @@ class MyViewModel : ViewModel() {
     }
 
     /**사용자에게 보여줄 코드를 업데이트 해주는 함수*/
-    // TODO Int 로 받아야함
     fun updateChords(chord1: String, chord2: String) {
         _shownChord1.value = chord1
         _shownChord2.value = chord2
@@ -105,59 +105,62 @@ class MyViewModel : ViewModel() {
 
         Log.d("answerNote", "_feedbackNoteList.value ${_feedbackNoteList.value}")
 
-        /**========================================================================박자 판단*/
+        /**========================================================================박자 및 코드 판단*/
         var updatedPaintNoteList = _paintNoteList.value.toMutableList()
-        updatedPaintNoteList = decideBeat(feedbackNoteList, updatedPaintNoteList)
-        /**=========================================================================코드 판단*/
-        updatedPaintNoteList = decideChord(feedbackNoteList, updatedPaintNoteList)
+        updatedPaintNoteList = decideAnswer(feedbackNoteList, updatedPaintNoteList)
         /**===============================================================================*/
         _paintNoteList.value = updatedPaintNoteList
 
         Log.d("answerNote", "_paintNoteList.value ${_paintNoteList.value}")
     }
 
-    /**코드 판정*/
-    private fun decideChord(
-        feedbackNoteList: List<Int>,
-        updatedPaintNoteList: MutableList<Int>
-    ): MutableList<Int> {
-        //TODO: paintNoteList 반 갈라서 왼쪽은 showChord1과 비교, 오른쪽은 shownChord2와 비교해서 정답이면 3, 오답이면 그대로 두기
-        val halfFeedbackChunkCnt = WavConsts.HALF_FEEDBACK_CHUNK_CNT
-        val feedbackChunkCnt = WavConsts.FEEDBACK_CHUNK_CNT
-        for (i in 0..<halfFeedbackChunkCnt) {
-            if (updatedPaintNoteList[i] != 0 && feedbackNoteList[i + 1] == ChordTypes.chords_string_int_map[_shownChord1.value]) {
-                updatedPaintNoteList[i] = 3
-            }
-        }
-        for(i in halfFeedbackChunkCnt..<feedbackChunkCnt){
-            if (updatedPaintNoteList[i] != 0 && feedbackNoteList[i + 1] == ChordTypes.chords_string_int_map[_shownChord2.value]) {
-                updatedPaintNoteList[i] = 3
-            }
-        }
-        Log.d("decideChord","updatedPaintNoteList ${updatedPaintNoteList}")
-        return updatedPaintNoteList
-    }
-
     /**박자 판정*/
-    private fun decideBeat(
+    private fun decideAnswer(
         feedbackNoteList: List<Int>,
         updatedPaintNoteList: MutableList<Int>
     ): MutableList<Int> {
-        for (i in 0..<WavConsts.FEEDBACK_CHUNK_CNT) {
-            if (feedbackNoteList[i + 1] != 0 && _answerNote.value[i] == 0) { // 피드백리스트의 값이 0이 아닌 정수라면 정답리스트의 원소를 1로 (박자 오답)
-                updatedPaintNoteList[i] = 1
+        /**=====================================================상수들*/
+        val BEAT_W_CHORD_X = AnswerTypes.BEAT_W_CHORD_X
+        val BEAT_C_CHORD_X = AnswerTypes.BEAT_C_CHORD_X
+        val BEAT_W_CHORD_C = AnswerTypes.BEAT_W_CHORD_C
+        val BEAT_W_CHORD_W = AnswerTypes.BEAT_W_CHORD_W
+        val BEAT_C_CHORD_C = AnswerTypes.BEAT_C_CHORD_C
+        val BEAT_C_CHORD_W = AnswerTypes.BEAT_C_CHORD_W
+        val DELETED = AnswerTypes.DELETED
+
+        val HALF_FEEDBACK_CHUNK_CNT = WavConsts.HALF_FEEDBACK_CHUNK_CNT
+        val FEEDBACK_CHUNK_CNT = WavConsts.FEEDBACK_CHUNK_CNT
+        /**==============================================================*/
+        for (i in 0..<FEEDBACK_CHUNK_CNT) {
+            val answerChordString =
+                if (i < HALF_FEEDBACK_CHUNK_CNT) _shownChord1.value else _shownChord2.value // 마디마다 다른 정답 코드 설정
+            val answerChordInt = ChordTypes.chords_string_int_map[answerChordString]
+
+            if (feedbackNoteList[i + 1] != 0 && _answerNote.value[i] == 0) { // 박자 x, 코드 미정
+                updatedPaintNoteList[i] = BEAT_W_CHORD_X
+            } else if (feedbackNoteList[i + 1] != 0 && _answerNote.value[i] == 1) { // 박자 0, 코드 미정
+                updatedPaintNoteList[i] = BEAT_C_CHORD_X
             }
 
-            if (feedbackNoteList[i + 1] != 0 && _answerNote.value[i] == 1) { // 정답리스트와 피드백 노트 리스트를 비교해서 둘다 1이라면 값을 2로 바꿈 (박자 정답)
-                updatedPaintNoteList[i] = 2
+            // 코드 판정
+            if ((updatedPaintNoteList[i] == BEAT_W_CHORD_X) && (feedbackNoteList[i + 1] == answerChordInt)) { // 박자 X 코드 0
+                updatedPaintNoteList[i] = BEAT_W_CHORD_C
+            } else if ((updatedPaintNoteList[i] == BEAT_W_CHORD_X) && (feedbackNoteList[i + 1] != answerChordInt)) { // 박자 X 코드 X
+                updatedPaintNoteList[i] = BEAT_W_CHORD_W
+            } else if ((updatedPaintNoteList[i] == BEAT_C_CHORD_X) && (feedbackNoteList[i + 1] == answerChordInt)) { // 박자 0 코드 0
+                updatedPaintNoteList[i] = BEAT_C_CHORD_C
+            } else if ((updatedPaintNoteList[i] == BEAT_C_CHORD_X) && (feedbackNoteList[i + 1] != answerChordInt)) { // 박자 0 코드 X
+                updatedPaintNoteList[i] = BEAT_C_CHORD_W
             }
         }
         // 3묶음 음표 합치기
-        for (i in 1..<WavConsts.FEEDBACK_CHUNK_CNT - 1) { // 1~70
-            // 연속된 1이 있으면 그 3묶음은 오답이라고 판단하고 첫번째 위치에만 1을 남김
-            if (updatedPaintNoteList[i - 1] == 1 && updatedPaintNoteList[i] == 1 && updatedPaintNoteList[i + 1] == 1) { // 3개 다 오답
-                updatedPaintNoteList[i] = 0
-                updatedPaintNoteList[i + 1] = 0
+        for (i in 1..<FEEDBACK_CHUNK_CNT - 3) { // 1~68
+            // 연속된 박자 오답이 있으면 그 3묶음은 오답이라고 판단하고 첫번째 위치에만 오답을 남김
+            // 3개 다 오답
+            Log.d("answerNote","updatedPaintNoteList ${updatedPaintNoteList}")
+            if (!isBeatCorrect(updatedPaintNoteList[i - 1]) && !isBeatCorrect(updatedPaintNoteList[i]) && !isBeatCorrect(updatedPaintNoteList[i + 1])) {
+                updatedPaintNoteList[i] = DELETED
+                updatedPaintNoteList[i + 1] = DELETED
             }
 
             Log.d("answerNote", "_answerNote.value ${_answerNote.value}")
@@ -165,81 +168,118 @@ class MyViewModel : ViewModel() {
             // 3묶음 중 하나라도 정답이면 3묶음 모두 지우고 정답 인 곳에 음표 그리기
             // 3묶음 중 정답과 가장 가까운 인덱스를 찾음
             /**======================================================================================================*/
-            if (updatedPaintNoteList[i - 1] == 2 && updatedPaintNoteList[i] == 2 && updatedPaintNoteList[i + 1] == 2) { // 3개 다 정답
-                val rightBoundIndex = WavConsts.FEEDBACK_CHUNK_CNT - 1
+            if (isBeatCorrect(updatedPaintNoteList[i - 1]) && isBeatCorrect(updatedPaintNoteList[i]) && isBeatCorrect(
+                    updatedPaintNoteList[i + 1]
+                )
+            ) { // 3개 다 정답
                 //=============================================================================================좌에 치우쳐져 있을 때
                 if (i - 1 == 0) { // 0부터 3개 연속 정답일 때
-                    updatedPaintNoteList[i] = 0
-                    updatedPaintNoteList[i + 1] = 0
-                } else if (_answerNote.value[i - 2] == 0 && _answerNote.value[i + 2] == 1) { // 3묶음의 왼쪽 인덱스가 0보다 크면서, 정답 범위의 왼쪽에 있음
-                    updatedPaintNoteList[i - 1] = 0
-                    updatedPaintNoteList[i] = 0
-                    updatedPaintNoteList[i + 1] = 0
-                    updatedPaintNoteList[i + 2] = 2
+                    updatedPaintNoteList[i] = DELETED
+                    updatedPaintNoteList[i + 1] = DELETED
+                } else if (_answerNote.value[i - 2] == 0 && _answerNote.value[i + 2] == 1) { // 제일 좌로 치우침
+                    updatedPaintNoteList[i + 2] = updatedPaintNoteList[i + 1]
+
+                    updatedPaintNoteList[i - 1] = DELETED
+                    updatedPaintNoteList[i] = DELETED
+                    updatedPaintNoteList[i + 1] = DELETED
                 } else if (i - 3 >= 0 && _answerNote.value[i - 3] == 0 && _answerNote.value[i + 3] == 1) {
-                    updatedPaintNoteList[i - 1] = 0
-                    updatedPaintNoteList[i] = 0
+                    updatedPaintNoteList[i - 1] = DELETED
+                    updatedPaintNoteList[i] = DELETED
                 }
                 //=======================================================================================================딱 중심
                 else if (i - 4 >= 0 && _answerNote.value[i - 4] == 0 && _answerNote.value[i + 4] == 0) {
-                    updatedPaintNoteList[i - 1] = 0
-                    updatedPaintNoteList[i + 1] = 0
+                    updatedPaintNoteList[i - 1] = DELETED
+                    updatedPaintNoteList[i + 1] = DELETED
                 }
                 //=========================================================================================================우로 치우쳐짐
-                else if (_answerNote.value[i] != 2 && i + 1 == rightBoundIndex) {
-                    updatedPaintNoteList[i - 1] = 0
-                    updatedPaintNoteList[i] = 0
-                } else if (_answerNote.value[i] != 2 && _answerNote.value[i + 2] == 0 && _answerNote.value[i - 2] == 1) {
-                    updatedPaintNoteList[i - 2] = 2
-                    updatedPaintNoteList[i - 1] = 0
-                    updatedPaintNoteList[i] = 0
-                    updatedPaintNoteList[i + 1] = 0
-                } else if (_answerNote.value[i] != 2 && i + 3 <= rightBoundIndex && _answerNote.value[i + 3] == 0 && _answerNote.value[i - 3] == 1) {
-                    updatedPaintNoteList[i + 1] = 0
-                    updatedPaintNoteList[i] = 0
+                else if (_answerNote.value[i + 2] == 0 && _answerNote.value[i - 2] == 1) { // 제일 우로 치우침
+                    updatedPaintNoteList[i - 2] = updatedPaintNoteList[i - 1]
+                    updatedPaintNoteList[i - 1] = DELETED
+                    updatedPaintNoteList[i] = DELETED
+                    updatedPaintNoteList[i + 1] = DELETED
+                } else if (_answerNote.value[i + 3] == 0 && _answerNote.value[i - 3] == 1) { // 우로 조금만 치우침
+                    updatedPaintNoteList[i + 1] = DELETED
+                    updatedPaintNoteList[i] = DELETED
                 }
-                //============================================================================================================
-            } else if (updatedPaintNoteList[i - 1] == 2 && updatedPaintNoteList[i] == 1 && updatedPaintNoteList[i + 1] == 1) { // 앞에 한 개만 정답
-                val shiftedAnswerIndex = (i - 1) - 3
-                if (updatedPaintNoteList[shiftedAnswerIndex] == 2) { // 만약 원점이 이미 2라면
-                    updatedPaintNoteList[i - 1] = 1 // 앞에 한 개를 오답으로 만들고 나머지를 0으로 만듦
-                    updatedPaintNoteList[i] = 0
-                    updatedPaintNoteList[i + 1] = 0
-                } else { // 원점이 2가 아니라면
-                    updatedPaintNoteList[i - 1] = 0
-                    updatedPaintNoteList[i] = 0
-                    updatedPaintNoteList[i + 1] = 0
-                    updatedPaintNoteList[shiftedAnswerIndex] = 2
-                }
-            } else if (updatedPaintNoteList[i - 1] == 2 && updatedPaintNoteList[i] == 2 && updatedPaintNoteList[i + 1] == 1) { // 앞에 두 개 정답
-                val shiftedAnswerIndex = (i - 1) - 2
-                if (updatedPaintNoteList[shiftedAnswerIndex] == 2) { // 만약 원점이 이미 2라면
-                    updatedPaintNoteList[i - 1] = 1 // 앞에 한 개를 오답으로 만들고 나머지를 0으로 만듦
-                    updatedPaintNoteList[i] = 0
-                    updatedPaintNoteList[i + 1] = 0
-                } else { // 원점이 2가 아니라면
-                    updatedPaintNoteList[i - 1] = 0
-                    updatedPaintNoteList[i] = 0
-                    updatedPaintNoteList[i + 1] = 0
-                    updatedPaintNoteList[shiftedAnswerIndex] = 2
-                }
-            } else if (updatedPaintNoteList[i - 1] == 1 && updatedPaintNoteList[i] == 1 && updatedPaintNoteList[i + 1] == 2) { // 뒤에 한 개 정답
-                val shiftedAnswerIndex = (i + 1) + 3
-                updatedPaintNoteList[i - 1] = 0
-                updatedPaintNoteList[i] = 0
-                updatedPaintNoteList[i + 1] = 0
-                updatedPaintNoteList[shiftedAnswerIndex] = 2
-            } else if (updatedPaintNoteList[i - 1] == 1 && updatedPaintNoteList[i] == 2 && updatedPaintNoteList[i + 1] == 2) { // 뒤에 두 개만 정답
-                val shiftedAnswerIndex = (i + 1) + 2
-                updatedPaintNoteList[i - 1] = 0
-                updatedPaintNoteList[i] = 0
-                updatedPaintNoteList[i + 1] = 0
-                updatedPaintNoteList[shiftedAnswerIndex] = 2
             }
-            /**========================================================================*/
-
+//            //===============================================================================================앞에 한 개만 정답
+//            else if (isBeatCorrect(updatedPaintNoteList[i - 1]) && isBeatCorrect(updatedPaintNoteList[i]) && isBeatCorrect(updatedPaintNoteList[i + 1])) {
+//                val shiftedAnswerIndex = (i - 1) - 3
+//                if (isBeatCorrect(updatedPaintNoteList[shiftedAnswerIndex])) { // =======================원점이 박자 정답이라면
+//                    updatedPaintNoteList[i - 1] = change2WrongBeat(updatedPaintNoteList[i - 1])
+//
+//                    updatedPaintNoteList[i] = DELETED
+//                    updatedPaintNoteList[i + 1] = DELETED
+//                } else if (!isBeatCorrect(updatedPaintNoteList[shiftedAnswerIndex])) { // ================원점이 박자 정답이 아니라면
+//                    updatedPaintNoteList[shiftedAnswerIndex] = updatedPaintNoteList[i - 1]
+//
+//                    updatedPaintNoteList[i - 1] = DELETED
+//                    updatedPaintNoteList[i] = DELETED
+//                    updatedPaintNoteList[i + 1] = DELETED
+//                }
+//            }
+//            // =============================================================================================== 앞에 두 개 정답
+//            else if (isBeatCorrect(updatedPaintNoteList[i - 1]) && isBeatCorrect(
+//                    updatedPaintNoteList[i]
+//                ) && !isBeatCorrect(updatedPaintNoteList[i + 1])
+//            ) {
+//                val shiftedAnswerIndex = (i - 1) - 2
+//                if (isBeatCorrect(updatedPaintNoteList[shiftedAnswerIndex])) { // 만약 원점이 박자 정답이라면
+//                    updatedPaintNoteList[i - 1] =
+//                        change2WrongBeat(updatedPaintNoteList[i - 1]) // 앞에 한 개를 오답으로 만들고 나머지를 0으로 만듦
+//                    updatedPaintNoteList[i] = DELETED
+//                    updatedPaintNoteList[i + 1] = DELETED
+//                } else { // 원점이 2가 아니라면
+//                    updatedPaintNoteList[shiftedAnswerIndex] = updatedPaintNoteList[i - 1]
+//
+//                    updatedPaintNoteList[i - 1] = DELETED
+//                    updatedPaintNoteList[i] = DELETED
+//                    updatedPaintNoteList[i + 1] = DELETED
+//                }
+//            } else if (i + 4 < FEEDBACK_CHUNK_CNT && !isBeatCorrect(updatedPaintNoteList[i - 1]) && !isBeatCorrect(
+//                    updatedPaintNoteList[i]
+//                ) && isBeatCorrect(updatedPaintNoteList[i + 1])
+//            ) { // 뒤에 한 개 정답
+//
+//                val shiftedAnswerIndex = (i + 1) + 3
+//                updatedPaintNoteList[shiftedAnswerIndex] = updatedPaintNoteList[i + 1]
+//
+//                updatedPaintNoteList[i - 1] = DELETED
+//                updatedPaintNoteList[i] = DELETED
+//                updatedPaintNoteList[i + 1] = DELETED
+//            } else if (!isBeatCorrect(updatedPaintNoteList[i - 1]) && isBeatCorrect(
+//                    updatedPaintNoteList[i]
+//                ) && isBeatCorrect(updatedPaintNoteList[i + 1])
+//            ) { // 뒤에 두 개만 정답
+//                val shiftedAnswerIndex = (i + 1) + 2
+//                updatedPaintNoteList[shiftedAnswerIndex] = updatedPaintNoteList[i + 1]
+//
+//                updatedPaintNoteList[i - 1] = DELETED
+//                updatedPaintNoteList[i] = DELETED
+//                updatedPaintNoteList[i + 1] = DELETED
+//            }
+//            /**========================================================================*/
+//
         }
         return updatedPaintNoteList
+    }
+
+    /**틀린 박자로 리턴*/
+    private fun change2WrongBeat(updatedPaintNoteListElement: Int): Int {
+        if (updatedPaintNoteListElement == AnswerTypes.BEAT_C_CHORD_C)
+            return AnswerTypes.BEAT_W_CHORD_C
+        else if (updatedPaintNoteListElement == AnswerTypes.BEAT_C_CHORD_W) {
+            return AnswerTypes.BEAT_W_CHORD_W
+        } else return updatedPaintNoteListElement
+    }
+
+    /**코드 정답 유무에 상관없이 박자가 맞으면 true를 반환해주는 함수*/
+    fun isBeatCorrect(updatedPaintNoteListElement: Int): Boolean {
+        if((updatedPaintNoteListElement == AnswerTypes.BEAT_C_CHORD_W) || (updatedPaintNoteListElement == AnswerTypes.BEAT_C_CHORD_C)){
+            return true
+        } else if(updatedPaintNoteListElement == 0 || (updatedPaintNoteListElement == AnswerTypes.BEAT_W_CHORD_W) || (updatedPaintNoteListElement == AnswerTypes.BEAT_W_CHORD_C)){
+            return false
+        } else return false
     }
 
     /**녹음 진행 정도(초)를 업데이트 해주는 함수*/
