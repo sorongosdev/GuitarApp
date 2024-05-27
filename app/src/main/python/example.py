@@ -670,6 +670,9 @@ def main(wave_bytes, rms_list):
     sample_rate_file, input_buffer = read_wav_file(wave_bytes)
     buffer_chunks = divide_buffer_into_non_overlapping_chunks(input_buffer, fft_len)
 
+    rms_list = rms_list.toArray()  # android에서 받아온 시간별 dB 결과
+    rms_list = [(pair.getFirst(), pair.getSecond()) for pair in rms_list]
+
     all_top_results = [] # [(chunk_num, freq, value, note_name), ...]
     all_values = []      # chunk별 상위 1개의 value 모음, [(chunk_num, value), ....]
     # all_freq_num = [0, ]    # chunk별 추출된 freq 모음
@@ -759,15 +762,25 @@ def main(wave_bytes, rms_list):
     print("\n---------------chunk별 시작 시간----------------")
     print(chunk_times)
 
+    print("\n---------------시간별 dB 결과----------------")
+    print(rms_list)
+
 
     print("\n---------------박자 확정 과정 및 결과---------------")
-    peak_chunks = find_chunks_with_peak_values(all_values)
+    # chunk별 dB 결과
+    rms_list = [((chunk[0] - 2000) / 200 + 1, chunk[1]) for chunk in rms_list]
+
+    # peak_chunks 찾기
+    peak_chunks = find_chunks_with_peak_values(rms_list)
     print(peak_chunks)
-    # sorted_peak_chunks = sorted(peak_chunks, key=lambda x: x[1], reverse=True)
-    # print(sorted_peak_chunks)
+    # peak_chunks = [(math.floor(value), duration) for value, duration in peak_chunks] # 각 chunk의 소수 버리기
 
     # 박자 친 부분 확정
-    previous_peak_chunk_nums = [chunk[0]-1 for chunk in peak_chunks]
+    peak_chunk_nums_double = [chunk[0] for chunk in peak_chunks]
+    print(peak_chunk_nums_double)
+    previous_peak_chunk_nums_double = [chunk[0]-1 for chunk in peak_chunks]
+    print(previous_peak_chunk_nums_double)
+    previous_peak_chunk_nums = [int(num) for num in previous_peak_chunk_nums_double]
     print(previous_peak_chunk_nums)
 
     # 각 숫자로부터 뒤로 3개의 숫자를 포함하는 이중리스트 생성
@@ -787,12 +800,19 @@ def main(wave_bytes, rms_list):
     for num in previous_peak_chunk_nums:
         extended_peak_chunks.append([num + i for i in range(3)])
 
+    # 중복되는 [1,2,3] 있으면 하나만 남겨두고 제거
+    # unique_extended_peak_chunks = []
+    # for chunk in extended_peak_chunks:
+    #     if chunk not in unique_extended_peak_chunks:
+    #         unique_extended_peak_chunks.append(chunk)
+    # print(unique_extended_peak_chunks)
 
     # 중복되는 [1,2,3] 있으면 하나만 남겨두고 제거
     unique_extended_peak_chunks = []
     for chunk in extended_peak_chunks:
-        if chunk not in unique_extended_peak_chunks:
-            unique_extended_peak_chunks.append(chunk)
+        int_chunk = [int(number) for number in chunk]  # 소수점을 제거하고 정수로 변환
+        if int_chunk not in unique_extended_peak_chunks:  # 중복 제거
+            unique_extended_peak_chunks.append(int_chunk)
     print(unique_extended_peak_chunks)
 
 
@@ -839,6 +859,16 @@ def main(wave_bytes, rms_list):
     numbered_final_chord_list = [chord_to_number(chord) for chord in final_chord_list]
     print(numbered_final_chord_list)
 
+    # 'null'이 아닌 첫 번째 값 찾기
+    first_non_null_value = None
+    for chord in numbered_final_chord_list:
+        if chord != 'null':
+            first_non_null_value = chord
+            break
+
+    # 'null' 값을 찾아서 'null'이 아닌 첫 번째 값으로 대체
+    numbered_final_chord_list = [first_non_null_value if chord == 'null' else chord for chord in numbered_final_chord_list]
+    print(numbered_final_chord_list)
 
     print("\n---------------박자 여음 처리 이전, 코드 및 박자 결과----------------")
     # 박자 체크
@@ -858,14 +888,25 @@ def main(wave_bytes, rms_list):
 
 
     print("\n---------------박자 여음 처리 과정 및 결과----------------")
+    print(rms_list)
+
     # 박자 친 부분, 즉 가운데 chunk
     peak_chunk_nums = [i+1 for i, val in enumerate(results) if val != 0]
     print(peak_chunk_nums)
 
-    print(all_values)
+    # results에서 살아남은 박자가 몇 chunk(double)이었는지 알아내야함
+    # 그리고 이를 calculate_increase_differneces에 peack_chunk_nums 대신 넣어야함
+    # print(peak_chunk_nums_double)
+    # survived_peak_chunk_nums_double = [peak_chunk_nums_double[i] for i, val in enumerate(results) if val != 0]
+    survived_peak_chunk_nums_double = []
+    for i, chord_number in enumerate(numbered_final_chord_list):
+        if chord_number != 'null':  # 코드 결과가 'null'이 아니면,
+            # 해당 인덱스에 해당하는 peak_chunk_nums_double 값을 추가합니다.
+            survived_peak_chunk_nums_double.append(peak_chunk_nums_double[i])
+    print(survived_peak_chunk_nums_double)
 
     # 증가하기 시작한 부분의 value와 max value까지의 차 저장
-    differences = calculate_increase_differences(peak_chunk_nums, all_values)
+    differences = calculate_increase_differences(survived_peak_chunk_nums_double, rms_list)
     print(differences)
 
     # 차를 봤을때 앞에 차보다 많이 작으면 여음으로 판정하여 differneces에서 차에 대한걸 삭제함
@@ -883,27 +924,30 @@ def main(wave_bytes, rms_list):
     print("원본 : ", results)
     print(len(results))
 
-    # 인덱스 15 이후의 요소들 중 0이 아닌 정수만 한 칸 앞으로 당기기
-    i = 15
-    while i < len(results) - 1:
-        # 현재 인덱스가 0이 아니고, 다음 인덱스도 0이 아닌 경우,
-        # 현재 인덱스를 건너뛰고 다음 연속된 0이 아닌 정수까지 이동
-        if results[i] != 0 and results[i + 1] != 0:
-            i += 1
-            while i < len(results) and results[i] != 0:
-                i += 1
-        # 현재 인덱스가 0이 아니지만 다음 인덱스가 0이 아닌 경우, 한 칸 앞으로 당김
-        elif results[i + 1] != 0:
-            results[i] = results[i + 1]
-            results[i + 1] = 0
-            i += 1
-        # 다음 인덱스가 0인 경우, 현재 인덱스도 0으로 설정하고 다음 인덱스로 이동
-        else:
-            results[i] = 0
-            i += 1
-    # 마지막 요소를 0으로 설정
-    results[-1] = 0
-    print("앞댕 : ", results)
+    # 인덱스 15부터 시작하여, 0이 아닌 값들을 한 칸씩 앞으로 당기기
+    # i = 15
+    # while i < len(results) - 1:
+    #     # 현재 인덱스가 0이 아니고, 다음 인덱스도 0이 아닌 경우
+    #     if results[i] != 0 and results[i + 1] != 0:
+    #         # 다음 인덱스부터 시작하여 0이 아닌 값을 한 칸씩 앞으로 당김
+    #         j = i + 1
+    #         while j < len(results) - 1:
+    #             results[j] = results[j + 1]
+    #             j += 1
+    #         results[j] = 0  # 마지막에 도달했을 때, 마지막 값을 0으로 설정
+    #     # 현재 인덱스가 0이고, 다음 인덱스가 0이 아닌 경우
+    #     elif results[i] == 0 and results[i + 1] != 0:
+    #         results[i] = results[i + 1]
+    #         i += 1  # 다음 위치로 이동
+    #         # 당긴 후의 나머지 값을 처리
+    #         while i < len(results) - 1:
+    #             results[i] = results[i + 1]
+    #             i += 1
+    #         results[i] = 0  # 마지막 값을 0으로 설정
+    #         break  # 처리 완료 후 반복문 탈출
+    #     else:
+    #         i += 1  # 다음 인덱스로 이동
+    # print("앞댕 : ", results)
 
     # 인덱스 27 이후의 모든 요소를 0으로 설정
     if len(results) > 27:
