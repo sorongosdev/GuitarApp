@@ -2,14 +2,11 @@ package com.example.tarsos_example.model
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.tarsos_example.consts.ChordTypes
 import com.example.tarsos_example.consts.NoteTypes
 import com.example.tarsos_example.consts.WavConsts
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
-import kotlin.coroutines.coroutineContext
 import kotlin.random.Random
 
 class MyViewModel : ViewModel() {
@@ -39,7 +36,7 @@ class MyViewModel : ViewModel() {
     val shownChord2: StateFlow<String> = _shownChord2
 
     /**정답이 되는 노트*/
-    private var _answerNote = MutableStateFlow(listOf<Int>())
+    var _answerNote = MutableStateFlow(listOf<Int>())
     val answerNote: StateFlow<List<Int>> = _answerNote
     /**============================================================================*/
 
@@ -96,6 +93,7 @@ class MyViewModel : ViewModel() {
     }
 
     /**사용자에게 보여줄 코드를 업데이트 해주는 함수*/
+    // TODO Int 로 받아야함
     fun updateChords(chord1: String, chord2: String) {
         _shownChord1.value = chord1
         _shownChord2.value = chord2
@@ -106,17 +104,55 @@ class MyViewModel : ViewModel() {
         _feedbackNoteList.value = feedbackNoteList
 
         Log.d("answerNote", "_feedbackNoteList.value ${_feedbackNoteList.value}")
-        val updatedPaintNoteList = _paintNoteList.value.toMutableList()
 
+        /**========================================================================박자 판단*/
+        var updatedPaintNoteList = _paintNoteList.value.toMutableList()
+        updatedPaintNoteList = decideBeat(feedbackNoteList, updatedPaintNoteList)
+        /**=========================================================================코드 판단*/
+        updatedPaintNoteList = decideChord(feedbackNoteList, updatedPaintNoteList)
+        /**===============================================================================*/
+        _paintNoteList.value = updatedPaintNoteList
+
+        Log.d("answerNote", "_paintNoteList.value ${_paintNoteList.value}")
+    }
+
+    /**코드 판정*/
+    private fun decideChord(
+        feedbackNoteList: List<Int>,
+        updatedPaintNoteList: MutableList<Int>
+    ): MutableList<Int> {
+        //TODO: paintNoteList 반 갈라서 왼쪽은 showChord1과 비교, 오른쪽은 shownChord2와 비교해서 정답이면 3, 오답이면 그대로 두기
+        val halfFeedbackChunkCnt = WavConsts.HALF_FEEDBACK_CHUNK_CNT
+        val feedbackChunkCnt = WavConsts.FEEDBACK_CHUNK_CNT
+        for (i in 0..<halfFeedbackChunkCnt) {
+            if (updatedPaintNoteList[i] != 0 && feedbackNoteList[i + 1] == ChordTypes.chords_string_int_map[_shownChord1.value]) {
+                updatedPaintNoteList[i] = 3
+            }
+        }
+        for(i in halfFeedbackChunkCnt..<feedbackChunkCnt){
+            if (updatedPaintNoteList[i] != 0 && feedbackNoteList[i + 1] == ChordTypes.chords_string_int_map[_shownChord2.value]) {
+                updatedPaintNoteList[i] = 3
+            }
+        }
+        Log.d("decideChord","updatedPaintNoteList ${updatedPaintNoteList}")
+        return updatedPaintNoteList
+    }
+
+    /**박자 판정*/
+    private fun decideBeat(
+        feedbackNoteList: List<Int>,
+        updatedPaintNoteList: MutableList<Int>
+    ): MutableList<Int> {
         for (i in 0..<WavConsts.FEEDBACK_CHUNK_CNT) {
-            if (feedbackNoteList[i + 1] != 0 && _answerNote.value[i] == 0) { // 피드백리스트의 값이 0이 아닌 정수라면 정답리스트의 원소를 1로 (오답)
+            if (feedbackNoteList[i + 1] != 0 && _answerNote.value[i] == 0) { // 피드백리스트의 값이 0이 아닌 정수라면 정답리스트의 원소를 1로 (박자 오답)
                 updatedPaintNoteList[i] = 1
             }
 
-            if (feedbackNoteList[i + 1] != 0 && _answerNote.value[i] == 1) { // 정답리스트와 피드백 노트 리스트를 비교해서 둘다 1이라면 값을 2로 바꿈 (정답)
+            if (feedbackNoteList[i + 1] != 0 && _answerNote.value[i] == 1) { // 정답리스트와 피드백 노트 리스트를 비교해서 둘다 1이라면 값을 2로 바꿈 (박자 정답)
                 updatedPaintNoteList[i] = 2
             }
         }
+        // 3묶음 음표 합치기
         for (i in 1..<WavConsts.FEEDBACK_CHUNK_CNT - 1) { // 1~70
             // 연속된 1이 있으면 그 3묶음은 오답이라고 판단하고 첫번째 위치에만 1을 남김
             if (updatedPaintNoteList[i - 1] == 1 && updatedPaintNoteList[i] == 1 && updatedPaintNoteList[i + 1] == 1) { // 3개 다 오답
@@ -203,9 +239,7 @@ class MyViewModel : ViewModel() {
             /**========================================================================*/
 
         }
-        _paintNoteList.value = updatedPaintNoteList
-
-        Log.d("answerNote", "_paintNoteList.value ${_paintNoteList.value}")
+        return updatedPaintNoteList
     }
 
     /**녹음 진행 정도(초)를 업데이트 해주는 함수*/
@@ -229,10 +263,11 @@ class MyViewModel : ViewModel() {
 
     /**init 버튼을 눌렀을 때, 초를 다시 세팅*/
     fun init() {
-        _paintNoteList.value = List(WavConsts.FEEDBACK_CHUNK_CNT + 1) { 0 }
+//        AnswerDecisionModel. = List(WavConsts.FEEDBACK_CHUNK_CNT + 1) { 0 }
         _countDownSecond.value = 4
         _recordSecond.value = 0.0
         _barSecond.value = 0.0
+        _paintNoteList.value = List(WavConsts.FEEDBACK_CHUNK_CNT + 1) { 0 }
 
         /******************************************NEW INIT*/
         // 코드와 악보 새로 불러오기
@@ -241,14 +276,16 @@ class MyViewModel : ViewModel() {
         _shownNote1.value = getRandomNote()
         _shownNote2.value = getRandomNote()
     }
+
     /** 랜덤으로 코드를 가져오는 함수*/
     fun getRandomChord(): String {
-        val chordMap = ChordTypes.chords_numbers // 코드 맵
+        val chordMap = ChordTypes.chords_int_string_map // 코드 맵
         val randomInt = Random.nextInt(1, chordMap.size) // 1~19 랜덤 정수
 
         val randomChord = chordMap[randomInt] // 보여줄 코드를 인덱스를 통해 맵에서 찾아줌
         return randomChord!!
     }
+
     /** 랜덤으로 노트를 가져오는 함수*/
     fun getRandomNote(): List<Int> {
         val randomInt = Random.nextInt(1, 3)
