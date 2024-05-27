@@ -83,8 +83,8 @@ fun NewDrawNotes(viewModel: MyViewModel, modifier: Modifier = Modifier) {
 
     if (!(isRecordingState.value) && countDownSecondState.value == 4) { // 녹음중이지 않으면서, 카운트다운되고 있지 않는 상태라면
         viewModel.updateNotes(
-            getRandomNote(),
-            getRandomNote()
+            viewModel.getRandomNote(),
+            viewModel.getRandomNote()
         )
     }
     Canvas(modifier = modifier) {
@@ -160,8 +160,8 @@ fun ShowChords(viewModel: MyViewModel, modifier: Modifier) {
 
     if (!(isRecordingState.value) && countDownSecondState.value == 4) { // 녹음중이지 않으면서, 카운트다운되고 있지 않는 상태라면
         viewModel.updateChords(
-            getRandomChord(),
-            getRandomChord()
+            viewModel.getRandomChord(),
+            viewModel.getRandomChord()
         )
     }
 
@@ -341,29 +341,6 @@ fun DrawProcessBar(seconds: Double, modifier: Modifier) {
                 0f, // y 좌표
                 paint // Paint 객체
             )
-        }
-    }
-}
-
-/** 랜덤으로 코드를 가져오는 함수*/
-fun getRandomChord(): String {
-    val chordMap = ChordTypes.chords_numbers // 코드 맵
-    val randomInt = Random.nextInt(1, chordMap.size) // 1~19 랜덤 정수
-
-    val randomChord = chordMap[randomInt] // 보여줄 코드를 인덱스를 통해 맵에서 찾아줌
-    return randomChord!!
-}
-
-/** 랜덤으로 노트를 가져오는 함수*/
-fun getRandomNote(): List<Int> {
-    val randomInt = Random.nextInt(1, 3)
-
-    return when (randomInt) {
-        1 -> NoteTypes.note_1111
-        2 -> NoteTypes.note_1011
-        3 -> NoteTypes.note_1010
-        else -> {
-            listOf<Int>(0, 0, 0, 0)
         }
     }
 }
