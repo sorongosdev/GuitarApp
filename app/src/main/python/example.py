@@ -35,11 +35,11 @@ def read_wav_file(wave_bytes):
         params = wf.getparams()
         frames = wf.readframes(params.nframes)
 
-#     wav_handler = wave.open(path + filename,'rb')    # 지정된 경로에 wav 파일을 읽기 전용 모드로 연다.
-#     num_frames = wav_handler.getnframes()            # 파일에서 sample의 총 개수를 얻는다. 44100*(wav 길이 예로 4초) = 176400개
-#     sample_rate = wav_handler.getframerate()         # 파일의 sample_rate를 얻는다. 44100
+    #     wav_handler = wave.open(path + filename,'rb')    # 지정된 경로에 wav 파일을 읽기 전용 모드로 연다.
+    #     num_frames = wav_handler.getnframes()            # 파일에서 sample의 총 개수를 얻는다. 44100*(wav 길이 예로 4초) = 176400개
+    #     sample_rate = wav_handler.getframerate()         # 파일의 sample_rate를 얻는다. 44100
     sample_rate = 44100
-#     wav_frames = wav_handler.readframes(num_frames)  # 모든 frame을 읽는다. wav_frames는 num_frames의 두 배이다. 각 샘플이 2바이트로 표현되기 때문. wav_frames의 바이트 배열 길이는 176400*2 = 352800 바이트이다.
+    #     wav_frames = wav_handler.readframes(num_frames)  # 모든 frame을 읽는다. wav_frames는 num_frames의 두 배이다. 각 샘플이 2바이트로 표현되기 때문. wav_frames의 바이트 배열 길이는 176400*2 = 352800 바이트이다.
     wav_frames = frames
 
     signal_temp = np.frombuffer(wav_frames, np.int16) # 읽은 wav_frame 데이터를 numpy 배열로 변환한다. 데이터 타입은 int16이다.
@@ -49,7 +49,7 @@ def read_wav_file(wave_bytes):
         signal_array[i] = signal_temp[i] / (2.0**15) # int16 타입의 값을 [-1, 1] 범위의 float64 타입으로 변환합니다.
 
     print("------------------------------")
-#     print("file_name: " + str(filename))
+    #     print("file_name: " + str(filename))
     print("sample_rate: " + str(sample_rate) + " Hz")
     print("input_buffer.size(sample의 총 갯수): " + str(len(signal_array)) + " 개")
     print("seconds(input_buffer.size/sample_rate): " + to_str_f4(len(signal_array)/sample_rate) + " s")
@@ -86,7 +86,7 @@ def getFFT(data, rate):
 
     # fft 연산 후 magnitude 배열
     fft = np.fft.rfft(data)             # 입력 데이터에 대해 실수 fft를 수행한다. fft의 결과로 복소수 numpy 배열을 반환한다.
-                                        # rfft는 수행하면 양수, 음수의 대칭적이므로 양수만을 출력한다.
+    # rfft는 수행하면 양수, 음수의 대칭적이므로 양수만을 출력한다.
     fft = np.abs(fft)                   # fft 결과의 절대값을 취하여 magnitue를 얻는다. 실수값의 numpy 배열을 반환한다.
 
     # fft 연산 후 frequency 개수
@@ -293,7 +293,7 @@ def get_chunks_results(all_top_results, target_chunk_nums, top_n):
                 chunk_results[chunk_num] = []
             chunk_results[chunk_num].append((freq, value, note_name))
 
-     # 각 chunk 별로 저장된 결과를 value 기준으로 내림차순 정렬하고 상위 n개만 선택
+    # 각 chunk 별로 저장된 결과를 value 기준으로 내림차순 정렬하고 상위 n개만 선택
     for chunk_num in chunk_results:
         chunk_results[chunk_num] = sorted(chunk_results[chunk_num], key=lambda x: x[1], reverse=True)[:top_n]
 
