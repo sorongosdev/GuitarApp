@@ -28,16 +28,14 @@ class AudioProcessorHandler(private val context: Context) {
     private val audioBufferSize = 7056 // 오디오 버퍼 크기
     private val bufferOverlap = 0 // 버퍼 겹침
 
-    private var beepJob: Job? = null // 비프음 재생 관리하는 Job 객체
     private val rmsList = mutableListOf<Pair<Long, Double>>() // RMS 값과 time 저장할 리스트
-    // private val pyPair = mutableListOf<Pair<ByteArray, List<Pair<Double, Long>>>>()
+    private var audioProcessingJob: Job? = null // 비프음 재생 관리하는 Job 객체
 
     /**녹음 시작시 실행*/
     fun SetupAudioProcessing(viewModel: MyViewModel) {
         // 코루틴을 사용하여 메인 스레드에서 비동기 작업을 수행
-        CoroutineScope(Dispatchers.Main).launch {
+        audioProcessingJob = CoroutineScope(Dispatchers.Main).launch {
             viewModel.updateRecordingState(isRecording = false)
-            viewModel.updateBeepingState(isBeeping = true) // 비프음 재생 시작 전에 true로 설정
 
             // 4박자에 대한 카운트 다운
             val totalDelay = WavConsts.TOT_DELAY // 총 지연 시간
@@ -113,10 +111,19 @@ class AudioProcessorHandler(private val context: Context) {
         }
     }
 
+
+    /**녹음 강제 중지, 파이썬으로 파일을 전송하지 않음*/
+    fun forceStopAudio(viewModel: MyViewModel) {
+        audioProcessingJob?.cancel() // 코루틴 중지
+        audioProcessingJob = null
+
+        viewModel.updateRecordingState(isRecording = false)
+        randomAccessFile?.close()
+        randomAccessFile = null
+    }
+
     /**녹음 중지시 실행되는 리스너*/
     suspend fun stopAudioProcessing(viewModel: MyViewModel) {
-        viewModel.updateBeepingState(false) // 비프음이 중지되었다는 것을 알림
-//        beepJob?.join() // 비프음 재생이 완전히 중지될 때까지 대기
         delay(600)
         releaseDispatcher()
         viewModel.updateRecordingState(isRecording = false)

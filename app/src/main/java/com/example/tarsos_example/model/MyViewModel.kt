@@ -3,12 +3,14 @@ package com.example.tarsos_example.model
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.tarsos_example.consts.ChordTypes
 import com.example.tarsos_example.consts.NoteTypes
 import com.example.tarsos_example.consts.WavConsts
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlin.coroutines.coroutineContext
+import kotlin.random.Random
 
 class MyViewModel : ViewModel() {
 
@@ -58,10 +60,6 @@ class MyViewModel : ViewModel() {
     /**녹음중 유무*/
     private var _isRecording = MutableStateFlow<Boolean>(false)
     val isRecording: StateFlow<Boolean> = _isRecording
-
-    /**비프음 출력 유무*/
-    private var _isBeeping = MutableStateFlow<Boolean>(false)
-    val isBeeping: StateFlow<Boolean> = _isBeeping
 
     /**현재 데시벨*/
 //    private var _currentDb = MutableStateFlow<Double>(0.0)
@@ -229,19 +227,41 @@ class MyViewModel : ViewModel() {
         _isRecording.value = isRecording
     }
 
-    /**녹음중 유무 변수를 세팅*/
-    fun updateBeepingState(isBeeping: Boolean) {
-        _isBeeping.value = isBeeping
-    }
-
     /**init 버튼을 눌렀을 때, 초를 다시 세팅*/
     fun init() {
         _paintNoteList.value = List(WavConsts.FEEDBACK_CHUNK_CNT + 1) { 0 }
         _countDownSecond.value = 4
         _recordSecond.value = 0.0
         _barSecond.value = 0.0
-    }
 
+        /******************************************NEW INIT*/
+        // 코드와 악보 새로 불러오기
+        _shownChord1.value = getRandomChord()
+        _shownChord2.value = getRandomChord()
+        _shownNote1.value = getRandomNote()
+        _shownNote2.value = getRandomNote()
+    }
+    /** 랜덤으로 코드를 가져오는 함수*/
+    fun getRandomChord(): String {
+        val chordMap = ChordTypes.chords_numbers // 코드 맵
+        val randomInt = Random.nextInt(1, chordMap.size) // 1~19 랜덤 정수
+
+        val randomChord = chordMap[randomInt] // 보여줄 코드를 인덱스를 통해 맵에서 찾아줌
+        return randomChord!!
+    }
+    /** 랜덤으로 노트를 가져오는 함수*/
+    fun getRandomNote(): List<Int> {
+        val randomInt = Random.nextInt(1, 3)
+
+        return when (randomInt) {
+            1 -> NoteTypes.note_1111
+            2 -> NoteTypes.note_1011
+            3 -> NoteTypes.note_1010
+            else -> {
+                listOf<Int>(0, 0, 0, 0)
+            }
+        }
+    }
 
     /**데시벨 찍어보기 위한 함수*/
 //    fun updateCurrentDb(db: Double){

@@ -109,8 +109,8 @@ class MainActivity : ComponentActivity() {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Text(text = "recordSecond: ${recordSecond.value}") // 녹음 시작후 지난 초 표시
-                Text(text = "barSecond: ${barSecond.value}") // 녹음 시작후 지난 초 표시
+//                Text(text = "recordSecond: ${recordSecond.value}") // 녹음 시작후 지난 초 표시
+//                Text(text = "barSecond: ${barSecond.value}") // 녹음 시작후 지난 초 표시
 
                 FloatingActionButton(
                     onClick = { viewModel.init() }
@@ -125,6 +125,14 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Text(
                         text = "연주 시작",
+                        style = TextStyle(fontSize = 50.sp)
+                    )
+                }
+                FloatingActionButton(
+                    onClick = { audioProcessorHandler.forceStopAudio(viewModel) }
+                ) {
+                    Text(
+                        text = "강제 중지",
                         style = TextStyle(fontSize = 50.sp)
                     )
                 }
