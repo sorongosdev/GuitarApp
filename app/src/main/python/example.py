@@ -501,21 +501,24 @@ def calculate_increase_differences(sorted_peak_chunks, all_values):
 
         # 증가 추세 시작 지점 찾기
         start_increase_value = None
-        for i in range(len(previous_values)-1, 0, -1):
-            # 뒤에서부터 확인하여 현재 값이 이전 값보다 작으면 증가 추세 시작점으로 판단
-            if previous_values[i] < previous_values[i-1]:
-                start_increase_value = previous_values[i]
-                break
+        if previous_values:
+            for i in range(len(previous_values)-1, 0, -1):
+                # 뒤에서부터 확인하여 현재 값이 이전 값보다 작으면 증가 추세 시작점으로 판단
+                if previous_values[i] < previous_values[i-1]:
+                    start_increase_value = previous_values[i]
+                    break
 
-        if start_increase_value is not None:
-            # 차이 계산 후 추가
-            difference = current_value - start_increase_value
-            differences.append(difference)
+            if start_increase_value is not None:
+                # 차이 계산 후 추가
+                difference = current_value - start_increase_value
+                differences.append(difference)
+            else:
+                # 만약 모든 이전 값들이 증가 추세에 있었다면, 가장 처음 값을 증가 시작점으로 간주
+                start_increase_value = previous_values[0]
+                difference = current_value - start_increase_value
+                differences.append(difference)
         else:
-            # 만약 모든 이전 값들이 증가 추세에 있었다면, 가장 처음 값을 증가 시작점으로 간주
-            start_increase_value = previous_values[0]
-            difference = current_value - start_increase_value
-            differences.append(difference)
+            pass
 
     return differences
 
@@ -920,7 +923,11 @@ def main(wave_bytes, rms_list):
 
     for i, difference in enumerate(differences):
         if difference not in filtered_differences:
-            results[peak_chunk_nums[i]-1] = 0
+            if 0 <= peak_chunk_nums[i]-1 < len(results):
+                results[peak_chunk_nums[i]-1] = 0
+            else:
+                pass
+            # results[peak_chunk_nums[i]-1] = 0
     print("원본 : ", results)
     print(len(results))
 
