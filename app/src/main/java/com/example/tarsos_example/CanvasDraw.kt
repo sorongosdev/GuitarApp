@@ -13,6 +13,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
@@ -211,8 +212,7 @@ fun ShowTabNote(viewModel: MyViewModel, modifier: Modifier) {
 
         val startY = 0f // 시작되는 Y지점
         val endY = size.height // 끝나는 Y지점
-
-        // 첫 번째 마디에 대한 사각형 그리기
+        /**===========================================================첫 번째 마디에 대한 사각형 그리기*/
         drawRect(
             color = Color.Black,
             topLeft = Offset(startX_measure1, startY),
@@ -220,55 +220,29 @@ fun ShowTabNote(viewModel: MyViewModel, modifier: Modifier) {
             style = Stroke(width = 5f)
         )
         /**================================================================================마디1 세로줄*/
-        // 마디1 라인1
-        drawLine(
-            color = Color.Black,
-            start = Offset(x = (startX_measure1 + 0.25 * tab_width).toFloat(), y = startY),
-            end = Offset(x = (startX_measure1 + 0.25 * tab_width).toFloat(), y = endY),
-            strokeWidth = Stroke.DefaultMiter
-        )
-        // 마디1 라인2
-        drawLine(
-            color = Color.Black,
-            start = Offset(x = (startX_measure1 + 0.5 * tab_width).toFloat(), y = startY),
-            end = Offset(x = (startX_measure1 + 0.5 * tab_width).toFloat(), y = endY),
-            strokeWidth = Stroke.DefaultMiter
-        )
-        // 마디1 라인3
-        drawLine(
-            color = Color.Black,
-            start = Offset(x = (startX_measure1 + 0.75 * tab_width).toFloat(), y = startY),
-            end = Offset(x = (startX_measure1 + 0.75 * tab_width).toFloat(), y = endY),
-            strokeWidth = Stroke.DefaultMiter
-        )
-        /**====================================================================================*/
+        for (i in 1..3) {
+            drawLine(
+                color = Color.Black,
+                start = Offset(x = (startX_measure1 + i * 0.25 * tab_width).toFloat(), y = startY),
+                end = Offset(x = (startX_measure1 + i * 0.25 * tab_width).toFloat(), y = endY),
+                strokeWidth = Stroke.DefaultMiter
+            )
+        }
         /**================================================================================마디1 가로줄*/
-        drawLine(
-            color = Color.Black,
-            start = Offset(x = startX_measure1, y = (startY + (1.0/5.0) * tab_height).toFloat()),
-            end = Offset(x = startX_measure1 + tab_width, y = (startY + (1.0/5.0) * tab_height).toFloat()),
-            strokeWidth = Stroke.DefaultMiter
-        )
-        drawLine(
-            color = Color.Black,
-            start = Offset(x = startX_measure1, y = (startY + (2.0/5.0) * tab_height).toFloat()),
-            end = Offset(x = startX_measure1 + tab_width, y = (startY + (2.0/5.0) * tab_height).toFloat()),
-            strokeWidth = Stroke.DefaultMiter
-        )
-        drawLine(
-            color = Color.Black,
-            start = Offset(x = startX_measure1, y = (startY + (3.0/5.0) * tab_height).toFloat()),
-            end = Offset(x = startX_measure1 + tab_width, y = (startY + (3.0/5.0) * tab_height).toFloat()),
-            strokeWidth = Stroke.DefaultMiter
-        )
-        drawLine(
-            color = Color.Black,
-            start = Offset(x = startX_measure1, y = (startY + (4.0/5.0) * tab_height).toFloat()),
-            end = Offset(x = startX_measure1 + tab_width, y = (startY + (4.0/5.0) * tab_height).toFloat()),
-            strokeWidth = Stroke.DefaultMiter
-        )
-        /**====================================================================================*/
-
+        for (i in 1..4) {
+            drawLine(
+                color = Color.Black,
+                start = Offset(
+                    x = startX_measure1,
+                    y = (startY + (i.toFloat() / 5.0) * tab_height).toFloat()
+                ),
+                end = Offset(
+                    x = startX_measure1 + tab_width,
+                    y = (startY + (i.toFloat() / 5.0) * tab_height).toFloat()
+                ),
+                strokeWidth = Stroke.DefaultMiter
+            )
+        }
         /**============================================================ 두 번째 마디에 대한 사각형 그리기*/
         drawRect(
             color = Color.Black,
@@ -277,52 +251,132 @@ fun ShowTabNote(viewModel: MyViewModel, modifier: Modifier) {
             style = Stroke(width = 5f)
         )
         /**=======================================================================마디2 세로줄*/
-        // 마디2 라인1
-        drawLine(
-            color = Color.Black,
-            start = Offset(x = (startX_measure2 + 0.25 * tab_width).toFloat(), y = startY),
-            end = Offset(x = (startX_measure2 + 0.25 * tab_width).toFloat(), y = endY),
-            strokeWidth = Stroke.DefaultMiter
-        )
-        // 마디1 라인2
-        drawLine(
-            color = Color.Black,
-            start = Offset(x = (startX_measure2 + 0.5 * tab_width).toFloat(), y = startY),
-            end = Offset(x = (startX_measure2 + 0.5 * tab_width).toFloat(), y = endY),
-            strokeWidth = Stroke.DefaultMiter
-        )
-        // 마디1 라인3
-        drawLine(
-            color = Color.Black,
-            start = Offset(x = (startX_measure2 + 0.75 * tab_width).toFloat(), y = startY),
-            end = Offset(x = (startX_measure2 + 0.75 * tab_width).toFloat(), y = endY),
-            strokeWidth = Stroke.DefaultMiter
-        )
+        for (i in 1..3) {
+            drawLine(
+                color = Color.Black,
+                start = Offset(x = (startX_measure2 + i * 0.25 * tab_width).toFloat(), y = startY),
+                end = Offset(x = (startX_measure2 + i * 0.25 * tab_width).toFloat(), y = endY),
+                strokeWidth = Stroke.DefaultMiter
+            )
+        }
         /**============================================================================마디2 가로줄*/
-        drawLine(
-            color = Color.Black,
-            start = Offset(x = startX_measure2, y = (startY + (1.0/5.0) * tab_height).toFloat()),
-            end = Offset(x = startX_measure2 + tab_width, y = (startY + (1.0/5.0) * tab_height).toFloat()),
-            strokeWidth = Stroke.DefaultMiter
-        )
-        drawLine(
-            color = Color.Black,
-            start = Offset(x = startX_measure2, y = (startY + (2.0/5.0) * tab_height).toFloat()),
-            end = Offset(x = startX_measure2 + tab_width, y = (startY + (2.0/5.0) * tab_height).toFloat()),
-            strokeWidth = Stroke.DefaultMiter
-        )
-        drawLine(
-            color = Color.Black,
-            start = Offset(x = startX_measure2, y = (startY + (3.0/5.0) * tab_height).toFloat()),
-            end = Offset(x = startX_measure2 + tab_width, y = (startY + (3.0/5.0) * tab_height).toFloat()),
-            strokeWidth = Stroke.DefaultMiter
-        )
-        drawLine(
-            color = Color.Black,
-            start = Offset(x = startX_measure2, y = (startY + (4.0/5.0) * tab_height).toFloat()),
-            end = Offset(x = startX_measure2 + tab_width, y = (startY + (4.0/5.0) * tab_height).toFloat()),
-            strokeWidth = Stroke.DefaultMiter
-        )
+        for (i in 1..4) {
+            drawLine(
+                color = Color.Black,
+                start = Offset(
+                    x = startX_measure2,
+                    y = (startY + (i.toFloat() / 5.0) * tab_height).toFloat()
+                ),
+                end = Offset(
+                    x = startX_measure2 + tab_width,
+                    y = (startY + (i.toFloat() / 5.0) * tab_height).toFloat()
+                ),
+                strokeWidth = Stroke.DefaultMiter
+            )
+        }
+        /**=========================================================================코드1 그리기*/
+        val tab_note1 = ChordTypes.chords_int_tab_map[shownChordState1.value] ?: listOf()
+        val tab_note2 = ChordTypes.chords_int_tab_map[shownChordState2.value] ?: listOf()
+
+        for (i in 0..5) { // 첫 프랫
+            if (tab_note1[i] == 1) {
+                drawCircle(
+                    color = Color.Black, // 원의 색상
+                    center = Offset(
+                        (startX_measure1 + (1.0 / 8.0) * tab_width).toFloat(),
+                        y = (startY + (i.toFloat() / 5.0) * tab_height).toFloat()
+                    ), // 원의 중심 좌표
+                    radius = 20f, // 원의 반지름
+                    style = Fill // 원을 채워서 그리기 (기본값이므로 생략 가능)
+                )
+            }
+            if (tab_note2[i] == 1) {
+                drawCircle(
+                    color = Color.Black, // 원의 색상
+                    center = Offset(
+                        (startX_measure2 + (1.0 / 8.0) * tab_width).toFloat(),
+                        y = (startY + (i.toFloat() / 5.0) * tab_height).toFloat()
+                    ), // 원의 중심 좌표
+                    radius = 20f, // 원의 반지름
+                    style = Fill // 원을 채워서 그리기 (기본값이므로 생략 가능)
+                )
+            }
+        }
+        for (i in 6..11) { // 두번째 프랫
+            if (tab_note1[i] == 1) {
+                drawCircle(
+                    color = Color.Black, // 원의 색상
+                    center = Offset(
+                        (startX_measure1 + (3.0 / 8.0) * tab_width).toFloat(),
+                        y = (startY + ((i - 6).toFloat() / 5.0) * tab_height).toFloat()
+                    ), // 원의 중심 좌표
+                    radius = 20f, // 원의 반지름
+                    style = Fill // 원을 채워서 그리기 (기본값이므로 생략 가능)
+                )
+            }
+            if (tab_note2[i] == 1) {
+                drawCircle(
+                    color = Color.Black, // 원의 색상
+                    center = Offset(
+                        (startX_measure2 + (3.0 / 8.0) * tab_width).toFloat(),
+                        y = (startY + ((i - 6).toFloat() / 5.0) * tab_height).toFloat()
+                    ), // 원의 중심 좌표
+                    radius = 20f, // 원의 반지름
+                    style = Fill // 원을 채워서 그리기 (기본값이므로 생략 가능)
+                )
+            }
+
+        }
+        for (i in 12..17) { // 세번째 프랫
+            if (tab_note1[i] == 1) {
+                drawCircle(
+                    color = Color.Black, // 원의 색상
+                    center = Offset(
+                        (startX_measure1 + (5.0 / 8.0) * tab_width).toFloat(),
+                        y = (startY + ((i - 12).toFloat() / 5.0) * tab_height).toFloat()
+                    ), // 원의 중심 좌표
+                    radius = 20f, // 원의 반지름
+                    style = Fill // 원을 채워서 그리기 (기본값이므로 생략 가능)
+                )
+            }
+            if (tab_note2[i] == 1) {
+                drawCircle(
+                    color = Color.Black, // 원의 색상
+                    center = Offset(
+                        (startX_measure2 + (5.0 / 8.0) * tab_width).toFloat(),
+                        y = (startY + ((i - 12).toFloat() / 5.0) * tab_height).toFloat()
+                    ), // 원의 중심 좌표
+                    radius = 20f, // 원의 반지름
+                    style = Fill // 원을 채워서 그리기 (기본값이므로 생략 가능)
+                )
+            }
+        }
+        for (i in 18..23) { // 세번째 프랫
+            if (tab_note1[i] == 1) {
+                drawCircle(
+                    color = Color.Black, // 원의 색상
+                    center = Offset(
+                        (startX_measure1 + (7.0 / 8.0) * tab_width).toFloat(),
+                        y = (startY + ((i - 18).toFloat() / 5.0) * tab_height).toFloat()
+                    ), // 원의 중심 좌표
+                    radius = 20f, // 원의 반지름
+                    style = Fill // 원을 채워서 그리기 (기본값이므로 생략 가능)
+                )
+            }
+            if (tab_note2[i] == 1) {
+                drawCircle(
+                    color = Color.Black, // 원의 색상
+                    center = Offset(
+                        (startX_measure2 + (7.0 / 8.0) * tab_width).toFloat(),
+                        y = (startY + ((i - 18).toFloat() / 5.0) * tab_height).toFloat()
+                    ), // 원의 중심 좌표
+                    radius = 20f, // 원의 반지름
+                    style = Fill // 원을 채워서 그리기 (기본값이므로 생략 가능)
+                )
+            }
+        }
+        /**=========================================================================코드2 그리기*/
+
     }
 }
 
