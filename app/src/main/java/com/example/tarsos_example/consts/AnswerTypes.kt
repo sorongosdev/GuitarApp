@@ -18,6 +18,6 @@ object AnswerTypes {
         BEAT_W_CHORD_W to (Color.Cyan),      // 박자 X 코드 X
         BEAT_C_CHORD_C to (Color.Magenta),   // 박자 0 코드 0
         BEAT_C_CHORD_W to (Color.Yellow),     // 박자 0 코드 X
-        DELETED to (Color.Transparent)
+        DELETED to (Color.Gray)
     )
 }

@@ -135,10 +135,11 @@ class MyViewModel : ViewModel() {
             val answerChordString =
                 if (i < HALF_FEEDBACK_CHUNK_CNT) _shownChord1.value else _shownChord2.value // 마디마다 다른 정답 코드 설정
             val answerChordInt = ChordTypes.chords_string_int_map[answerChordString]
-
-            if (feedbackNoteList[i + 1] != 0 && _answerNote.value[i] == 0) { // 박자 x, 코드 미정
+            if (feedbackNoteList[i + 1] != 0 && _answerNote.value[i] == 0) { // 박자 X, 코드 미정, 답이 없는데 친 경우
                 updatedPaintNoteList[i] = BEAT_W_CHORD_X
-            } else if (feedbackNoteList[i + 1] != 0 && _answerNote.value[i] == 1) { // 박자 0, 코드 미정
+            }
+            else if(feedbackNoteList[i+1] == 0 && _answerNote.value[i] == 1 ) // 박자 X, 코드 미정, 답이 있는데 안 친 경우
+            else if (feedbackNoteList[i + 1] != 0 && _answerNote.value[i] == 1) { // 박자 0, 코드 미정
                 updatedPaintNoteList[i] = BEAT_C_CHORD_X
             }
 
@@ -153,51 +154,70 @@ class MyViewModel : ViewModel() {
                 updatedPaintNoteList[i] = BEAT_C_CHORD_W
             }
         }
+
+        Log.d("two", "updatedPaintNoteList ${updatedPaintNoteList}")
+
         // 3묶음 음표 합치기
         for (i in 1..<FEEDBACK_CHUNK_CNT - 3) { // 1~68
             // 연속된 박자 오답이 있으면 그 3묶음은 오답이라고 판단하고 첫번째 위치에만 오답을 남김
             // 3개 다 오답
-            Log.d("answerNote","updatedPaintNoteList ${updatedPaintNoteList}")
-            if (!isBeatCorrect(updatedPaintNoteList[i - 1]) && !isBeatCorrect(updatedPaintNoteList[i]) && !isBeatCorrect(updatedPaintNoteList[i + 1])) {
+//            Log.d("twoNotes", "for decision start updatedPaintNoteList ${updatedPaintNoteList}")
+            if (isBeatCorrect(updatedPaintNoteList[i - 1]) == 'W'
+                && isBeatCorrect(updatedPaintNoteList[i]) == 'W'
+                && isBeatCorrect(updatedPaintNoteList[i + 1]) == 'W'
+            ) {
+                Log.d("twoNotes", "3개 다 오답 ${i - 1} ${i} ${i + 1}")
+
                 updatedPaintNoteList[i] = DELETED
                 updatedPaintNoteList[i + 1] = DELETED
             }
-
-            Log.d("answerNote", "_answerNote.value ${_answerNote.value}")
             /**========================================================================*/
             // 3묶음 중 하나라도 정답이면 3묶음 모두 지우고 정답 인 곳에 음표 그리기
             // 3묶음 중 정답과 가장 가까운 인덱스를 찾음
             /**======================================================================================================*/
-            if (isBeatCorrect(updatedPaintNoteList[i - 1]) && isBeatCorrect(updatedPaintNoteList[i]) && isBeatCorrect(
-                    updatedPaintNoteList[i + 1]
-                )
+            if (isBeatCorrect(updatedPaintNoteList[i - 1]) == 'C'
+                && isBeatCorrect(updatedPaintNoteList[i]) == 'C'
+                && isBeatCorrect(updatedPaintNoteList[i + 1]) == 'C'
             ) { // 3개 다 정답
                 //=============================================================================================좌에 치우쳐져 있을 때
+                Log.d("twoNotes", "3개 다 정답 ${i - 1} ${i} ${i + 1}")
+
                 if (i - 1 == 0) { // 0부터 3개 연속 정답일 때
+                    Log.d("twoNotes", "0부터 3개 연속 정답 ${i - 1} ${i} ${i + 1}")
+
                     updatedPaintNoteList[i] = DELETED
                     updatedPaintNoteList[i + 1] = DELETED
                 } else if (_answerNote.value[i - 2] == 0 && _answerNote.value[i + 2] == 1) { // 제일 좌로 치우침
+                    Log.d("twoNotes", "제일 좌로 치우침 $i")
+
                     updatedPaintNoteList[i + 2] = updatedPaintNoteList[i + 1]
 
                     updatedPaintNoteList[i - 1] = DELETED
                     updatedPaintNoteList[i] = DELETED
                     updatedPaintNoteList[i + 1] = DELETED
-                } else if (i - 3 >= 0 && _answerNote.value[i - 3] == 0 && _answerNote.value[i + 3] == 1) {
+                } else if (i - 3 >= 0 && _answerNote.value[i - 3] == 0 && _answerNote.value[i + 3] == 1) { // 덜 좌로 치우침
+                    Log.d("twoNotes", "덜 좌로 치우침 $i")
+
                     updatedPaintNoteList[i - 1] = DELETED
                     updatedPaintNoteList[i] = DELETED
                 }
                 //=======================================================================================================딱 중심
                 else if (i - 4 >= 0 && _answerNote.value[i - 4] == 0 && _answerNote.value[i + 4] == 0) {
+                    Log.d("twoNotes", "딱 중심 $i")
+
                     updatedPaintNoteList[i - 1] = DELETED
                     updatedPaintNoteList[i + 1] = DELETED
                 }
                 //=========================================================================================================우로 치우쳐짐
                 else if (_answerNote.value[i + 2] == 0 && _answerNote.value[i - 2] == 1) { // 제일 우로 치우침
+                    Log.d("twoNotes", "제일 우로 치우침 $i")
                     updatedPaintNoteList[i - 2] = updatedPaintNoteList[i - 1]
                     updatedPaintNoteList[i - 1] = DELETED
                     updatedPaintNoteList[i] = DELETED
                     updatedPaintNoteList[i + 1] = DELETED
                 } else if (_answerNote.value[i + 3] == 0 && _answerNote.value[i - 3] == 1) { // 우로 조금만 치우침
+                    Log.d("twoNotes", "우로 조금만 치우침 $i")
+
                     updatedPaintNoteList[i + 1] = DELETED
                     updatedPaintNoteList[i] = DELETED
                 }
@@ -274,12 +294,14 @@ class MyViewModel : ViewModel() {
     }
 
     /**코드 정답 유무에 상관없이 박자가 맞으면 true를 반환해주는 함수*/
-    fun isBeatCorrect(updatedPaintNoteListElement: Int): Boolean {
-        if((updatedPaintNoteListElement == AnswerTypes.BEAT_C_CHORD_W) || (updatedPaintNoteListElement == AnswerTypes.BEAT_C_CHORD_C)){
-            return true
-        } else if(updatedPaintNoteListElement == 0 || (updatedPaintNoteListElement == AnswerTypes.BEAT_W_CHORD_W) || (updatedPaintNoteListElement == AnswerTypes.BEAT_W_CHORD_C)){
-            return false
-        } else return false
+    fun isBeatCorrect(updatedPaintNoteListElement: Int): Char {
+        if ((updatedPaintNoteListElement == AnswerTypes.BEAT_C_CHORD_W) || (updatedPaintNoteListElement == AnswerTypes.BEAT_C_CHORD_C)) {
+            return 'C'
+        } else if ((updatedPaintNoteListElement == AnswerTypes.BEAT_W_CHORD_W) || (updatedPaintNoteListElement == AnswerTypes.BEAT_W_CHORD_C)) {
+            return 'W'
+        } else if (updatedPaintNoteListElement == 0) {
+            return 'N'
+        } else return 'E'
     }
 
     /**녹음 진행 정도(초)를 업데이트 해주는 함수*/
@@ -313,8 +335,9 @@ class MyViewModel : ViewModel() {
         // 코드와 악보 새로 불러오기
         _shownChord1.value = getRandomChord()
         _shownChord2.value = getRandomChord()
-        _shownNote1.value = getRandomNote()
-        _shownNote2.value = getRandomNote()
+//        _shownNote1.value = getRandomNote()
+//        _shownNote2.value = getRandomNote()
+        updateNotes(getRandomNote(),getRandomNote())
     }
 
     /** 랜덤으로 코드를 가져오는 함수*/
