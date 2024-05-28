@@ -1,12 +1,12 @@
 package com.example.tarsos_example
 
 import DrawDiv
-import DrawFeedBackNotes
 import DrawPaintNotes
 import DrawProcessBar
 import DrawSheet
 import NewDrawNotes
 import ShowChords
+import ShowTabNote
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -137,7 +137,7 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
-            Spacer(modifier = Modifier.fillMaxHeight(0.1f)) // 전체의 10% 공백
+            Spacer(modifier = Modifier.fillMaxHeight(0.05f)) // 전체의 10% 공백
 
             Text(
                 text = "Count Down : ${countDownSecond.value}",
@@ -151,7 +151,14 @@ class MainActivity : ComponentActivity() {
                 modifier = Modifier
                     .fillMaxWidth()
             )
-            Spacer(modifier = Modifier.fillMaxHeight(0.05f)) // 전체의 30% 공백
+            Spacer(modifier = Modifier.fillMaxHeight(0.05f))
+            ShowTabNote(
+                viewModel = viewModel,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(150.dp)
+            )
+            Spacer(modifier = Modifier.fillMaxHeight(0.1f)) // 전체의 30% 공백
 
             // Box를 사용하여 DrawSheet와 DrawNotes를 겹치게 함, 표출 악보
             Box(
