@@ -137,6 +137,8 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
+            Spacer(modifier = Modifier.fillMaxHeight(0.1f)) // 전체의 10% 공백
+
             Text(
                 text = "Count Down : ${countDownSecond.value}",
                 style = TextStyle(fontSize = 60.sp)
