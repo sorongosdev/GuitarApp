@@ -357,7 +357,7 @@ class MyViewModel : ViewModel() {
 
     /** 랜덤으로 노트를 가져오는 함수*/
     fun getRandomNote(): List<Int> {
-        val randomInt = Random.nextInt(1, 3)
+        val randomInt = Random.nextInt(1, 4)
 
         return when (randomInt) {
             1 -> NoteTypes.note_1111

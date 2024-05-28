@@ -9,7 +9,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
@@ -77,6 +80,7 @@ fun DrawDiv(modifier: Modifier = Modifier) {
     }
 }
 
+/**악보를 그려주는 함수*/
 @Composable
 fun NewDrawNotes(viewModel: MyViewModel, modifier: Modifier = Modifier) {
     val countDownSecondState = viewModel.countDownSecond.collectAsState() // 초
@@ -151,7 +155,7 @@ fun NewDrawNotes(viewModel: MyViewModel, modifier: Modifier = Modifier) {
     }
 }
 
-/**사용자에게 코드를 보여주는 함수*/
+/**코드 텍스트를 보여주는 함수*/
 @Composable
 fun ShowChords(viewModel: MyViewModel, modifier: Modifier) {
     val countDownSecondState = viewModel.countDownSecond.collectAsState() // 초
@@ -193,60 +197,136 @@ fun ShowChords(viewModel: MyViewModel, modifier: Modifier) {
     }
 }
 
-/**피드백 노트를 받아와 화면에 빨간색으로 보여주는 함수*/
+/**타브 악보 그리는 함수*/
 @Composable
-fun DrawFeedBackNotes(feedbackNoteList: List<Int>?, modifier: Modifier) {
-    val feedbackChunkCnt = WavConsts.FEEDBACK_CHUNK_CNT
-    val halfFeedbackChunkCnt = feedbackChunkCnt / 2
-    if (!feedbackNoteList.isNullOrEmpty()) {
-        Canvas(modifier = modifier) {
-            val startX_measure1 = 1 * (size.width / 10) // 첫번째 마디 시작점
-            val startX_measure2 = 5 * (size.width / 10) // 두번째 마디 시작점
-            val measure_width = 4 * (size.width / 10) // 한 마디 넓이
-            val startY_tail = size.height * 1 / 5 // 꼬리가 시작되는 Y지점
-            val endY_tail = size.height * 4 / 5 // 꼬리가 끝나는 Y지점
-            val centerY = size.height * 4 / 5 // 선의 중심점
-            val lineLength = sqrt(2f) * 25f // 45도 각도에서의 선 길이, 대각선 길이 계산
+fun ShowTabNote(viewModel: MyViewModel, modifier: Modifier) {
+    val shownChordState1 = viewModel.shownChord1.collectAsState() // 마디1에 보여주는 코드
+    val shownChordState2 = viewModel.shownChord2.collectAsState() // 마디2에 보여주는 코드
 
-            var startX = startX_measure1
-            var xOffset = startX + (halfFeedbackChunkCnt + 1)
+    Canvas(modifier = modifier) {
+        val startX_measure1 = 1 * (size.width / 10) // 첫번째 마디 시작점
+        val startX_measure2 = 5 * (size.width / 10) // 두번째 마디 시작점
+        val tab_width = 3 * (size.width / 10) // 타브 악보 넓이
+        val tab_height = size.height // 타브 악보 높이
 
-            for (i in 1..feedbackChunkCnt) {
-                if (i <= (halfFeedbackChunkCnt)) { // 마디1 인덱스 설정
-                    startX = startX_measure1
-                    xOffset = startX + i * (measure_width / (halfFeedbackChunkCnt + 1))
+        val startY = 0f // 시작되는 Y지점
+        val endY = size.height // 끝나는 Y지점
 
-                } else { // 마디2 X인덱스 설정
-                    startX = startX_measure2
-                    xOffset = startX + (i - halfFeedbackChunkCnt) * (measure_width / (halfFeedbackChunkCnt + 1))
-                }
+        // 첫 번째 마디에 대한 사각형 그리기
+        drawRect(
+            color = Color.Black,
+            topLeft = Offset(startX_measure1, startY),
+            size = Size(tab_width, endY),
+            style = Stroke(width = 5f)
+        )
+        /**================================================================================마디1 세로줄*/
+        // 마디1 라인1
+        drawLine(
+            color = Color.Black,
+            start = Offset(x = (startX_measure1 + 0.25 * tab_width).toFloat(), y = startY),
+            end = Offset(x = (startX_measure1 + 0.25 * tab_width).toFloat(), y = endY),
+            strokeWidth = Stroke.DefaultMiter
+        )
+        // 마디1 라인2
+        drawLine(
+            color = Color.Black,
+            start = Offset(x = (startX_measure1 + 0.5 * tab_width).toFloat(), y = startY),
+            end = Offset(x = (startX_measure1 + 0.5 * tab_width).toFloat(), y = endY),
+            strokeWidth = Stroke.DefaultMiter
+        )
+        // 마디1 라인3
+        drawLine(
+            color = Color.Black,
+            start = Offset(x = (startX_measure1 + 0.75 * tab_width).toFloat(), y = startY),
+            end = Offset(x = (startX_measure1 + 0.75 * tab_width).toFloat(), y = endY),
+            strokeWidth = Stroke.DefaultMiter
+        )
+        /**====================================================================================*/
+        /**================================================================================마디1 가로줄*/
+        drawLine(
+            color = Color.Black,
+            start = Offset(x = startX_measure1, y = (startY + (1.0/5.0) * tab_height).toFloat()),
+            end = Offset(x = startX_measure1 + tab_width, y = (startY + (1.0/5.0) * tab_height).toFloat()),
+            strokeWidth = Stroke.DefaultMiter
+        )
+        drawLine(
+            color = Color.Black,
+            start = Offset(x = startX_measure1, y = (startY + (2.0/5.0) * tab_height).toFloat()),
+            end = Offset(x = startX_measure1 + tab_width, y = (startY + (2.0/5.0) * tab_height).toFloat()),
+            strokeWidth = Stroke.DefaultMiter
+        )
+        drawLine(
+            color = Color.Black,
+            start = Offset(x = startX_measure1, y = (startY + (3.0/5.0) * tab_height).toFloat()),
+            end = Offset(x = startX_measure1 + tab_width, y = (startY + (3.0/5.0) * tab_height).toFloat()),
+            strokeWidth = Stroke.DefaultMiter
+        )
+        drawLine(
+            color = Color.Black,
+            start = Offset(x = startX_measure1, y = (startY + (4.0/5.0) * tab_height).toFloat()),
+            end = Offset(x = startX_measure1 + tab_width, y = (startY + (4.0/5.0) * tab_height).toFloat()),
+            strokeWidth = Stroke.DefaultMiter
+        )
+        /**====================================================================================*/
 
-                if (feedbackNoteList[i] != 0) { // 첫번째 마디 그리기
-                    drawLine(
-                        color = Color.Red,
-                        start = Offset(x = xOffset + lineLength / 2, y = startY_tail),
-                        end = Offset(x = xOffset + lineLength / 2, y = endY_tail - lineLength / 2),
-                        strokeWidth = 10f
-                    )
-
-                    // 45도 기울인 선을 그리기 위한 시작점과 끝점 계산
-                    val start = Offset(x = xOffset - lineLength / 2, y = centerY + lineLength / 2)
-                    val end = Offset(x = xOffset + lineLength / 2, y = centerY - lineLength / 2)
-                    drawLine(
-                        color = Color.Red,
-                        start = start,
-                        end = end,
-                        strokeWidth = 10f
-                    )
-                }
-            }
-
-
-        }
+        /**============================================================ 두 번째 마디에 대한 사각형 그리기*/
+        drawRect(
+            color = Color.Black,
+            topLeft = Offset(startX_measure2, startY),
+            size = Size(tab_width, endY),
+            style = Stroke(width = 5f)
+        )
+        /**=======================================================================마디2 세로줄*/
+        // 마디2 라인1
+        drawLine(
+            color = Color.Black,
+            start = Offset(x = (startX_measure2 + 0.25 * tab_width).toFloat(), y = startY),
+            end = Offset(x = (startX_measure2 + 0.25 * tab_width).toFloat(), y = endY),
+            strokeWidth = Stroke.DefaultMiter
+        )
+        // 마디1 라인2
+        drawLine(
+            color = Color.Black,
+            start = Offset(x = (startX_measure2 + 0.5 * tab_width).toFloat(), y = startY),
+            end = Offset(x = (startX_measure2 + 0.5 * tab_width).toFloat(), y = endY),
+            strokeWidth = Stroke.DefaultMiter
+        )
+        // 마디1 라인3
+        drawLine(
+            color = Color.Black,
+            start = Offset(x = (startX_measure2 + 0.75 * tab_width).toFloat(), y = startY),
+            end = Offset(x = (startX_measure2 + 0.75 * tab_width).toFloat(), y = endY),
+            strokeWidth = Stroke.DefaultMiter
+        )
+        /**============================================================================마디2 가로줄*/
+        drawLine(
+            color = Color.Black,
+            start = Offset(x = startX_measure2, y = (startY + (1.0/5.0) * tab_height).toFloat()),
+            end = Offset(x = startX_measure2 + tab_width, y = (startY + (1.0/5.0) * tab_height).toFloat()),
+            strokeWidth = Stroke.DefaultMiter
+        )
+        drawLine(
+            color = Color.Black,
+            start = Offset(x = startX_measure2, y = (startY + (2.0/5.0) * tab_height).toFloat()),
+            end = Offset(x = startX_measure2 + tab_width, y = (startY + (2.0/5.0) * tab_height).toFloat()),
+            strokeWidth = Stroke.DefaultMiter
+        )
+        drawLine(
+            color = Color.Black,
+            start = Offset(x = startX_measure2, y = (startY + (3.0/5.0) * tab_height).toFloat()),
+            end = Offset(x = startX_measure2 + tab_width, y = (startY + (3.0/5.0) * tab_height).toFloat()),
+            strokeWidth = Stroke.DefaultMiter
+        )
+        drawLine(
+            color = Color.Black,
+            start = Offset(x = startX_measure2, y = (startY + (4.0/5.0) * tab_height).toFloat()),
+            end = Offset(x = startX_measure2 + tab_width, y = (startY + (4.0/5.0) * tab_height).toFloat()),
+            strokeWidth = Stroke.DefaultMiter
+        )
     }
 }
-/**피드백리스트와 정답리스트를 기반으로 다시 노트를 그림*/
 
+/**피드백리스트와 정답리스트를 기반으로 다시 노트를 그림*/
 @Composable
 fun DrawPaintNotes(paintNoteList: List<Int>?, modifier: Modifier) {
     val feedbackChunkCnt = WavConsts.FEEDBACK_CHUNK_CNT
@@ -267,11 +347,12 @@ fun DrawPaintNotes(paintNoteList: List<Int>?, modifier: Modifier) {
             for (i in 0..feedbackChunkCnt) { // 0~72
                 if (i <= (halfFeedbackChunkCnt)) { // 마디1 인덱스 설정
                     startX = startX_measure1
-                    xOffset = startX + (i+3) * (measure_width / (halfFeedbackChunkCnt + 1))
+                    xOffset = startX + (i + 3) * (measure_width / (halfFeedbackChunkCnt + 1))
 
                 } else { // 마디2 X인덱스 설정
                     startX = startX_measure2
-                    xOffset = (startX + ((i+1.5) - halfFeedbackChunkCnt) * (measure_width / (halfFeedbackChunkCnt + 1))).toFloat()
+                    xOffset =
+                        (startX + ((i + 1.5) - halfFeedbackChunkCnt) * (measure_width / (halfFeedbackChunkCnt + 1))).toFloat()
                 }
 
                 val selected_color = AnswerTypes.answerCodeMap[paintNoteList[i]]
@@ -285,7 +366,10 @@ fun DrawPaintNotes(paintNoteList: List<Int>?, modifier: Modifier) {
                         drawLine(
                             color = selected_color,
                             start = Offset(x = xOffset + lineLength / 2, y = startY_tail),
-                            end = Offset(x = xOffset + lineLength / 2, y = endY_tail - lineLength / 2),
+                            end = Offset(
+                                x = xOffset + lineLength / 2,
+                                y = endY_tail - lineLength / 2
+                            ),
                             strokeWidth = selected_stroke
                         )
                     }
