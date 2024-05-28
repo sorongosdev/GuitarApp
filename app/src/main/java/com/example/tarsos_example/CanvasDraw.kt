@@ -468,20 +468,5 @@ fun DrawProcessBar(seconds: Double, modifier: Modifier) {
             end = Offset(x = xOffset, y = endY),
             strokeWidth = 10f
         )
-
-        //===============================
-        val paint = android.graphics.Paint().apply {
-            color = android.graphics.Color.BLACK // 텍스트 색상 설정
-            textSize = 40f // 텍스트 크기 설정
-        }
-
-        drawIntoCanvas { canvas ->
-            canvas.nativeCanvas.drawText(
-                seconds.toString(),
-                xOffset, // x 좌표
-                0f, // y 좌표
-                paint // Paint 객체
-            )
-        }
     }
 }

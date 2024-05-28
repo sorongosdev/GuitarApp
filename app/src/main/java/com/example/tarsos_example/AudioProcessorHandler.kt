@@ -108,7 +108,7 @@ class AudioProcessorHandler(private val context: Context) {
                 delay(totalInterval) // 지정된 간격만큼 대기
                 totalElapsedTime += totalInterval // 경과 시간 업데이트
             }
-
+            viewModel.updateBarSecond(5.0)
             stopAudioProcessing(viewModel = viewModel)
         }
     }
