@@ -318,9 +318,9 @@ def find_nearest_key(found_unique_notes, keys_freq):
         return 'null'
 
     # 각 조와 found_notes 간의 일치도 계산
-    best_match = None
+    best_match = 'null'
     best_match_score = -1  # 일치하는 음의 개수를 저장할 변수
-    best_match_index = None  # found_notes에서 match된 최소 인덱스를 저장할 변수
+    best_match_index = 'null'  # found_notes에서 match된 최소 인덱스를 저장할 변수
 
     for key, notes in keys_freq.items():
         match_score = sum(note in found_unique_notes for note in notes)  # found_notes에 포함된 음의 개수를 계산
@@ -863,7 +863,7 @@ def main(wave_bytes, rms_list):
     print(numbered_final_chord_list)
 
     # 'null'이 아닌 첫 번째 값 찾기
-    first_non_null_value = None
+    first_non_null_value = 'null'
     for chord in numbered_final_chord_list:
         if chord != 'null':
             first_non_null_value = chord
@@ -968,6 +968,25 @@ def main(wave_bytes, rms_list):
     del results[1]  # 원래 인덱스 2의 요소가 삭제되면서 인덱스가 한 칸씩 당겨지므로 다시 인덱스 1의 요소를 삭제
     print("삭제 : ",results)
     print(len(results))
+
+    # 12, 13, 14 인덱스에 0이 아닌 숫자가 존재하면, 이를 뒤에 있는 0이 아닌 숫자로 대체
+    if any(results[i] != 0 for i in range(12, 15)):
+        replacement_found = False  # 대체할 숫자를 찾았는지 여부
+        replacement_value = None  # 대체할 숫자
+
+        # 뒤에 있는 첫 번째 0이 아닌 숫자를 찾기
+        for j in range(15, len(results)):
+            if results[j] != 0:
+                replacement_value = results[j]  # 대체할 숫자를 찾았으므로 저장
+                replacement_found = True  # 대체할 숫자를 찾았음을 표시
+                break  # 첫 번째 0이 아닌 숫자를 찾았으므로 루프 중단
+
+        # 대체할 숫자를 찾았다면, 12, 13, 14 인덱스의 숫자를 대체
+        if replacement_found:
+            for i in range(12, 15):
+                if results[i] != 0:  # 0이 아닌 숫자만 대체
+                    results[i] = replacement_value
+    print("두한 : ", results)
 
     # 원소 1개를 3개로 늘려서 list 반환
     results = expand_results(results)
