@@ -156,12 +156,12 @@ class MyViewModel : ViewModel() {
         }
 
         Log.d("two", "updatedPaintNoteList ${updatedPaintNoteList}")
+        Log.d("two", "answerNote ${_answerNote.value}")
 
         // 3묶음 음표 합치기
         for (i in 1..<FEEDBACK_CHUNK_CNT - 3) { // 1~68
             // 연속된 박자 오답이 있으면 그 3묶음은 오답이라고 판단하고 첫번째 위치에만 오답을 남김
             // 3개 다 오답
-//            Log.d("twoNotes", "for decision start updatedPaintNoteList ${updatedPaintNoteList}")
             if (isBeatCorrect(updatedPaintNoteList[i - 1]) == 'W'
                 && isBeatCorrect(updatedPaintNoteList[i]) == 'W'
                 && isBeatCorrect(updatedPaintNoteList[i + 1]) == 'W'
@@ -222,22 +222,28 @@ class MyViewModel : ViewModel() {
                     updatedPaintNoteList[i] = DELETED
                 }
             }
-//            //===============================================================================================앞에 한 개만 정답
-//            else if (isBeatCorrect(updatedPaintNoteList[i - 1]) && isBeatCorrect(updatedPaintNoteList[i]) && isBeatCorrect(updatedPaintNoteList[i + 1])) {
-//                val shiftedAnswerIndex = (i - 1) - 3
-//                if (isBeatCorrect(updatedPaintNoteList[shiftedAnswerIndex])) { // =======================원점이 박자 정답이라면
-//                    updatedPaintNoteList[i - 1] = change2WrongBeat(updatedPaintNoteList[i - 1])
-//
-//                    updatedPaintNoteList[i] = DELETED
-//                    updatedPaintNoteList[i + 1] = DELETED
-//                } else if (!isBeatCorrect(updatedPaintNoteList[shiftedAnswerIndex])) { // ================원점이 박자 정답이 아니라면
-//                    updatedPaintNoteList[shiftedAnswerIndex] = updatedPaintNoteList[i - 1]
-//
-//                    updatedPaintNoteList[i - 1] = DELETED
-//                    updatedPaintNoteList[i] = DELETED
-//                    updatedPaintNoteList[i + 1] = DELETED
-//                }
-//            }
+            //===============================================================================================앞에 한 개만 정답
+            else if (isBeatCorrect(updatedPaintNoteList[i - 1])=='C' && isBeatCorrect(updatedPaintNoteList[i])=='W' && isBeatCorrect(updatedPaintNoteList[i + 1])=='W') {
+                Log.d("twoNotes", "앞에 한 개만 정답 ${i-1} ${i} ${i+1}")
+
+                val shiftedAnswerIndex = (i - 1) - 3
+                if (isBeatCorrect(updatedPaintNoteList[shiftedAnswerIndex])=='C') { // =======================원점이 박자 정답이라면
+                    Log.d("twoNotes", "원점에 박자 정답이 이미 존재 $shiftedAnswerIndex")
+
+                    updatedPaintNoteList[i - 1] = change2WrongBeat(updatedPaintNoteList[i - 1])
+
+                    updatedPaintNoteList[i] = DELETED
+                    updatedPaintNoteList[i + 1] = DELETED
+                } else if (isBeatCorrect(updatedPaintNoteList[shiftedAnswerIndex])!='C') { // ================원점이 박자 정답이 아니라면
+                    Log.d("twoNotes", "원점이 박자 정답이 아님 $shiftedAnswerIndex")
+
+                    updatedPaintNoteList[shiftedAnswerIndex] = updatedPaintNoteList[i - 1]
+
+                    updatedPaintNoteList[i - 1] = DELETED
+                    updatedPaintNoteList[i] = DELETED
+                    updatedPaintNoteList[i + 1] = DELETED
+                }
+            }
 //            // =============================================================================================== 앞에 두 개 정답
 //            else if (isBeatCorrect(updatedPaintNoteList[i - 1]) && isBeatCorrect(
 //                    updatedPaintNoteList[i]
