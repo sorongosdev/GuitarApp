@@ -2,22 +2,22 @@ package com.example.tarsos_example.consts
 
 object ChordTypes {
     val chords_int_string_map: Map<Int, String> = mapOf(
-        1 to "A", 2 to "Am", 3 to "A7",
-        4 to "B", 5 to "Bm", 6 to "B7",
-        7 to "C", 8 to "C7",
-        9 to "D", 10 to "Dm", 11 to "D7",
-        12 to "E", 13 to "Em", 14 to "E7",
-        15 to "F", 16 to "Fm", 17 to "F7",
-        18 to "G", 19 to "G7"
+        1 to "A",
+        2 to "B", 3 to "Bm", 4 to "B7",
+        5 to "C", 6 to "C7",
+        7 to "Dm",
+        8 to "E",
+        9 to "F",
+        10 to "G", 11 to "G7"
     )
     val chords_string_int_map: Map<String, Int> = mapOf(
-        "A" to 1, "Am" to 2, "A7" to 3,
-        "B" to 4, "Bm" to 5, "B7" to 6,
-        "C" to 7, "C7" to 8,
-        "D" to 9, "Dm" to 10, "D7" to 11,
-        "E" to 12, "Em" to 13, "E7" to 14,
-        "F" to 15, "Fm" to 16, "F7" to 17,
-        "G" to 18, "G7" to 19
+        "A" to 1,
+        "B" to 2, "Bm" to 3, "B7" to 4,
+        "C" to 5, "C7" to 6,
+        "Dm" to 7,
+        "E" to 8,
+        "F" to 9,
+        "G" to 10, "G7" to 11
     )
 
 }

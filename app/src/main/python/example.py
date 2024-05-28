@@ -196,11 +196,11 @@ def get_all_keys_note():
 def get_all_guitar_chords_notes():
     guitar_chords_with_common_notes = {
         "A": {
-            "chords": ["A", "Am", "A7"],
+            "chords": ["A"],
             "identifying_notes": {
                 "A": ["A_3", "C#_4"],
-                "Am": ["A_3", "C_4"],
-                "A7": ["G_3", "C#_4", "C#_2"]
+                # "Am": ["A_3", "C_4"],
+                # "A7": ["G_3", "C#_4", "C#_2"]
             }
         },
         "B": {
@@ -219,27 +219,27 @@ def get_all_guitar_chords_notes():
             }
         },
         "D": {
-            "chords": ["D", "Dm", "D7"],
+            "chords": ["Dm"],
             "identifying_notes": {
-                "D": ["D_4", "F#_4"],
+                # "D": ["D_4", "F#_4"],
                 "Dm": ["D_4", "F_4"],
-                "D7": ["C_4", "F#_4"]
+                # "D7": ["C_4", "F#_4"]
             }
         },
         "E": {
-            "chords": ["E", "Em", "E7"],
+            "chords": ["E"],
             "identifying_notes": {
                 "E": ["E_3", "G#_3", "A#_2"],
-                "Em": ["E_3", "G_3"],
-                "E7": ["D_3", "G#_3", "G#_2", "D#_2"]
+                # "Em": ["E_3", "G_3"],
+                # "E7": ["D_3", "G#_3", "G#_2", "D#_2"]
             }
         },
         "F": {
-            "chords": ["F", "Fm", "F7"],
+            "chords": ["F"],
             "identifying_notes": {
                 "F": ["F_3", "A_3"],
-                "Fm": ["F_3", "G#_3"],
-                "F7": ["D#_3", "A_3", "D_2", "F#_2", "C#_3", "G_2"]
+                # "Fm": ["F_3", "G#_3"],
+                # "F7": ["D#_3", "A_3", "D_2", "F#_2", "C#_3", "G_2"]
             }
         },
         "G": {
@@ -266,13 +266,13 @@ def get_unique_key():
 def chord_to_number(chord_name):
     # 각 코드에 숫자를 부여하는 딕셔너리
     chords_numbers = {
-        "A": 1, "Am": 2, "A7": 3,
-        "B": 4, "Bm": 5, "B7": 6,
-        "C": 7, "C7": 8,
-        "D": 9, "Dm": 10, "D7": 11,
-        "E": 12, "Em": 13, "E7": 14,
-        "F": 15, "Fm": 16, "F7": 17,
-        "G": 18, "G7": 19,
+        "A": 1,
+        "B": 2, "Bm": 3, "B7": 4,
+        "C": 5, "C7": 6,
+        "Dm": 7,
+        "E": 8,
+        "F": 9,
+        "G": 10, "G7": 11,
     }
 
     # 입력된 코드 이름에 해당하는 숫자를 반환
