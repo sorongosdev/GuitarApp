@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.tarsos_example.ui.theme.Tarsos_exampleTheme
@@ -34,11 +34,13 @@ import androidx.activity.viewModels
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
-import com.example.tarsos_example.consts.NoteTypes
 import com.example.tarsos_example.model.MyViewModel
 import java.io.File
 import java.io.IOException
@@ -101,16 +103,17 @@ class MainActivity : ComponentActivity() {
         name: String,
         modifier: Modifier = Modifier
     ) {
+        var showPaintNotes by remember { mutableStateOf(false) }
+
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Top
         ) {
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-//                Text(text = "recordSecond: ${recordSecond.value}") // 녹음 시작후 지난 초 표시
-//                Text(text = "barSecond: ${barSecond.value}") // 녹음 시작후 지난 초 표시
 
                 FloatingActionButton(
                     onClick = { viewModel.init() }
@@ -133,6 +136,27 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Text(
                         text = "강제 중지",
+                        style = TextStyle(fontSize = 50.sp)
+                    )
+                }
+                FloatingActionButton(
+                    onClick = {
+                        showPaintNotes = false // 악보 보기 클릭 시 `DrawPaintNotes` 숨기기
+                    }
+
+                ) {
+                    Text(
+                        text = "악보 보기",
+                        style = TextStyle(fontSize = 50.sp)
+                    )
+                }
+                FloatingActionButton(
+                    onClick = {
+                        showPaintNotes = true // 피드백 보기 클릭 시 `DrawPaintNotes` 표시
+                    }
+                ) {
+                    Text(
+                        text = "피드백 보기",
                         style = TextStyle(fontSize = 50.sp)
                     )
                 }
@@ -182,13 +206,15 @@ class MainActivity : ComponentActivity() {
                         .height(200.dp)
                 )
 
-                /**피드백리스트와 정답리스트를 기반으로 다시 노트를 그림*/
-                DrawPaintNotes(
-                   paintNoteList = paintNoteList.value,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                )
+                /**피드백리스트와 정답리스트를 기반으로 사용자가 연주한 노트를 그림*/
+                if (showPaintNotes) {
+                    DrawPaintNotes(
+                        paintNoteList = paintNoteList.value,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                    )
+                }
 
                 DrawProcessBar(
                     seconds = barSecond.value,
