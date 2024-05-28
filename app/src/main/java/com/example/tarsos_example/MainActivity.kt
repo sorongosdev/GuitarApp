@@ -116,7 +116,7 @@ class MainActivity : ComponentActivity() {
                     onClick = { viewModel.init() }
                 ) {
                     Text(
-                        text = "INIT",
+                        text = "초기화",
                         style = TextStyle(fontSize = 50.sp)
                     )
                 }
@@ -139,7 +139,7 @@ class MainActivity : ComponentActivity() {
             }
             Text(
                 text = "Count Down : ${countDownSecond.value}",
-                style = TextStyle(fontSize = 20.sp)
+                style = TextStyle(fontSize = 60.sp)
             )
 
             Spacer(modifier = Modifier.fillMaxHeight(0.1f)) // 전체의 10% 공백

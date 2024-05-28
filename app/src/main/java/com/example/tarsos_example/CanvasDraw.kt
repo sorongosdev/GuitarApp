@@ -173,7 +173,7 @@ fun ShowChords(viewModel: MyViewModel, modifier: Modifier) {
 
         val paint = android.graphics.Paint().apply {
             color = android.graphics.Color.BLACK // 텍스트 색상 설정
-            textSize = 40f // 텍스트 크기 설정
+            textSize = 120f // 텍스트 크기 설정
         }
 
         drawIntoCanvas { canvas ->
