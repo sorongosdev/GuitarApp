@@ -36,6 +36,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
 
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
@@ -103,7 +104,7 @@ class MainActivity : ComponentActivity() {
         name: String,
         modifier: Modifier = Modifier
     ) {
-        var showPaintNotes by remember { mutableStateOf(false) }
+        var showPaintNotes by remember { mutableStateOf(true) }
 
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -163,10 +164,37 @@ class MainActivity : ComponentActivity() {
             }
             Spacer(modifier = Modifier.fillMaxHeight(0.05f)) // 전체의 10% 공백
 
-            Text(
-                text = "Count Down : ${countDownSecond.value}",
-                style = TextStyle(fontSize = 60.sp)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Text(
+                    text = "Count Down : ${countDownSecond.value}",
+                    style = TextStyle(fontSize = 50.sp)
+                )
+                Text(
+                    text = "                        ",
+                    style = TextStyle(fontSize = 50.sp)
+                )
+
+                Text(
+                    text = "코드 정확도: ",
+                    style = TextStyle(fontSize = 30.sp)
+                )
+                Text(
+                    text = "빨강(오답) ",
+                    style = TextStyle(fontSize = 30.sp),
+                    color = Color.Red
+                )
+                Text(
+                    text = "초록(정답) ",
+                    style = TextStyle(fontSize = 30.sp),
+                    color = Color.Green
+                )
+
+
+            }
+
 
             Spacer(modifier = Modifier.fillMaxHeight(0.1f)) // 전체의 10% 공백
 
