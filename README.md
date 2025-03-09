@@ -9,13 +9,14 @@
 ## 🛠️ 2. 개발 환경
 
 ### 🔍 1) 프레임워크 및 언어
-- Front-end: Kotlin (1.8)
+- Front-end: Kotlin (1.9.0)
 - Back-end: None
 
 ### 🔧 2) 개발 도구
-- Android Studio: Bumblebee (2021.1.1)
-- Gradle: 7.2
-- JDK: 11
+- Android Studio: Hedgehog (2023.1.1)
+- Gradle: 8.4
+- Android Gradle Plugin: 8.2.1
+- JDK: 17 (JetBrains Runtime)
 
 ### 📱 3) 테스트 환경
 - Android 에뮬레이터: API 레벨 32 (Android 12L)
