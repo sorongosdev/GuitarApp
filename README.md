@@ -6,7 +6,25 @@
 - 혹은 음향 파일에서 기타 코드를 추출해주지만, 사용자가 연주한 기타 코드에 대한 판단은 하지 않습니다.
 - 그래서 코드와 박자 추정이 가능하며, 사용자에게 피드백이 가능한 어플리케이션을 개발했습니다.
 
-## 🛠️ 2. 개발 환경
+## 👤 2. 팀원 구성 및 역할
+
+### 1) 팀원 구성
+
+|   |   |
+|---|---|
+| 도소라 | 앱 UI |
+| 김예은 | 알고리즘 |
+
+### 2) 본인 역할
+
+#### 🐚 도소라 | 앱 UI
+
+- hps 알고리즘 레퍼런스 코드 탐색
+- 파이썬과 코틀린 연동 가능한 chaoqupy 라이브러리 적용
+- Compose를 이용한 악보/노트 뷰 개발, 진행바 애니메이션 구현
+- WAV로 변환 후 알고리즘에 입력
+
+## 🛠️ 3. 개발 환경
 
 ### 🔍 1) 프레임워크 및 언어
 - Front-end: Kotlin (1.9.0)
@@ -19,44 +37,40 @@
 - JDK: 17 (JetBrains Runtime)
 
 ### 📱 3) 테스트 환경
-- Android 에뮬레이터: API 레벨 32 (Android 12L)
-- Mobile Robot Temi: API 레벨 32 (Android 12L)
+- Android 에뮬레이터: API 레벨 34 (Android 14)
+- 갤럭시탭 S7: API 레벨 34 (Android 14)
 
 ### 📚 4) 주요 라이브러리 및 API
-- robotemi:sdk: 0.10.77 (Temi 로봇 제어용 SDK)
-- firebase-bom: 29.3.1 (Firebase 관련)
-- firebase-analytics
-- firebase-database
+- tarsosDSP: 2.5
 
 ### 🔖 5) 버전 및 이슈 관리
-- Git: 2.45.2
+- Git: 2.43.0
 
 ### 👥 6) 협업 툴
-- 커뮤니케이션: Kakaotalk, Figma
+- 커뮤니케이션: Slack
 
-### ☁️ 7) 서비스 배포 환경
-- 백엔드 서버: Firebase Realtime Database
-- 배포 방식: Firebase Cloud 호스팅
+## ▶️ 4. 프로젝트 실행 방법
 
-## ▶️ 3. 프로젝트 실행 방법
-
-### ⬇️ 1) 필수 설치 사항
+### ⬇️ 1) 필수 설정 사항
 
 #### ① 기본 환경
 - Android Studio (최신 버전)
 - Java JDK (Java 8 이상)
-- Android SDK (minSdk 23, targetSdk 32)
-- Google Play 서비스 SDK
+- Android SDK (minSdk 24, targetSdk 34, compileSdk 34)
+- Python (Python 3.12 - Chaquopy 사용)
 
 #### ② 필수 의존성 패키지
-- androidx.appcompat:appcompat: 1.4.2
-- com.google.android.material:material: 1.6.1
-- androidx.constraintlayout:constraintlayout: 2.1.4
+- androidx.core:core-ktx: 1.13.1
+- androidx.lifecycle:lifecycle-runtime-ktx: 2.7.0
+- androidx.activity:activity-compose: 1.9.0
+- androidx.compose: compose-bom: 2024.05.00
+- androidx.lifecycle:lifecycle-viewmodel-compose: 2.7.0
+- Python 패키지: numpy, matplotlib, wave
 
 ### ⿻ 2) 프로젝트 클론 및 설정
 - 프로젝트 클론
 ```bash
-git clone https://github.com/sorongosdev/HairTemi.git
+git clone https://github.com/sorongosdev/GuitarApp.git
 ```
 - 의존성 설치
 ```bash
@@ -72,51 +86,30 @@ gradlew.bat --refresh-dependencies
 ./gradlew build
 ```
 
-## 📁 4. 프로젝트 구조
+## 📁 5. 프로젝트 구조
 ```
-example/soratemi3/
-│  Agreement.java          # 이용 약관 동의 화면
-│  CareInform.java         # 케어 서비스 정보 안내 화면
-│  CareService.java        # 케어 서비스 선택 화면
-│  CareStart.java          # 케어 서비스 시작 화면
-│  CareStep1.java          # 케어 서비스 1단계 화면
-│  CareStep2.java          # 케어 서비스 2단계 화면
-│  CareStepf.java          # 케어 서비스 최종 단계 화면
-│  Charge.java             # 요금 결제 화면
-│  CheckHair.java          # 헤어 상태 체크 화면
-│  DesignSel.java          # 헤어 디자인 선택 화면
-│  FirebaseTest.java       # Firebase 연동 테스트 모듈
-│  JuiceSel.java           # 음료 선택 화면
-│  LoadingDrinkHere.java   # '이곳에서 음료' 로딩 화면
-│  LoadingEmpty.java       # 빈 로딩 화면
-│  LoadingFollow.java      # '따라오세요' 로딩 화면
-│  MainActivity.java       # 앱 메인 화면
-│  PayCheck.java           # 결제 확인 화면
-│  PayReceipt.java         # 결제 영수증 화면
-│  PayRfid.java            # RFID 결제 화면
-│  Recommend.java          # 스타일 추천 화면
-│  Register.java           # 고객 등록 화면
-│
-└─temi/                   # 테미 로봇 관련 기능
-    CustomTtsListener.java     # 테미 로봇 음성 출력 리스너
-    RoboTemi.java              # 테미 로봇 제어 클래스
-    RoboTemiListeners.java     # 테미 로봇 이벤트 리스너
+tarsos_example
+├─ MainActivity.kt  # 앱의 메인 액티비티, UI 구성, 녹음 권한 요청, 레이아웃 관리
+├─ MyApplication.kt  # 앱의 전역 컨텍스트 제공 Application 클래스
+├─ consts
+│  ├─ AnswerTypes.kt  # 사용자 연주 정답 상태 코드 및 색상 매핑 정의
+│  ├─ ChordTypes.kt  # 기타 코드 관련 매핑 및 탭 위치 정보
+│  ├─ NoteTypes.kt  # 악보 노트 패턴 및 정답 판정을 위한 패턴 정의
+│  └─ WavConsts.kt  # 녹음 및 타이밍 관련 상수 정의
+├─ model
+│  └─ MyViewModel.kt  # 앱 데이터 상태 관리, 박자/코드 정확도 판정, 피드백 생성 로직
+└─ utils
+   ├─ AudioProcessorHandler.kt  # 오디오 녹음 및 처리
+   ├─ CanvasDraw.kt  # Canvas를 사용한 악보, 코드, 탭, 진행 바 등 그래픽 요소 그리기
+   └─ RMSProcessor.kt  # 오디오 신호의 RMS(Root Mean Square) 값 계산 프로세서
 ```
-
-## 🎭 5. 역할
-
-### 🐚 도소라
-
-- 이용약관, 케어 서비스 정보, 음료 선택, RFID 결제 화면 등 전반적인 UI 개발
-- 화면 전환 구현
-- 화면 전환 시 가격 전달, 데이터 전달 구현
 
 ## 📅 6. 개발 기간
-- 전체 개발 기간: 2022.03 ~ 2022.06
-- 기획 및 디자인: 2022.03 ~ 2022.05
-- 개발: 2022.05 ~ 2022.06
+- 전체 프로젝트 기간: 2023.10 ~ 2024.05
+- 기획 및 디자인: 2023.10 ~ 2023.12
+- 개발: 2024.01 ~ 2024.05
 
-## 📜 7. 화면별 기능 설명
+## 📜 7. 기능 설명
 
 ### 📄 1) 손님 입장
 
