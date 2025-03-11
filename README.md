@@ -10,9 +10,8 @@
 
 ### 1) 팀원 구성
 
-|   |   |
-|---|---|
 | 도소라 | 앱 UI |
+|---|---|
 | 김예은 | 알고리즘 |
 
 ### 2) 본인 역할
@@ -117,7 +116,7 @@ tarsos_example
 
 | 기타 코드와 악보 표출 |
 | :-----: |
-| |
+| ![image](https://github.com/user-attachments/assets/155d7c3f-07ae-43f5-85a0-79dc3534f603) |
 
 ### 2) 카운트 다운 시작
 
@@ -125,7 +124,7 @@ tarsos_example
 
 | 카운트 다운 |
 | :-----: |
-| |
+| ![카운트다운](https://github.com/user-attachments/assets/77e2a099-89cd-4c8e-bea0-fe369a083ced) |
 
 ### 3) 사용자 연주
 
