@@ -132,7 +132,7 @@ tarsos_example
 
 | 사용자 연주 |
 | :-----: |
-| |
+| ![진행바](https://github.com/user-attachments/assets/aeef6c6c-2986-4861-8fc3-eeff323c8507) |
 
 ### 4) 사용자에게 피드백
 
@@ -141,8 +141,8 @@ tarsos_example
 
 | 박자 O, 코드 O | 박자 O, 코드 X |
 | :-----: | :-----: |
-| | |
+| ![image](https://github.com/user-attachments/assets/420474ab-243e-415d-9315-d460ec371809) | ![image](https://github.com/user-attachments/assets/7d4deda5-2e96-46ff-9ca3-8f520d8ae010) |
 
 | 박자 X, 코드 O | 박자 X, 코드 X |
 | :-----: | :-----: |
-| | |
+| ![image](https://github.com/user-attachments/assets/e39d7d20-c51c-446f-b4e7-acd11e39edb7) | ![image](https://github.com/user-attachments/assets/49c73f81-a582-4168-b41c-089f0c1ac07f) |
