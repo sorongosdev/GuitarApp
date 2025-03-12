@@ -8,13 +8,13 @@
 
 ## 👤 2. 팀원 구성 및 역할
 
-### 1) 팀원 구성
+### 👤 1) 팀원 구성
 
 | 도소라 | 앱 UI |
 |---|---|
 | 김예은 | 알고리즘 |
 
-### 2) 본인 역할
+### 👤 2) 본인 역할
 
 #### 🐚 도소라 | 앱 UI
 
@@ -52,13 +52,13 @@
 
 ### ⬇️ 1) 필수 설정 사항
 
-#### ① 기본 환경
+#### ⬇️ ① 기본 환경
 - Android Studio (최신 버전)
 - Java JDK (Java 8 이상)
 - Android SDK (minSdk 24, targetSdk 34, compileSdk 34)
 - Python (Python 3.12 - Chaquopy 사용)
 
-#### ② 필수 의존성 패키지
+#### ⬇️ ② 필수 의존성 패키지
 - androidx.core:core-ktx: 1.13.1
 - androidx.lifecycle:lifecycle-runtime-ktx: 2.7.0
 - androidx.activity:activity-compose: 1.9.0
